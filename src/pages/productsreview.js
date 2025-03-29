@@ -8,7 +8,7 @@ import styles from '../styles/ProductsReview.module.css'; // Ensure this CSS mod
 // Use the same API URL as blog.js and drinks.js
 const API_URL =
   process.env.NODE_ENV === 'production'
-    ? 'https://stylishmom.vercel.appapi/posts'
+    ? 'https://stylishmom.vercel.app/api/posts'
     : 'http://localhost:3000/api/posts';
 
 export default function ProductsReview({ initialPosts, initialCategories, initialTags, initialError, pagination }) {
