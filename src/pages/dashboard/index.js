@@ -8,7 +8,7 @@ import styles from '../../styles/AdminDashboard.module.css';
 import 'react-quill/dist/quill.snow.css';
 
 // Use dynamic API URL based on environment
-const API_URL = 'https://www.barkatkamran.com/api.php';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/posts';
 
 // Dynamically import ReactQuill with SSR disabled
 const ReactQuill = dynamic(() => import('react-quill'), {
