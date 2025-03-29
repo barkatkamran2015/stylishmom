@@ -8,7 +8,7 @@ import styles from '../styles/ProductsReview.module.css'; // Ensure this CSS mod
 // Use the same API URL as blog.js and drinks.js
 const API_URL =
   process.env.NODE_ENV === 'production'
-    ? 'https://www.thestylishmama.com/api/posts'
+    ? 'https://stylishmom.vercel.appapi/posts'
     : 'http://localhost:3000/api/posts';
 
 export default function ProductsReview({ initialPosts, initialCategories, initialTags, initialError, pagination }) {
@@ -62,7 +62,7 @@ export default function ProductsReview({ initialPosts, initialCategories, initia
   const handleShare = (post) => {
     const baseUrl =
       process.env.NODE_ENV === 'production'
-        ? 'https://www.thestylishmama.com'
+        ? 'https://stylishmom.vercel.app'
         : 'http://localhost:3000';
     const postUrl = `${baseUrl}/productsreview?id=${post.id}`;
 
@@ -113,7 +113,7 @@ export default function ProductsReview({ initialPosts, initialCategories, initia
     image: post.imageUrl || '/default-product-image.jpg',
     url: `${
       process.env.NODE_ENV === 'production'
-        ? 'https://www.thestylishmama.com'
+        ? 'https://stylishmom.vercel.app'
         : 'http://localhost:3000'
     }/productsreview?id=${post.id}`,
   }));
@@ -132,7 +132,7 @@ export default function ProductsReview({ initialPosts, initialCategories, initia
           rel="canonical"
           href={`${
             process.env.NODE_ENV === 'production'
-              ? 'https://www.thestylishmama.com'
+              ? 'https://stylishmom.vercel.app'
               : 'http://localhost:3000'
           }/productsreview`}
         />
@@ -145,7 +145,7 @@ export default function ProductsReview({ initialPosts, initialCategories, initia
           property="og:url"
           content={`${
             process.env.NODE_ENV === 'production'
-              ? 'https://www.thestylishmama.com'
+              ? 'https://stylishmom.vercel.app'
               : 'http://localhost:3000'
           }/productsreview`}
         />
@@ -167,7 +167,7 @@ export default function ProductsReview({ initialPosts, initialCategories, initia
             rel="prev"
             href={`${
               process.env.NODE_ENV === 'production'
-                ? 'https://www.thestylishmama.com'
+                ? 'https://stylishmom.vercel.app'
                 : 'http://localhost:3000'
             }/productsreview?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
           />
@@ -177,7 +177,7 @@ export default function ProductsReview({ initialPosts, initialCategories, initia
             rel="next"
             href={`${
               process.env.NODE_ENV === 'production'
-                ? 'https://www.thestylishmama.com'
+                ? 'https://stylishmom.vercel.app'
                 : 'http://localhost:3000'
             }/productsreview?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
           />
