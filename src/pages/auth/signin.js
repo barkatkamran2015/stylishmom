@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import auth  from '../../../lib/firebaseConfig';
+import { auth } from '../../../lib/firebaseConfig';
 import  { useAuth }  from '../../../context/AuthContext';
 import styles from '../../styles/auth.module.css';
 
