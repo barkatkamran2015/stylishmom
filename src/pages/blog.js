@@ -8,7 +8,7 @@ import styles from '../styles/Blog.module.css';
 // Use the same API URL as dessert.js
 const API_URL =
   process.env.NODE_ENV === 'production'
-    ? 'https://www.thestylishmama.com/api/posts'
+    ? 'https://stylishmom.vercel.app/api/posts'
     : 'http://localhost:3000/api/posts';
 
 export default function Blog({ initialPosts, initialCategories, initialTags, initialError, pagination }) {
