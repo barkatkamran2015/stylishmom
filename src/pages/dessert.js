@@ -59,8 +59,8 @@ export default function Dessert({ initialPosts, initialCategories, initialTags, 
   const handleShare = (post) => {
     const baseUrl =
       process.env.NODE_ENV === 'production'
-    ? 'https://stylishmom.vercel.app/api/posts'
-    : 'http://localhost:3000/api/posts';
+    ? 'https://stylishmom.vercel.app'
+    : 'http://localhost:3000'
     const postUrl = `${baseUrl}/dessert?id=${post.id}`;
 
     if (navigator.share) {
@@ -103,8 +103,8 @@ export default function Dessert({ initialPosts, initialCategories, initialTags, 
     image: post.imageUrl || '/default-dessert-image.jpg',
     url: `${
       process.env.NODE_ENV === 'production'
-    ? 'https://stylishmom.vercel.app/api/posts'
-    : 'http://localhost:3000/api/posts';
+    ? 'https://stylishmom.vercel.app'
+    : 'http://localhost:3000'
     }/dessert?id=${post.id}`,
   }));
 
@@ -122,8 +122,8 @@ export default function Dessert({ initialPosts, initialCategories, initialTags, 
           rel="canonical"
           href={`${
             process.env.NODE_ENV === 'production'
-    ? 'https://stylishmom.vercel.app/api/posts'
-    : 'http://localhost:3000/api/posts';
+    ? 'https://stylishmom.vercel.app'
+    : 'http://localhost:3000'
           }/dessert`}
         />
         <meta property="og:title" content="Delicious Dessert Recipes and Ideas | The Stylish Mama" />
@@ -135,8 +135,8 @@ export default function Dessert({ initialPosts, initialCategories, initialTags, 
           property="og:url"
           content={`${
             process.env.NODE_ENV === 'production'
-    ? 'https://stylishmom.vercel.app/api/posts'
-    : 'http://localhost:3000/api/posts';
+    ? 'https://stylishmom.vercel.app'
+    : 'http://localhost:3000'
           }/dessert`}
         />
         <meta property="og:type" content="website" />
@@ -158,8 +158,8 @@ export default function Dessert({ initialPosts, initialCategories, initialTags, 
             rel="prev"
             href={`${
               process.env.NODE_ENV === 'production'
-    ? 'https://stylishmom.vercel.app/api/posts'
-    : 'http://localhost:3000/api/posts';
+    ? 'https://stylishmom.vercel.app'
+    : 'http://localhost:3000'
             }/dessert?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
           />
         )}
@@ -168,8 +168,8 @@ export default function Dessert({ initialPosts, initialCategories, initialTags, 
             rel="next"
             href={`${
               process.env.NODE_ENV === 'production'
-    ? 'https://stylishmom.vercel.app/api/posts'
-    : 'http://localhost:3000/api/posts';
+    ? 'https://stylishmom.vercel.app'
+    : 'http://localhost:3000'
             }/dessert?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
           />
         )}
