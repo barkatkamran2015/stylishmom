@@ -1,0 +1,264 @@
+/* src/styles/Drinks.module.css */
+.drinksPage {
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  background-color: #f5f8fa; /* Light blue-gray for a refreshing vibe */
+}
+
+/* Header/Search Container */
+.drinksPageSearchContainer {
+  margin-bottom: 20px;
+}
+
+/* Content Wrapper */
+.drinksPageContentWrapper {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Grid Layout for Posts */
+.drinksPageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(920px, 1fr));
+  gap: 20px;
+  padding: 0;
+}
+
+/* Individual Post Card */
+.drinksPageCard {
+  background-color: #fff;
+  border: 1px solid #d9e1e8;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  padding: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+}
+
+.drinksPageCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Title */
+.drinksPageTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2c3e50; /* Darker blue for a drink theme */
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+/* Content */
+.drinksPageContent {
+  font-size: 1rem;
+  color: #5d6d7e;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.drinksPageContent p {
+  margin: 0 0 10px;
+}
+
+/* Image */
+.drinksPageImage {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-bottom: 15px;
+  display: block;
+}
+
+/* Image Placeholder */
+.drinksPageImagePlaceholder {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e8eef2;
+  color: #7f8c8d;
+  font-size: 1rem;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+/* Share Button */
+.shareButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #3498db; /* Blue to match drinks theme */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.shareButton:hover {
+  background-color: #2980b9;
+}
+
+.shareIcon {
+  font-size: 1rem;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 30px;
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.paginationLink {
+  padding: 8px 16px;
+  background-color: #3498db;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.paginationLink:hover {
+  background-color: #2980b9;
+}
+
+/* Loading Container */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #fff;
+}
+
+.drinkLoader {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(45deg, #3498db, #9b59b6); /* Gradient for a drink splash */
+  border-radius: 50%;
+  animation: ripple 1.5s infinite ease-in-out;
+}
+
+.drinkLoader::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  background-color: #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Error and No Posts Messages */
+.drinksPageErrorMessage,
+.drinksPageNoPostsMessage {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #e74c3c;
+  margin: 20px 0;
+}
+
+/* Animation */
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .drinksPage {
+    padding: 15px;
+  }
+  .drinksPageGrid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+  }
+  .drinksPageTitle {
+    font-size: 1.4rem;
+  }
+  .drinksPageContent {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .drinksPage {
+    padding: 10px;
+  }
+  .drinksPageGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .drinksPageTitle {
+    font-size: 1.3rem;
+  }
+  .drinksPageContent {
+    font-size: 0.9rem;
+  }
+  .drinksPageCard {
+    padding: 15px;
+  }
+  .shareButton {
+    padding: 8px 12px;
+  }
+  .pagination {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .drinksPage {
+    padding: 5px;
+  }
+  .drinksPageTitle {
+    font-size: 1.2rem;
+  }
+  .drinksPageContent {
+    font-size: 0.85rem;
+  }
+  .drinksPageCard {
+    padding: 10px;
+  }
+  .drinksPageImagePlaceholder {
+    height: 150px;
+  }
+  .shareButton {
+    width: 100%;
+    justify-content: center;
+  }
+  .drinkLoader {
+    width: 50px;
+    height: 50px;
+  }
+  .drinkLoader::before {
+    width: 30px;
+    height: 30px;
+  }
+}

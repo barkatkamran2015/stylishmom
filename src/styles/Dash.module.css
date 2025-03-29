@@ -1,0 +1,327 @@
+/* src/styles/Dash.module.css */
+/* General Home Page Styling */
+.homePage {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f5f5; /* Light background for better contrast */
+}
+
+/* Featured Slider */
+.homePage__featuredSlider {
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.homePage__sliderImage {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.homePage__sliderText {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle text shadow for readability */
+}
+
+/* Posts Layout */
+.homePage__postsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.homePage__postItem {
+  position: relative; /* For positioning the "Updated" badge */
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.homePage__postItem:hover {
+  transform: translateY(-5px); /* Lift effect on hover */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* "Updated" Badge for Edited Posts */
+.homePage__postItem--updated::after {
+  content: "Updated";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #4CAF50;
+  color: white;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Post Image */
+.homePage__postImage {
+  width: 300px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Fallback for Posts Without Images */
+.homePage__postImage--placeholder {
+  width: 300px;
+  height: 200px;
+  background-color: #e0e0e0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 1rem;
+  font-style: italic;
+}
+
+/* Post Details */
+.homePage__postDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* Post Title */
+.homePage__postTitle {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+  word-wrap: break-word;
+  text-align: left;
+  line-height: 1.4;
+  transition: color 0.3s ease-in-out;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  font-size: 1rem;
+}
+
+.paginationLink {
+  padding: 0.5rem 1rem;
+  background-color: #0070f3;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.paginationLink:hover {
+  background-color: #005bb5;
+}
+
+.homePage__postTitle:hover {
+  color: #0b9299; /* Match the CTA button color for consistency */
+}
+
+/* Post Date */
+.homePage__postDate {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 10px;
+  font-style: italic;
+}
+
+/* Post Excerpt */
+.homePage__postExcerpt {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 15px;
+  line-height: 1.6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Call-to-Action Button */
+.homePage__ctaButton {
+  background-color: #0b9299;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  align-self: flex-start;
+}
+
+.homePage__ctaButton:hover {
+  background-color: #08787f; /* Darker shade for hover */
+  transform: scale(1.05); /* Slight scale effect on hover */
+}
+
+/* Heart Loader Styling */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.heartLoader {
+  position: relative;
+  width: 60px; /* Slightly larger for better visibility */
+  height: 60px;
+  transform: rotate(-45deg);
+  animation: beat 1s infinite;
+}
+
+.heartLoader::before,
+.heartLoader::after {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: #ff6f61; /* Softer red color */
+  border-radius: 50%;
+}
+
+.heartLoader::before {
+  top: -30px;
+  left: 0;
+}
+
+.heartLoader::after {
+  left: 30px;
+  top: 0;
+}
+
+@keyframes beat {
+  0%, 100% {
+    transform: scale(1) rotate(-45deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(-45deg);
+  }
+}
+
+/* Error Message Styling */
+.errorMessage {
+  text-align: center;
+  color: #d83f87;
+  font-size: 1.2rem;
+  padding: 20px;
+  background-color: #ffe6e6;
+  border-radius: 8px;
+  margin: 20px 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .homePage__sliderImage {
+    max-height: 350px;
+  }
+
+  .homePage__postImage,
+  .homePage__postImage--placeholder {
+    width: 250px;
+    height: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .homePage__sliderImage {
+    max-height: 300px;
+  }
+
+  .homePage__postItem {
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+  }
+
+  .homePage__postImage,
+  .homePage__postImage--placeholder {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+  }
+
+  .homePage__postDetails {
+    text-align: center;
+    padding: 10px;
+  }
+
+  .homePage__postTitle {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .homePage__postExcerpt {
+    font-size: 0.95rem;
+    text-align: left;
+  }
+
+  .homePage__ctaButton {
+    align-self: center;
+    padding: 8px 16px;
+  }
+
+  .homePage__postItem--updated::after {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .homePage__sliderImage {
+    max-height: 200px;
+  }
+
+  .homePage__sliderText {
+    font-size: 1.2rem;
+  }
+
+  .homePage__postTitle {
+    font-size: 1.3rem;
+  }
+
+  .homePage__postExcerpt {
+    font-size: 0.9rem;
+  }
+
+  .homePage__ctaButton {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+  }
+
+  .homePage__postDate {
+    font-size: 0.8rem;
+  }
+
+  .errorMessage {
+    font-size: 1rem;
+    padding: 15px;
+  }
+}

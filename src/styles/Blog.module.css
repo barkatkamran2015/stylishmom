@@ -1,0 +1,258 @@
+/* src/styles/Blog.module.css */
+.blogPage {
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  background-color: #f9f9f9;
+}
+
+/* Header/Search Container */
+.blogPageSearchContainer {
+  margin-bottom: 20px;
+}
+
+/* Content Wrapper */
+.blogPageContentWrapper {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Grid Layout for Posts */
+.blogPageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(920px, 1fr));
+  gap: 20px;
+  padding: 0;
+}
+
+/* Individual Post Card */
+.blogPageCard {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  padding: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+}
+
+.blogPageCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Title */
+.blogPageTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+/* Content */
+.blogPageContent {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.blogPageContent p {
+  margin: 0 0 10px;
+}
+
+/* Image */
+.blogPageImage {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-bottom: 15px;
+  display: block;
+}
+
+/* Image Placeholder */
+.blogPageImagePlaceholder {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #666;
+  font-size: 1rem;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+/* Share Button */
+.shareButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.shareButton:hover {
+  background-color: #005bb5;
+}
+
+.shareIcon {
+  font-size: 1rem;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 30px;
+  font-size: 1rem;
+  color: #333;
+}
+
+.paginationLink {
+  padding: 8px 16px;
+  background-color: #0070f3;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.paginationLink:hover {
+  background-color: #005bb5;
+}
+
+/* Loading Container */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #fff;
+}
+
+.heartLoader {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  background-color: #ff4d4d;
+  transform: rotate(-45deg);
+  animation: beat 1s infinite ease-in-out;
+}
+
+.heartLoader::before,
+.heartLoader::after {
+  content: '';
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background-color: #ff4d4d;
+  border-radius: 50%;
+}
+
+.heartLoader::before {
+  top: -25px;
+  left: 0;
+}
+
+.heartLoader::after {
+  top: 0;
+  left: 25px;
+}
+
+/* Error and No Posts Messages */
+.blogPageErrorMessage,
+.blogPageNoPostsMessage {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #ff4d4d;
+  margin: 20px 0;
+}
+
+/* Animation */
+@keyframes beat {
+  0%, 100% {
+    transform: scale(1) rotate(-45deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(-45deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .blogPage {
+    padding: 15px;
+  }
+  .blogPageGrid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+  }
+  .blogPageTitle {
+    font-size: 1.4rem;
+  }
+  .blogPageContent {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .blogPage {
+    padding: 10px;
+  }
+  .blogPageGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .blogPageTitle {
+    font-size: 1.3rem;
+  }
+  .blogPageContent {
+    font-size: 0.9rem;
+  }
+  .blogPageCard {
+    padding: 15px;
+  }
+  .shareButton {
+    padding: 8px 12px;
+  }
+  .pagination {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .blogPage {
+    padding: 5px;
+  }
+  .blogPageTitle {
+    font-size: 1.2rem;
+  }
+  .blogPageContent {
+    font-size: 0.85rem;
+  }
+  .blogPageCard {
+    padding: 10px;
+  }
+  .blogPageImagePlaceholder {
+    height: 150px;
+  }
+  .shareButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
