@@ -8,7 +8,7 @@ import styles from '../../styles/AdminDashboard.module.css';
 import 'react-quill/dist/quill.snow.css';
 
 // Use dynamic API URL based on environment
-const API_URL = 'https://www.barkatkamran.com/api.php';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://www.barkatkamran.com/api.php';
 
 // Dynamically import ReactQuill with SSR disabled
 const ReactQuill = dynamic(() => import('react-quill'), {
@@ -320,166 +320,166 @@ export default function Dashboard() {
   };
 
   const handleCreatePost = async () => {
-    if (!user) {
-      setError('User not authenticated. Please sign in.');
+  if (!user) {
+    setError('User not authenticated. Please sign in.');
+    return;
+  }
+
+  // Validate required fields
+  if (!newPost.title.trim()) {
+    setError('Title is required.');
+    return;
+  }
+
+  if (!newPost.content.trim()) {
+    setError('Content is required.');
+    return;
+  }
+
+  if (!selectedPage) {
+    setError('Page is required.');
+    return;
+  }
+
+  const trimmedCategory = newPost.category ? newPost.category.trim() : '';
+  if (trimmedCategory.length > 50) {
+    setError('Category must be 50 characters or less.');
+    return;
+  }
+
+  let processedTags = newPost.tags || [];
+  if (!Array.isArray(processedTags)) {
+    setError('Tags must be an array of strings.');
+    return;
+  }
+  processedTags = processedTags
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0)
+    .slice(0, 5);
+  if (processedTags.some((tag) => tag.length > 30)) {
+    setError('Each tag must be 30 characters or less.');
+    return;
+  }
+
+  const trimmedImageURL = newPost.imageUrl ? newPost.imageUrl.trim() : '';
+  if (trimmedImageURL) {
+    const isValidExternalURL = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL);
+    const isValidRelativeURL = /^\/uploads\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL);
+    if (!isValidExternalURL && !isValidRelativeURL) {
+      setError('Image URL must be a valid URL ending in .jpg, .jpeg, .png, .gif, or .webp, or a relative path like /uploads/image.jpg');
       return;
     }
-  
-    // Validate required fields
-    if (!newPost.title.trim()) {
-      setError('Title is required.');
-      return;
-    }
-  
-    if (!newPost.content.trim()) {
-      setError('Content is required.');
-      return;
-    }
-  
-    if (!selectedPage) {
-      setError('Page is required.');
-      return;
-    }
-  
-    const trimmedCategory = newPost.category ? newPost.category.trim() : '';
-    if (trimmedCategory.length > 50) {
-      setError('Category must be 50 characters or less.');
-      return;
-    }
-  
-    let processedTags = newPost.tags || [];
-    if (!Array.isArray(processedTags)) {
-      setError('Tags must be an array of strings.');
-      return;
-    }
-    processedTags = processedTags
-      .map((tag) => tag.trim())
-      .filter((tag) => tag.length > 0)
-      .slice(0, 5);
-    if (processedTags.some((tag) => tag.length > 30)) {
-      setError('Each tag must be 30 characters or less.');
-      return;
-    }
-  
-    const trimmedImageURL = newPost.imageUrl ? newPost.imageUrl.trim() : '';
-    if (trimmedImageURL) {
-      const isValidExternalURL = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL);
-      const isValidRelativeURL = /^\/uploads\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL);
-      if (!isValidExternalURL && !isValidRelativeURL) {
-        setError('Image URL must be a valid URL ending in .jpg, .jpeg, .png, .gif, or .webp, or a relative path like /uploads/image.jpg');
-        return;
-      }
-    }
-  
-    const trimmedBackgroundColor = newPost.backgroundColor ? newPost.backgroundColor.trim() : '#ffffff';
-    if (!/^#[0-9A-F]{6}$/i.test(trimmedBackgroundColor)) {
-      setError('Background color must be a valid hex color (e.g., #ffffff).');
-      return;
-    }
-  
-    const validateTitleStyle = (style) => {
-      const validColors = /^#[0-9A-F]{6}$/i;
-      const validFontSizes = ['8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px', '48px', '56px', '64px', '72px'];
-      const validTextAligns = ['left', 'center', 'right', 'justify'];
-  
-      return {
-        color: validColors.test(style.color) ? style.color : '#000000',
-        fontSize: validFontSizes.includes(style.fontSize) ? style.fontSize : '24px',
-        textAlign: validTextAligns.includes(style.textAlign) ? style.textAlign : 'center',
-      };
+  }
+
+  const trimmedBackgroundColor = newPost.backgroundColor ? newPost.backgroundColor.trim() : '#ffffff';
+  if (!/^#[0-9A-F]{6}$/i.test(trimmedBackgroundColor)) {
+    setError('Background color must be a valid hex color (e.g., #ffffff).');
+    return;
+  }
+
+  const validateTitleStyle = (style) => {
+    const validColors = /^#[0-9A-F]{6}$/i;
+    const validFontSizes = ['8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px', '48px', '56px', '64px', '72px'];
+    const validTextAligns = ['left', 'center', 'right', 'justify'];
+
+    return {
+      color: validColors.test(style.color) ? style.color : '#000000',
+      fontSize: validFontSizes.includes(style.fontSize) ? style.fontSize : '24px',
+      textAlign: validTextAligns.includes(style.textAlign) ? style.textAlign : 'center',
     };
-  
-    setIsLoading(true);
-    try {
-      const idToken = await user.getIdToken();
-      const validatedStyle = validateTitleStyle(newPost.titleStyle);
-      const processedContent = persistImageDimensions(newPost.content);
-      const sanitizedContent = DOMPurify.sanitize(processedContent, {
-        ALLOWED_TAGS: [
-          'img', 'p', 'div', 'span', 'br', 'strong', 'em', 'a',
-          'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li',
-          'blockquote', 'code', 'pre',
-        ],
-        ALLOWED_ATTR: ['src', 'width', 'height', 'alt', 'style', 'class', 'align', 'href', 'target', 'rel'],
-      });
-  
-      const formData = new FormData();
-      formData.append('id', editMode ? currentPostId : `post_${Date.now()}`);
-      formData.append('title', newPost.title.trim());
-      formData.append('content', sanitizedContent);
-      formData.append('imageUrl', trimmedImageURL);
-      formData.append('backgroundColor', trimmedBackgroundColor);
-      formData.append('titleStyle', JSON.stringify(validatedStyle));
-      formData.append('creator_uid', user.uid);
-      formData.append('category', trimmedCategory);
-      formData.append('tags', JSON.stringify(processedTags));
-      formData.append('page', selectedPage);
-      if (editMode) {
-        formData.append('method', 'UPDATE_POST');
-        formData.append('postId', currentPostId);
-      } else {
-        formData.append('method', 'CREATE_POST');
-      }
-  
-      const endpoint = `${API_URL}`;
-      console.log('Submitting to endpoint:', endpoint);
-      console.log('Form Data:', Object.fromEntries(formData.entries()));
-  
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: formData,
-      });
-  
-      const responseText = await response.text();
-      console.log('API Raw Response:', responseText);
-      console.log('API Response Status:', response.status);
-  
-      if (!response.ok) {
-        try {
-          const errorData = JSON.parse(responseText);
-          console.error('API Error Response:', errorData);
-          throw new Error(
-            errorData.error && typeof errorData.error === 'string'
-              ? errorData.error
-              : `Failed to ${editMode ? 'update' : 'create'} post: ${JSON.stringify(errorData)}`
-          );
-        } catch (jsonError) {
-          throw new Error(`Failed to ${editMode ? 'update' : 'create'} post: Invalid JSON response - ${responseText}`);
-        }
-      }
-  
-      const responseData = JSON.parse(responseText);
-      console.log('API Success Response:', responseData);
-  
-      setSuccessMessage(
-        responseData.message || (editMode ? 'Post updated successfully!' : 'Post created successfully!')
-      );
-  
-      // Reset the form and refresh posts
-      setNewPost({
-        title: '',
-        content: '',
-        image: null,
-        imageUrl: '',
-        backgroundColor: '#ffffff',
-        titleStyle: { color: '#000000', fontSize: '24px', textAlign: 'center' },
-        category: '',
-        tags: [],
-      });
-      setEditMode(false);
-      setCurrentPostId(null);
-      fetchPosts(0);
-      setError(null);
-    } catch (error) {
-      console.error(`Error ${editMode ? 'updating' : 'creating'} post:`, error);
-      setError(`Failed to ${editMode ? 'update' : 'create'} post: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
   };
+
+  setIsLoading(true);
+  try {
+    const idToken = await user.getIdToken();
+    const validatedStyle = validateTitleStyle(newPost.titleStyle);
+    const processedContent = persistImageDimensions(newPost.content);
+    const sanitizedContent = DOMPurify.sanitize(processedContent, {
+      ALLOWED_TAGS: [
+        'img', 'p', 'div', 'span', 'br', 'strong', 'em', 'a',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li',
+        'blockquote', 'code', 'pre',
+      ],
+      ALLOWED_ATTR: ['src', 'width', 'height', 'alt', 'style', 'class', 'align', 'href', 'target', 'rel'],
+    });
+
+    const formData = new FormData();
+    formData.append('id', editMode ? currentPostId : `post_${Date.now()}`);
+    formData.append('title', newPost.title.trim());
+    formData.append('content', sanitizedContent);
+    formData.append('imageUrl', trimmedImageURL);
+    formData.append('backgroundColor', trimmedBackgroundColor);
+    formData.append('titleStyle', JSON.stringify(validatedStyle));
+    formData.append('creator_uid', user.uid);
+    formData.append('category', trimmedCategory);
+    formData.append('tags', JSON.stringify(processedTags));
+    formData.append('page', selectedPage);
+
+    // Move method and postId to query parameters
+    const method = editMode ? 'UPDATE_POST' : 'CREATE_POST';
+    const queryParams = new URLSearchParams({ method });
+    if (editMode) {
+      queryParams.append('postId', currentPostId);
+    }
+    const endpoint = `${API_URL}?${queryParams.toString()}`;
+    console.log('Submitting to endpoint:', endpoint);
+    console.log('Form Data:', Object.fromEntries(formData.entries()));
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: formData,
+    });
+
+    const responseText = await response.text();
+    console.log('API Raw Response:', responseText);
+    console.log('API Response Status:', response.status);
+
+    if (!response.ok) {
+      try {
+        const errorData = JSON.parse(responseText);
+        console.error('API Error Response:', errorData);
+        throw new Error(
+          errorData.error && typeof errorData.error === 'string'
+            ? errorData.error
+            : `Failed to ${editMode ? 'update' : 'create'} post: ${JSON.stringify(errorData)}`
+        );
+      } catch (jsonError) {
+        throw new Error(`Failed to ${editMode ? 'update' : 'create'} post: Invalid JSON response - ${responseText}`);
+      }
+    }
+
+    const responseData = JSON.parse(responseText);
+    console.log('API Success Response:', responseData);
+
+    setSuccessMessage(
+      responseData.message || (editMode ? 'Post updated successfully!' : 'Post created successfully!')
+    );
+
+    // Reset the form and refresh posts
+    setNewPost({
+      title: '',
+      content: '',
+      image: null,
+      imageUrl: '',
+      backgroundColor: '#ffffff',
+      titleStyle: { color: '#000000', fontSize: '24px', textAlign: 'center' },
+      category: '',
+      tags: [],
+    });
+    setEditMode(false);
+    setCurrentPostId(null);
+    fetchPosts(0);
+    setError(null);
+  } catch (error) {
+    console.error(`Error ${editMode ? 'updating' : 'creating'} post:`, error);
+    setError(`Failed to ${editMode ? 'update' : 'create'} post: ${error.message}`);
+  } finally {
+    setIsLoading(false);
+  }
+};
   
   const handleDelete = async (postId, page) => {
     if (!user) {
