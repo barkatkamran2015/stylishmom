@@ -251,58 +251,71 @@ export default function Dashboard() {
   }, [fetchPosts, selectedPage]);
 
   const handleImageUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-  
-    setIsLoading(true);
-    try {
-      if (!user) {
-        throw new Error('User not authenticated. Please sign in.');
-      }
-  
-      const idToken = await user.getIdToken();
-      const formData = new FormData();
-      formData.append('image', file);
-  
-      // Ensure the required fields are included
-      formData.append('id', newPost.id || '');  // Add default value if undefined
-      formData.append('title', newPost.title || '');  // Add default value if undefined
-      formData.append('content', newPost.content || '');  // Add default value if undefined
-      formData.append('creator_uid', newPost.creator_uid || '');  // Add default value if undefined
-  
-      // Upload the image
-      const imageResponse = await fetch(`${API_URL}?page=${selectedPage}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: formData,
-      });
-  
-      if (!imageResponse.ok) {
-        const errorData = await imageResponse.json();
-        throw new Error(errorData.error || 'Failed to upload image');
-      }
-  
-      const imageData = await imageResponse.json();
-      const imageUrl = imageData.imageUrl;
-  
-      // Update the newPost state with the image URL
-      setNewPost((prev) => ({
-        ...prev,
-        imageUrl,
-      }));
-  
-      setError(null);
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
+  const file = event.target.files[0];
+  if (!file) return;
 
+  setIsLoading(true);
+  try {
+    if (!user) {
+      throw new Error('User not authenticated. Please sign in.');
+    }
+
+    const idToken = await user.getIdToken();
+    const formData = new FormData();
+    formData.append('image', file);
+
+    // Ensure the required fields are included
+    formData.append('id', newPost.id || '');
+    formData.append('title', newPost.title || '');
+    formData.append('content', newPost.content || '');
+    formData.append('creator_uid', newPost.creator_uid || '');
+
+    // Send method and page as query parameters
+    const queryParams = new URLSearchParams({
+      method: 'UPLOAD_IMAGE',
+      page: selectedPage || '',
+    });
+    const endpoint = `${API_URL}?${queryParams.toString()}`;
+    console.log('Uploading image to endpoint:', endpoint);
+    console.log('Image Upload Form Data:', Object.fromEntries(formData.entries()));
+
+    const imageResponse = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: formData,
+    });
+
+    const responseText = await imageResponse.text();
+    console.log('Image Upload Raw Response:', responseText);
+
+    if (!imageResponse.ok) {
+      try {
+        const errorData = JSON.parse(responseText);
+        throw new Error(errorData.error || 'Failed to upload image');
+      } catch (jsonError) {
+        throw new Error(`Failed to upload image: Invalid JSON response - ${responseText}`);
+      }
+    }
+
+    const imageData = JSON.parse(responseText);
+    const imageUrl = imageData.imageUrl;
+
+    // Update the newPost state with the image URL
+    setNewPost((prev) => ({
+      ...prev,
+      imageUrl,
+    }));
+
+    setError(null);
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    setError(error.message);
+  } finally {
+    setIsLoading(false);
+  }
+};
   const persistImageDimensions = (content) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, 'text/html');
@@ -413,11 +426,13 @@ export default function Dashboard() {
     formData.append('creator_uid', user.uid);
     formData.append('category', trimmedCategory);
     formData.append('tags', JSON.stringify(processedTags));
-    formData.append('page', selectedPage);
 
-    // Move method and postId to query parameters
+    // Move method, postId, and page to query parameters
     const method = editMode ? 'UPDATE_POST' : 'CREATE_POST';
-    const queryParams = new URLSearchParams({ method });
+    const queryParams = new URLSearchParams({
+      method,
+      page: selectedPage,
+    });
     if (editMode) {
       queryParams.append('postId', currentPostId);
     }
