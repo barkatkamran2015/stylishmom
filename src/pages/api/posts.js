@@ -2,6 +2,13 @@ import fetch from 'node-fetch';
 
 const PHP_API_URL = 'https://www.barkatkamran.com/api.php';
 
+// Disable Next.js body parser to handle multipart/form-data correctly
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export default async function handler(req, res) {
   try {
     // Set CORS headers dynamically based on environment
@@ -29,7 +36,7 @@ export default async function handler(req, res) {
       id,
       title,
       content,
-     .creator_uid,
+      creator_uid,
       imageUrl,
       backgroundColor,
       titleStyle,
@@ -60,6 +67,8 @@ export default async function handler(req, res) {
     // Log the headers being sent to the backend
     const headers = {
       ...(req.headers.authorization && { Authorization: req.headers.authorization }),
+      // Forward the Content-Type header for multipart/form-data
+      ...(req.headers['content-type'] && { 'Content-Type': req.headers['content-type'] }),
     };
     console.log('Headers sent to backend:', headers);
 
@@ -67,11 +76,13 @@ export default async function handler(req, res) {
     const response = await fetch(url, {
       method: req.method,
       headers,
-      body: req.method !== 'GET' && req.method !== 'DELETE' && req.body ? req.body : undefined,
+      // Forward the raw body for POST requests (e.g., FormData for image uploads)
+      body: req.method !== 'GET' && req.method !== 'DELETE' ? req : undefined,
     });
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.log('Backend error response:', errorText);
       return res.status(response.status).json({ error: `PHP API error: ${errorText}` });
     }
 
