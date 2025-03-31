@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     // Set CORS headers dynamically based on environment
     const allowedOrigin =
       process.env.NODE_ENV === 'production'
-        ? 'https://www.thestylishmama.com' // Update to match your production domain
+        ? 'https://www.thestylishmama.com'
         : 'http://localhost:3000';
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       id,
       title,
       content,
-      creator_uid,
+     .creator_uid,
       imageUrl,
       backgroundColor,
       titleStyle,
@@ -57,13 +57,16 @@ export default async function handler(req, res) {
     const url = `${PHP_API_URL}?${queryParams.toString()}`;
     console.log('Proxying request to:', url);
 
+    // Log the headers being sent to the backend
+    const headers = {
+      ...(req.headers.authorization && { Authorization: req.headers.authorization }),
+    };
+    console.log('Headers sent to backend:', headers);
+
     // Forward the request to the PHP API
     const response = await fetch(url, {
       method: req.method,
-      headers: {
-        // Do not set Content-Type to application/json, let fetch handle it for FormData
-        ...(req.headers.authorization && { Authorization: req.headers.authorization }),
-      },
+      headers,
       body: req.method !== 'GET' && req.method !== 'DELETE' && req.body ? req.body : undefined,
     });
 
