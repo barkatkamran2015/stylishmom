@@ -261,22 +261,22 @@ export default function Dashboard() {
     }
 
     const idToken = await user.getIdToken();
-    const formData = new FormData();
-    formData.append('image', file);
 
-    // Ensure the required fields are included
-    formData.append('id', newPost.id || '');
-    formData.append('title', newPost.title || '');
-    formData.append('content', newPost.content || '');
-    formData.append('creator_uid', newPost.creator_uid || '');
-
-    // Send method and page as query parameters
+    // Prepare query parameters for non-file data
     const queryParams = new URLSearchParams({
       method: 'UPLOAD_IMAGE',
       page: selectedPage || '',
+      id: newPost.id || '',
+      title: newPost.title || '',
+      content: newPost.content || '',
+      creator_uid: user.uid || '',
     });
     const endpoint = `${API_URL}?${queryParams.toString()}`;
     console.log('Uploading image to endpoint:', endpoint);
+
+    // Prepare FormData for the file only
+    const formData = new FormData();
+    formData.append('image', file);
     console.log('Image Upload Form Data:', Object.fromEntries(formData.entries()));
 
     const imageResponse = await fetch(endpoint, {
@@ -302,7 +302,6 @@ export default function Dashboard() {
     const imageData = JSON.parse(responseText);
     const imageUrl = imageData.imageUrl;
 
-    // Update the newPost state with the image URL
     setNewPost((prev) => ({
       ...prev,
       imageUrl,
@@ -416,36 +415,30 @@ export default function Dashboard() {
       ALLOWED_ATTR: ['src', 'width', 'height', 'alt', 'style', 'class', 'align', 'href', 'target', 'rel'],
     });
 
-    const formData = new FormData();
-    formData.append('id', editMode ? currentPostId : `post_${Date.now()}`);
-    formData.append('title', newPost.title.trim());
-    formData.append('content', sanitizedContent);
-    formData.append('imageUrl', trimmedImageURL);
-    formData.append('backgroundColor', trimmedBackgroundColor);
-    formData.append('titleStyle', JSON.stringify(validatedStyle));
-    formData.append('creator_uid', user.uid);
-    formData.append('category', trimmedCategory);
-    formData.append('tags', JSON.stringify(processedTags));
-
-    // Move method, postId, and page to query parameters
-    const method = editMode ? 'UPDATE_POST' : 'CREATE_POST';
     const queryParams = new URLSearchParams({
-      method,
+      method: editMode ? 'UPDATE_POST' : 'CREATE_POST',
       page: selectedPage,
+      id: editMode ? currentPostId : `post_${Date.now()}`,
+      title: newPost.title.trim(),
+      content: sanitizedContent,
+      imageUrl: trimmedImageURL,
+      backgroundColor: trimmedBackgroundColor,
+      titleStyle: JSON.stringify(validatedStyle),
+      creator_uid: user.uid,
+      category: trimmedCategory,
+      tags: JSON.stringify(processedTags),
     });
     if (editMode) {
       queryParams.append('postId', currentPostId);
     }
     const endpoint = `${API_URL}?${queryParams.toString()}`;
     console.log('Submitting to endpoint:', endpoint);
-    console.log('Form Data:', Object.fromEntries(formData.entries()));
 
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${idToken}`,
       },
-      body: formData,
     });
 
     const responseText = await response.text();
@@ -473,7 +466,6 @@ export default function Dashboard() {
       responseData.message || (editMode ? 'Post updated successfully!' : 'Post created successfully!')
     );
 
-    // Reset the form and refresh posts
     setNewPost({
       title: '',
       content: '',
