@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Image from 'next/image';
-import Header from '../pages/header'; // Ensure this path is correct
+import Header from '../pages/header';
 import styles from '../styles/Blog.module.css';
 
-const API_URL = 'https://www.barkatkamran.com/api.php'; // Updated to match homepage
-const BASE_URL = process.env.NODE_ENV === 'production' ? 'https://www.thestylishmama.com' : 'http://localhost:3000';
+// Use the same API URL as dessert.js
+const API_URL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://stylishmom.vercel.app/api/posts'
+    : 'http://localhost:3000/api/posts';
 
 export default function Blog({ initialPosts, initialCategories, initialTags, initialError, pagination }) {
   const [posts, setPosts] = useState(initialPosts || []);
@@ -53,11 +56,16 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
   };
 
   const handleShare = (post) => {
-    const postUrl = `${BASE_URL}/blog?id=${post.id}`;
+    const baseUrl =
+      process.env.NODE_ENV === 'production'
+        ? 'https://www.thestylishmama.com'
+        : 'http://localhost:3000';
+    const postUrl = `${baseUrl}/blog?id=${post.id}`;
+
     if (navigator.share) {
       navigator.share({
         title: post.title,
-        text: 'Check out this blog post from The Stylish Mama!',
+        text: 'Check out this blog post!',
         url: postUrl,
       })
         .then(() => console.log('Post shared successfully'))
@@ -75,13 +83,10 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
       await fetch(`${API_URL}?method=INCREMENT_VIEW_COUNT&postId=${postId}&page=Blog`, {
         method: 'POST',
       });
+      console.log(`View count incremented for post ${postId}`);
     } catch (err) {
       console.error('Error incrementing view count:', err);
     }
-  };
-
-  const handlePageChange = (newOffset) => {
-    router.push(`/blog?limit=${pagination.limit}&offset=${newOffset}`, undefined, { shallow: true });
   };
 
   const structuredData = filteredPosts.map((post) => ({
@@ -90,19 +95,16 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
     headline: post.title,
     description: post.content.replace(/<[^>]+>/g, '').substring(0, 160),
     datePublished: post.createdAt || new Date().toISOString(),
-    dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
-    author: { '@type': 'Person', name: 'Admin' },
-    image: post.imageUrl || `${BASE_URL}/default-blog-image.jpg`,
-    url: `${BASE_URL}/blog?id=${post.id}`,
-    publisher: {
-      '@type': 'Organization',
-      name: 'The Stylish Mama',
-      logo: { '@type': 'ImageObject', url: `${BASE_URL}/logo1.png` }, // Add logo if available
+    author: {
+      '@type': 'Person',
+      name: 'Admin',
     },
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': `${BASE_URL}/blog`,
-    },
+    image: post.imageUrl || '/default-blog-image.jpg',
+    url: `${
+      process.env.NODE_ENV === 'production'
+        ? 'https://www.thestylishmama.com'
+        : 'http://localhost:3000'
+    }/blog?id=${post.id}`,
   }));
 
   return (
@@ -113,35 +115,62 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
           name="description"
           content="Explore insightful blog posts on motherhood, lifestyle, and more at The Stylish Mama."
         />
-        <meta name="keywords" content="blog, motherhood, lifestyle, parenting, stylish mama" />
+        <meta name="keywords" content="blog, motherhood, lifestyle" />
         <meta name="robots" content="index, follow" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="canonical" href={`${BASE_URL}/blog`} />
+        <link
+          rel="canonical"
+          href={`${
+            process.env.NODE_ENV === 'production'
+              ? 'https://www.thestylishmama.com'
+              : 'http://localhost:3000'
+          }/blog`}
+        />
         <meta property="og:title" content="Blog | The Stylish Mama" />
         <meta
           property="og:description"
           content="Explore insightful blog posts on motherhood, lifestyle, and more at The Stylish Mama."
         />
-        <meta property="og:url" content={`${BASE_URL}/blog`} />
+        <meta
+          property="og:url"
+          content={`${
+            process.env.NODE_ENV === 'production'
+              ? 'https://www.thestylishmama.com'
+              : 'http://localhost:3000'
+          }/blog`}
+        />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content={`${BASE_URL}/default-blog-image.jpg`} />
-        <meta property="og:site_name" content="The Stylish Mama" />
+        <meta property="og:image" content="/default-blog-image.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Blog | The Stylish Mama" />
         <meta
           name="twitter:description"
           content="Explore insightful blog posts on motherhood, lifestyle, and more at The Stylish Mama."
         />
-        <meta name="twitter:image" content={`${BASE_URL}/default-blog-image.jpg`} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+        <meta name="twitter:image" content="/default-blog-image.jpg" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
         {pagination.offset > 0 && (
-          <link rel="prev" href={`${BASE_URL}/blog?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`} />
+          <link
+            rel="prev"
+            href={`${
+              process.env.NODE_ENV === 'production'
+                ? 'https://www.thestylishmama.com'
+                : 'http://localhost:3000'
+            }/blog?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
+          />
         )}
         {pagination.offset + pagination.limit < pagination.total && (
-          <link rel="next" href={`${BASE_URL}/blog?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`} />
+          <link
+            rel="next"
+            href={`${
+              process.env.NODE_ENV === 'production'
+                ? 'https://www.thestylishmama.com'
+                : 'http://localhost:3000'
+            }/blog?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
+          />
         )}
-        <link rel="sitemap" type="application/xml" href={`${BASE_URL}/sitemap.xml`} />
-        <link rel="preload" href="/default-blog-image.jpg" as="image" /> {/* Preload default image */}
       </Head>
 
       {loading ? (
@@ -161,7 +190,7 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
 
           <section className={styles.blogPageContentWrapper}>
             {error ? (
-              <p className={styles.blogPageErrorMessage}>Unable to load posts at this time.</p>
+              <p className={styles.blogPageErrorMessage}>{error}</p>
             ) : filteredPosts.length === 0 ? (
               <p className={styles.blogPageNoPostsMessage}>No posts available</p>
             ) : (
@@ -201,11 +230,16 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
                           className={styles.blogPageImage}
                           width={600}
                           height={337}
-                          onError={(e) => (e.target.src = '/default-blog-image.jpg')}
+                          onError={(e) => {
+                            console.error('Image failed to load:', post.imageUrl);
+                            e.target.src = '/default-blog-image.jpg';
+                          }}
                           loading="lazy"
                         />
                       ) : (
-                        <div className={styles.blogPageImagePlaceholder}>No Image Available</div>
+                        <div className={styles.blogPageImagePlaceholder}>
+                          No Image Available
+                        </div>
                       )}
 
                       <button
@@ -221,22 +255,24 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
 
                 <div className={styles.pagination}>
                   {pagination.offset > 0 && (
-                    <button
+                    <a
+                      href={`/blog?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
                       className={styles.paginationLink}
-                      onClick={() => handlePageChange(pagination.offset - pagination.limit)}
                     >
                       Previous
-                    </button>
+                    </a>
                   )}
                   {pagination.offset + pagination.limit < pagination.total && (
-                    <button
+                    <a
+                      href={`/blog?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
                       className={styles.paginationLink}
-                      onClick={() => handlePageChange(pagination.offset + pagination.limit)}
                     >
                       Next
-                    </button>
+                    </a>
                   )}
-                  <p>Page {pagination.offset / pagination.limit + 1} of {pagination.totalPages}</p>
+                  <p>
+                    Page {pagination.offset / pagination.limit + 1} of {pagination.totalPages}
+                  </p>
                 </div>
               </>
             )}
@@ -248,26 +284,20 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
 }
 
 export async function getServerSideProps({ query }) {
-  const { limit = 10, offset = 0 } = query;
+  const { limit = 10, offset = 0 } = query; // Get pagination params from query
   try {
-    const response = await fetch(`${API_URL}?page=Blog&limit=${limit}&offset=${offset}`, {
-      headers: { 'Cache-Control': 's-maxage=3600, stale-while-revalidate=86400' }, // Cache for 1 hour, revalidate 24 hours
-    });
+    const response = await fetch(`${API_URL}?page=Blog&limit=${limit}&offset=${offset}`);
+    const responseText = await response.text();
+    console.log('Raw API Response for Blog (List):', responseText);
+
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error fetching posts (Server-Side):', errorText);
-      return {
-        props: {
-          initialPosts: [],
-          initialCategories: [],
-          initialTags: [],
-          initialError: 'Unable to load posts at this time.',
-          pagination: { total: 0, limit: 10, offset: 0, totalPages: 0 },
-        },
-      };
+      console.error('Error fetching posts (Server-Side):', responseText);
+      throw new Error(`HTTP Error! Status: ${response.status} - ${responseText}`);
     }
 
-    const { posts, pagination } = await response.json();
+    const { posts, pagination } = JSON.parse(responseText);
+    console.log('Parsed Blog Posts (Server-Side):', posts);
+
     const blogPosts = posts.map((post) => ({
       ...post,
       titleStyle: post.titleStyle
@@ -277,8 +307,12 @@ export async function getServerSideProps({ query }) {
         : { color: '#000', fontSize: '1.5rem', textAlign: 'left' },
     }));
 
-    const uniqueCategories = [...new Set(blogPosts.map((post) => post.category).filter(Boolean))];
-    const uniqueTags = [...new Set(blogPosts.flatMap((post) => post.tags || []).filter(Boolean))];
+    const uniqueCategories = [
+      ...new Set(blogPosts.map((post) => post.category).filter((cat) => cat !== undefined)),
+    ];
+    const uniqueTags = [
+      ...new Set(blogPosts.flatMap((post) => post.tags || []).filter((tag) => tag !== undefined)),
+    ];
 
     return {
       props: {
@@ -301,7 +335,7 @@ export async function getServerSideProps({ query }) {
         initialPosts: [],
         initialCategories: [],
         initialTags: [],
-        initialError: 'Unable to load posts at this time.',
+        initialError: `Failed to load posts: ${err.message}`,
         pagination: { total: 0, limit: 10, offset: 0, totalPages: 0 },
       },
     };
