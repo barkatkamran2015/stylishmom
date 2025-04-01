@@ -148,7 +148,7 @@ const Navbar = () => {
                       position: 'absolute',
                       top: '100%',
                       left: 0,
-                      backgroundColor: '#0b9299',
+                      backgroundColor: '#2980b9',
                       borderRadius: '8px',
                       boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)',
                       minWidth: '150px',
