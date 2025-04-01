@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import Image from 'next/image';
-import Link from 'next/link'; // For client-side pagination
+import Link from 'next/link';
 import SearchBar from "../components/SearchBar";
 import styles from "../../styles/Dash.module.css";
 
@@ -14,12 +14,8 @@ import imageGarden from "../Assets/garden.JPG";
 import imageFall from "../Assets/fall.jpg";
 import imageTulip from "../Assets/tulip.JPEG";
 
-const Slider = dynamic(() => import('react-slick'), {
-  ssr: false,
-  loading: () => <p>Loading slider...</p>,
-});
+const Slider = dynamic(() => import('react-slick'), { ssr: false });
 
-// Ensure slick CSS loads in production
 if (typeof window !== 'undefined') {
   require('slick-carousel/slick/slick.css');
   require('slick-carousel/slick/slick-theme.css');
@@ -34,11 +30,10 @@ export async function getServerSideProps(context) {
 
   try {
     const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`, {
-      headers: { 'Cache-Control': 's-maxage=3600, stale-while-revalidate' }, // Cache for 1 hour
+      headers: { 'Cache-Control': 's-maxage=3600, stale-while-revalidate=86400' }, // Cache 1 hour, revalidate 24 hours
     });
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error response body in getServerSideProps:', errorText);
+      console.error('Error fetching posts:', response.status);
       return {
         props: {
           initialPosts: [],
@@ -53,7 +48,6 @@ export async function getServerSideProps(context) {
       const imageMatch = (post.content || post.post_content || post.body)?.match(/<img[^>]+src=["'](.*?)["']/i);
       const thumbnailUrl = post.imageUrl || post.image_url || (imageMatch ? imageMatch[1] : '/default-image.jpg');
       const createdAt = post.createdAt ? new Date(post.createdAt) : new Date();
-      const isRecentlyUpdated = (new Date() - createdAt) < 24 * 60 * 60 * 1000;
       return {
         id: post.id,
         title: post.title || 'Untitled',
@@ -63,7 +57,7 @@ export async function getServerSideProps(context) {
         page: post.page,
         titleStyle: post.titleStyle || { color: "#000", fontSize: "1.8rem", textAlign: "left" },
         userId: post.creator_uid,
-        isRecentlyUpdated,
+        isRecentlyUpdated: (new Date() - createdAt) < 24 * 60 * 60 * 1000,
       };
     });
 
@@ -94,7 +88,6 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
   const [error, setError] = useState(initialError);
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
-  const { limit = 10, offset = 0 } = router.query;
 
   const pagePaths = {
     Recipe: "/food",
@@ -106,8 +99,10 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
 
   useEffect(() => {
     setIsClient(true);
-    setFilteredPosts(initialPosts); // Sync with SSR data
-  }, [initialPosts]);
+    setFilteredPosts(initialPosts);
+    setPosts(initialPosts);
+    setPagination(initialPagination);
+  }, [initialPosts, initialPagination]);
 
   const handleSearch = (query) => {
     const lowerCaseQuery = query.toLowerCase();
@@ -126,12 +121,14 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
 
   const incrementViewCount = async (postId, page) => {
     try {
-      await fetch(`${API_URL}?method=INCREMENT_VIEW_COUNT&postId=${postId}&page=${page}`, {
-        method: 'POST',
-      });
+      await fetch(`${API_URL}?method=INCREMENT_VIEW_COUNT&postId=${postId}&page=${page}`, { method: 'POST' });
     } catch (err) {
       console.error('Error incrementing view count:', err);
     }
+  };
+
+  const handlePageChange = (newOffset) => {
+    router.push(`/?limit=${pagination.limit}&offset=${newOffset}`, undefined, { shallow: true });
   };
 
   const sliderSettings = {
@@ -184,8 +181,6 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
     },
   }));
 
-  if (!isClient) return <p>Loading...</p>;
-
   return (
     <div className={styles.homePage}>
       <Head>
@@ -222,84 +217,43 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
           <link rel="next" href={`${BASE_URL}/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`} />
         )}
         <link rel="sitemap" type="application/xml" href={`${BASE_URL}/sitemap.xml`} />
+        <link rel="preload" href={imageBlog.src} as="image" /> {/* Preload first slider image */}
       </Head>
 
-      {loading ? (
-        <div className={styles.loadingContainer}>
-          <div className={styles.heartLoader}></div>
-        </div>
+      {loading && !isClient ? (
+        <div className={styles.loadingContainer}><div className={styles.heartLoader}></div></div>
       ) : error ? (
         <p className={styles.errorMessage}>{error}</p>
       ) : (
         <>
           <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
             <div>
-              <Image
-                src={imageBlog}
-                alt="Blog"
-                className={styles.homePage__sliderImage}
-                width={1200}
-                height={600}
-                priority
-              />
+              <Image src={imageBlog} alt="Blog" className={styles.homePage__sliderImage} width={1200} height={600} priority />
               <h3 className={styles.homePage__sliderText}>Explore Inspiring Blogs</h3>
             </div>
             <div>
-              <Image
-                src={imageNature}
-                alt="Natures Beauty"
-                className={styles.homePage__sliderImage}
-                width={1200}
-                height={600}
-              />
+              <Image src={imageNature} alt="Natures Beauty" className={styles.homePage__sliderImage} width={1200} height={600} loading="lazy" />
               <h3 className={styles.homePage__sliderText}>Discover Natures Beauty</h3>
             </div>
             <div>
-              <Image
-                src={imageRecipe}
-                alt="Recipe"
-                className={styles.homePage__sliderImage}
-                width={1200}
-                height={600}
-              />
+              <Image src={imageRecipe} alt="Recipe" className={styles.homePage__sliderImage} width={1200} height={600} loading="lazy" />
               <h3 className={styles.homePage__sliderText}>Healthy Recipe Ideas</h3>
             </div>
             <div>
-              <Image
-                src={imageGarden}
-                alt="Garden"
-                className={styles.homePage__sliderImage}
-                width={1200}
-                height={600}
-              />
+              <Image src={imageGarden} alt="Garden" className={styles.homePage__sliderImage} width={1200} height={600} loading="lazy" />
               <h3 className={styles.homePage__sliderText}>Butcher Garden Visit</h3>
             </div>
             <div>
-              <Image
-                src={imageTulip}
-                alt="Tulip"
-                className={styles.homePage__sliderImage}
-                width={1200}
-                height={600}
-              />
+              <Image src={imageTulip} alt="Tulip" className={styles.homePage__sliderImage} width={1200} height={600} loading="lazy" />
               <h3 className={styles.homePage__sliderText}>Tulip Festival BC</h3>
             </div>
             <div>
-              <Image
-                src={imageFall}
-                alt="Fall"
-                className={styles.homePage__sliderImage}
-                width={1200}
-                height={600}
-              />
+              <Image src={imageFall} alt="Fall" className={styles.homePage__sliderImage} width={1200} height={600} loading="lazy" />
               <h3 className={styles.homePage__sliderText}>Beautiful Fall Season</h3>
             </div>
           </Slider>
 
-          <SearchBar
-            onSearch={handleSearch}
-            placeholder="Search for blogs, reviews, or recipes..."
-          />
+          <SearchBar onSearch={handleSearch} placeholder="Search for blogs, reviews, or recipes..." />
 
           <div className={styles.homePage__postsContainer}>
             {filteredPosts.length === 0 ? (
@@ -323,62 +277,45 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                         loading="lazy"
                       />
                     ) : (
-                      <div className={styles['homePage__postImage--placeholder']}>
-                        No Image Available
-                      </div>
+                      <div className={styles['homePage__postImage--placeholder']}>No Image Available</div>
                     )}
-
                     <div className={styles.homePage__postDetails}>
-                      <h2
-                        className={styles.homePage__postTitle}
-                        style={{
-                          color: post.titleStyle?.color || "#333",
-                          fontSize: post.titleStyle?.fontSize || "1.8rem",
-                          textAlign: post.titleStyle?.textAlign || "left",
-                        }}
-                      >
-                        {post.title}
-                      </h2>
-
-                      {post.createdAt ? (
-                        <p className={styles.homePage__postDate}>
-                          Posted on:{" "}
-                          {new Date(post.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </p>
-                      ) : (
-                        <p className={styles.homePage__postDate}>Date not available</p>
-                      )}
-
-                      <p className={styles.homePage__postExcerpt}>
-                        {post.contentHtml
-                          ? post.contentHtml.replace(/<[^>]+>/g, '').slice(0, 200) + '...'
-                          : 'No content available'}
+                      <h2 className={styles.homePage__postTitle} style={post.titleStyle}>{post.title}</h2>
+                      <p className={styles.homePage__postDate}>
+                        Posted on:{" "}
+                        {post.createdAt
+                          ? new Date(post.createdAt).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "Date not available"}
                       </p>
-
-                      <button
-                        className={styles.homePage__ctaButton}
-                        onClick={() => navigateToPost(post.id, post.page)}
-                      >
+                      <p className={styles.homePage__postExcerpt}>
+                        {post.contentHtml ? post.contentHtml.replace(/<[^>]+>/g, '').slice(0, 200) + '...' : 'No content available'}
+                      </p>
+                      <button className={styles.homePage__ctaButton} onClick={() => navigateToPost(post.id, post.page)}>
                         Read More
                       </button>
                     </div>
                   </div>
                 ))}
-
                 <div className={styles.pagination}>
                   {pagination.offset > 0 && (
-                    <Link href={`/?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`} passHref>
-                      <a className={styles.paginationLink}>Previous</a>
-                    </Link>
+                    <button
+                      className={styles.paginationLink}
+                      onClick={() => handlePageChange(pagination.offset - pagination.limit)}
+                    >
+                      Previous
+                    </button>
                   )}
                   {pagination.offset + pagination.limit < pagination.total && (
-                    <Link href={`/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`} passHref>
-                      <a className={styles.paginationLink}>Next</a>
-                    </Link>
+                    <button
+                      className={styles.paginationLink}
+                      onClick={() => handlePageChange(pagination.offset + pagination.limit)}
+                    >
+                      Next
+                    </button>
                   )}
                   <p>Page {pagination.offset / pagination.limit + 1} of {pagination.totalPages}</p>
                 </div>
