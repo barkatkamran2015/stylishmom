@@ -1,3 +1,5 @@
+import nodemailer from 'nodemailer'; // Move to top
+
 export default async function handler(req, res) {
     console.log('=== API Route Hit ===');
 
@@ -8,7 +10,6 @@ export default async function handler(req, res) {
 
     console.log('Request body:', req.body);
 
-    // Check environment variables
     const emailUser = process.env.EMAIL_USER;
     const emailPass = process.env.EMAIL_PASS;
     console.log('Environment variables:', {
@@ -21,19 +22,6 @@ export default async function handler(req, res) {
         return res.status(500).json({ 
             success: false, 
             message: 'Server configuration error: missing email credentials' 
-        });
-    }
-
-    // Try to load nodemailer
-    let nodemailer;
-    try {
-        nodemailer = require('nodemailer');
-        console.log('Nodemailer loaded successfully');
-    } catch (error) {
-        console.error('Failed to load nodemailer:', error.message);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Server error: Nodemailer not available' 
         });
     }
 
