@@ -98,7 +98,7 @@ const Navbar = () => {
     <AppBar
       position="sticky"
       sx={{
-        backgroundColor: '#0b9299', // Teal base color
+        backgroundColor: '#2980b9',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
         top: 0, // Ensures stickiness at the top
         zIndex: 1200, // Above content
