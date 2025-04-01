@@ -1,63 +1,98 @@
 .contactPage {
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: #f4f4f4;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 2rem;
 }
 
 .contactFormContainer {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 500px;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.heading {  /* Changed from h2 to .heading */
+.title {
     text-align: center;
-    margin-bottom: 20px;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    font-size: 2rem;
+    font-weight: 700;
 }
 
-.contactForm .formGroup {
-    margin-bottom: 15px;
+.contactForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
-.contactForm label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-.contactForm input,
-.contactForm textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+.label {
+    color: #34495e;
+    font-weight: 500;
 }
 
-.contactForm textarea {
-    resize: none;
+.input, .textarea {
+    padding: 0.75rem;
+    border: 2px solid #ecf0f1;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.input:focus, .textarea:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.textarea {
+    resize: vertical;
+    min-height: 120px;
 }
 
 .submitButton {
-    width: 100%;
-    padding: 10px;
-    background-color: #3A86FF;
+    background: #3498db;
     color: white;
+    padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
+    transition: background 0.3s ease;
 }
 
-.submitButton:hover {
-    background-color: #2563eb;
+.submitButton:hover:not(:disabled) {
+    background: #2980b9;
+}
+
+.submitButton:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
 }
 
 .status {
     text-align: center;
-    margin-top: 10px;
-    color: green;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    border-radius: 5px;
+}
+
+.success {
+    color: #27ae60;
+    background: #e8f5e9;
+}
+
+.error {
+    color: #c0392b;
+    background: #ffebee;
 }
