@@ -145,7 +145,7 @@
   .heartLoader {
     width: 50px;
     height: 50px;
-    background: url('../Assets/heart-loader.gif') no-repeat center;
+    background: url('/Assets/heart-loader.gif') no-repeat center;
     background-size: contain;
   }
   
