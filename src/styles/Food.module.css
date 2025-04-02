@@ -2,7 +2,7 @@
 .foodPage {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 25px;
     background-color: #f5f7fa;
     min-height: 100vh;
   }
@@ -72,7 +72,7 @@
     line-height: 1.7;
     color: #4a4a4a;
     margin-bottom: 20px;
-    margin-bottom: 10px;
+    margin-left: 10px;
   }
   
   .foodPageContent img {
@@ -145,7 +145,7 @@
   .heartLoader {
     width: 50px;
     height: 50px;
-    background: url('/heart-loader.gif') no-repeat center;
+    background: url('../pages/Assets/heart-loader.gif') no-repeat center;
     background-size: contain;
   }
   
@@ -217,7 +217,8 @@
     }
   
     .foodPageCard {
-      padding: 20px;
+      padding: 25px;
+      
     }
   
     .foodPageTitle {
