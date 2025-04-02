@@ -337,69 +337,50 @@ export default function Dashboard() {
     return;
   }
 
-  // Validate required fields
+  // Validation (unchanged)
   if (!newPost.title.trim()) {
     setError('Title is required.');
     return;
   }
-
   if (!newPost.content.trim()) {
     setError('Content is required.');
     return;
   }
-
   if (!selectedPage) {
     setError('Page is required.');
     return;
   }
-
   const trimmedCategory = newPost.category ? newPost.category.trim() : '';
   if (trimmedCategory.length > 50) {
     setError('Category must be 50 characters or less.');
     return;
   }
-
   let processedTags = newPost.tags || [];
   if (!Array.isArray(processedTags)) {
     setError('Tags must be an array of strings.');
     return;
   }
-  processedTags = processedTags
-    .map((tag) => tag.trim())
-    .filter((tag) => tag.length > 0)
-    .slice(0, 5);
+  processedTags = processedTags.map((tag) => tag.trim()).filter((tag) => tag.length > 0).slice(0, 5);
   if (processedTags.some((tag) => tag.length > 30)) {
     setError('Each tag must be 30 characters or less.');
     return;
   }
-
   const trimmedImageURL = newPost.imageUrl ? newPost.imageUrl.trim() : '';
-  if (trimmedImageURL) {
-    const isValidExternalURL = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL);
-    const isValidRelativeURL = /^\/uploads\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL);
-    if (!isValidExternalURL && !isValidRelativeURL) {
-      setError('Image URL must be a valid URL ending in .jpg, .jpeg, .png, .gif, or .webp, or a relative path like /uploads/image.jpg');
-      return;
-    }
+  if (trimmedImageURL && !/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL) && !/^\/uploads\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL)) {
+    setError('Image URL must be a valid URL ending in .jpg, .jpeg, .png, .gif, or .webp, or a relative path like /uploads/image.jpg');
+    return;
   }
-
   const trimmedBackgroundColor = newPost.backgroundColor ? newPost.backgroundColor.trim() : '#ffffff';
   if (!/^#[0-9A-F]{6}$/i.test(trimmedBackgroundColor)) {
     setError('Background color must be a valid hex color (e.g., #ffffff).');
     return;
   }
 
-  const validateTitleStyle = (style) => {
-    const validColors = /^#[0-9A-F]{6}$/i;
-    const validFontSizes = ['8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px', '48px', '56px', '64px', '72px'];
-    const validTextAligns = ['left', 'center', 'right', 'justify'];
-
-    return {
-      color: validColors.test(style.color) ? style.color : '#000000',
-      fontSize: validFontSizes.includes(style.fontSize) ? style.fontSize : '24px',
-      textAlign: validTextAligns.includes(style.textAlign) ? style.textAlign : 'center',
-    };
-  };
+  const validateTitleStyle = (style) => ({
+    color: /^#[0-9A-F]{6}$/i.test(style.color) ? style.color : '#000000',
+    fontSize: ['8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px', '48px', '56px', '64px', '72px'].includes(style.fontSize) ? style.fontSize : '24px',
+    textAlign: ['left', 'center', 'right', 'justify'].includes(style.textAlign) ? style.textAlign : 'center',
+  });
 
   setIsLoading(true);
   try {
@@ -407,15 +388,11 @@ export default function Dashboard() {
     const validatedStyle = validateTitleStyle(newPost.titleStyle);
     const processedContent = persistImageDimensions(newPost.content);
     const sanitizedContent = DOMPurify.sanitize(processedContent, {
-      ALLOWED_TAGS: [
-        'img', 'p', 'div', 'span', 'br', 'strong', 'em', 'a',
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li',
-        'blockquote', 'code', 'pre',
-      ],
+      ALLOWED_TAGS: ['img', 'p', 'div', 'span', 'br', 'strong', 'em', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'code', 'pre'],
       ALLOWED_ATTR: ['src', 'width', 'height', 'alt', 'style', 'class', 'align', 'href', 'target', 'rel'],
     });
 
-    const queryParams = new URLSearchParams({
+    const postData = {
       method: editMode ? 'UPDATE_POST' : 'CREATE_POST',
       page: selectedPage,
       id: editMode ? currentPostId : `post_${Date.now()}`,
@@ -427,18 +404,20 @@ export default function Dashboard() {
       creator_uid: user.uid,
       category: trimmedCategory,
       tags: JSON.stringify(processedTags),
-    });
-    if (editMode) {
-      queryParams.append('postId', currentPostId);
-    }
-    const endpoint = `${API_URL}?${queryParams.toString()}`;
+      ...(editMode && { postId: currentPostId }),
+    };
+
+    const endpoint = `${API_URL}`; // No query params here
     console.log('Submitting to endpoint:', endpoint);
+    console.log('Post Data:', postData);
 
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${idToken}`,
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json', // Send as JSON
       },
+      body: JSON.stringify(postData), // Data in body, not URL
     });
 
     const responseText = await response.text();
@@ -448,24 +427,14 @@ export default function Dashboard() {
     if (!response.ok) {
       try {
         const errorData = JSON.parse(responseText);
-        console.error('API Error Response:', errorData);
-        throw new Error(
-          errorData.error && typeof errorData.error === 'string'
-            ? errorData.error
-            : `Failed to ${editMode ? 'update' : 'create'} post: ${JSON.stringify(errorData)}`
-        );
-      } catch (jsonError) {
+        throw new Error(errorData.error || `Failed to ${editMode ? 'update' : 'create'} post: ${JSON.stringify(errorData)}`);
+      } catch {
         throw new Error(`Failed to ${editMode ? 'update' : 'create'} post: Invalid JSON response - ${responseText}`);
       }
     }
 
     const responseData = JSON.parse(responseText);
-    console.log('API Success Response:', responseData);
-
-    setSuccessMessage(
-      responseData.message || (editMode ? 'Post updated successfully!' : 'Post created successfully!')
-    );
-
+    setSuccessMessage(responseData.message || (editMode ? 'Post updated successfully!' : 'Post created successfully!'));
     setNewPost({
       title: '',
       content: '',
