@@ -1,11 +1,5 @@
 {
   "routes": [
-    {
-      "src": "/robots.txt",
-      "dest": "https://www.barkatkamran.com/sitemap.xml",
-      "headers": {
-        "Content-Type": "text/plain"
-      }
-    }
+    { "src": "/robots.txt", "dest": "/robots.txt" }
   ]
 }
