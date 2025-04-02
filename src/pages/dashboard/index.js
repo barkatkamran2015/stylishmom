@@ -393,7 +393,6 @@ export default function Dashboard() {
     });
 
     const postData = {
-      method: editMode ? 'UPDATE_POST' : 'CREATE_POST',
       page: selectedPage,
       id: editMode ? currentPostId : `post_${Date.now()}`,
       title: newPost.title.trim(),
@@ -407,7 +406,8 @@ export default function Dashboard() {
       ...(editMode && { postId: currentPostId }),
     };
 
-    const endpoint = `${API_URL}`; // No query params here
+    const method = editMode ? 'UPDATE_POST' : 'CREATE_POST';
+    const endpoint = `${API_URL}?method=${method}`;
     console.log('Submitting to endpoint:', endpoint);
     console.log('Post Data:', postData);
 
@@ -415,9 +415,9 @@ export default function Dashboard() {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${idToken}`,
-        'Content-Type': 'application/json', // Send as JSON
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(postData), // Data in body, not URL
+      body: JSON.stringify(postData),
     });
 
     const responseText = await response.text();
