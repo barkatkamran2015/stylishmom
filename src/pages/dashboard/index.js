@@ -402,11 +402,12 @@ export default function Dashboard() {
       creator_uid: user.uid,
       category: trimmedCategory,
       tags: JSON.stringify(processedTags),
+      page: selectedPage,
+      method: editMode ? 'UPDATE_POST' : 'CREATE_POST',
       ...(editMode && { postId: currentPostId }),
     };
 
-    const method = editMode ? 'UPDATE_POST' : 'CREATE_POST';
-    const endpoint = `${API_URL}?method=${method}&page=${selectedPage}`;
+    const endpoint = `${API_URL}`;
     console.log('Submitting to endpoint:', endpoint);
     console.log('Post Data:', postData);
 
@@ -414,9 +415,9 @@ export default function Dashboard() {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${idToken}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json', // Switch to JSON for clarity
       },
-      body: JSON.stringify(postData),
+      body: JSON.stringify(postData), // Send as JSON instead of FormData
     });
 
     const responseText = await response.text();
@@ -434,16 +435,7 @@ export default function Dashboard() {
 
     const responseData = JSON.parse(responseText);
     setSuccessMessage(responseData.message || (editMode ? 'Post updated successfully!' : 'Post created successfully!'));
-    setNewPost({
-      title: '',
-      content: '',
-      image: null,
-      imageUrl: '',
-      backgroundColor: '#ffffff',
-      titleStyle: { color: '#000000', fontSize: '24px', textAlign: 'center' },
-      category: '',
-      tags: [],
-    });
+    setNewPost({ title: '', content: '', image: null, imageUrl: '', backgroundColor: '#ffffff', titleStyle: { color: '#000000', fontSize: '24px', textAlign: 'center' }, category: '', tags: [] });
     setEditMode(false);
     setCurrentPostId(null);
     fetchPosts(0);
