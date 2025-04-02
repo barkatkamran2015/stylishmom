@@ -393,7 +393,6 @@ export default function Dashboard() {
     });
 
     const postData = {
-      page: selectedPage,
       id: editMode ? currentPostId : `post_${Date.now()}`,
       title: newPost.title.trim(),
       content: sanitizedContent,
@@ -407,7 +406,7 @@ export default function Dashboard() {
     };
 
     const method = editMode ? 'UPDATE_POST' : 'CREATE_POST';
-    const endpoint = `${API_URL}?method=${method}`;
+    const endpoint = `${API_URL}?method=${method}&page=${selectedPage}`;
     console.log('Submitting to endpoint:', endpoint);
     console.log('Post Data:', postData);
 
