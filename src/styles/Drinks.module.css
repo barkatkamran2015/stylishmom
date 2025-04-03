@@ -47,6 +47,7 @@
 /* Title */
 .drinksPageTitle {
   font-size: 1.5rem;
+  font-family: "Playfair Display", "Georgia", serif; /* Elegant and readable */
   font-weight: bold;
   color: #2c3e50; /* Darker blue for a drink theme */
   margin-bottom: 10px;
