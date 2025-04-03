@@ -48,6 +48,7 @@
 .productsReviewPageTitle {
   font-size: 1.5rem;
   font-weight: bold;
+  font-family: "Playfair Display", "Georgia", serif; /* Elegant and readable */
   color: #333333; /* Dark gray for readability */
   margin-bottom: 10px;
   line-height: 1.2;
