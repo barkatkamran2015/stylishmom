@@ -2,7 +2,7 @@
 .foodPage {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 25px;
     background-color: #f5f7fa;
     min-height: 100vh;
   }
@@ -63,7 +63,7 @@
   }
   
   .foodPageTitle:hover {
-    color: #2e7d32; /* Food-themed green color */
+    color: #2980b9;
   }
   
   .foodPageContent {
@@ -72,6 +72,7 @@
     line-height: 1.7;
     color: #4a4a4a;
     margin-bottom: 20px;
+    margin-left: 10px;
   }
   
   .foodPageContent img {
@@ -109,7 +110,7 @@
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background-color: #2e7d32; /* Food-themed green color */
+    background-color: #2980b9;
     color: white;
     border: none;
     border-radius: 6px;
@@ -144,7 +145,7 @@
   .heartLoader {
     width: 50px;
     height: 50px;
-    background: url('/heart-loader.gif') no-repeat center;
+    background: url('../pages/Assets/heart-loader.gif') no-repeat center;
     background-size: contain;
   }
   
@@ -216,7 +217,8 @@
     }
   
     .foodPageCard {
-      padding: 15px;
+      padding: 25px;
+      
     }
   
     .foodPageTitle {

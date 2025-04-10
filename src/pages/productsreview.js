@@ -95,36 +95,85 @@ export default function ProductsReview({ initialPosts, initialCategories, initia
     }
   };
 
-  // Structured data for SEO
-  const structuredData = filteredPosts.map((post) => ({
-    '@context': 'https://schema.org',
-    '@type': 'Review',
-    itemReviewed: {
+  // Structured data for SEO - Updated to fix syntax error and structured data issue
+  const specificPostData = filteredPosts
+    .filter((post) => post.id === postIdFromQuery)
+    .map((post) => ({
+      '@context': 'https://schema.org',
       '@type': 'Product',
       name: post.title,
-    },
-    reviewBody: post.content.replace(/<[^>]+>/g, '').substring(0, 160),
-    datePublished: post.createdAt || new Date().toISOString(),
-    dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
-    author: {
-      '@type': 'Person',
-      name: 'Admin',
-    },
-    image: post.imageUrl || '/default-product-image.jpg',
-    url: `${
-      process.env.NODE_ENV === 'production'
-        ? 'https://www.thestylishmama.com'
-        : 'http://localhost:3000'
-    }/productsreview?id=${post.id}`,
-  }));
+      image: post.imageUrl || 'https://www.thestylishmama.com/default-product-image.jpg',
+      review: {
+        '@type': 'Review',
+        reviewRating: {
+          '@type': 'Rating',
+          ratingValue: post.rating && !isNaN(post.rating) ? post.rating : '4.5',
+          bestRating: '5',
+        },
+        reviewBody: post.content.replace(/<[^>]+>/g, '').substring(0, 160),
+        datePublished: post.createdAt || new Date().toISOString(),
+        dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
+        author: {
+          '@type': 'Person',
+          name: 'The Stylish Mama',
+        },
+      },
+      url: `${
+        process.env.NODE_ENV === 'production'
+          ? 'https://www.thestylishmama.com'
+          : 'http://localhost:3000'
+      }/productsreview?id=${post.id}`,
+    }));
+
+  const structuredData = postIdFromQuery
+    ? (specificPostData[0] || {})
+    : filteredPosts.map((post) => ({
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: post.title,
+        image: post.imageUrl || 'https://www.thestylishmama.com/default-product-image.jpg',
+        review: {
+          '@type': 'Review',
+          reviewRating: {
+            '@type': 'Rating',
+            ratingValue: post.rating && !isNaN(post.rating) ? post.rating : '4.5',
+            bestRating: '5',
+          },
+          reviewBody: post.content.replace(/<[^>]+>/g, '').substring(0, 160),
+          datePublished: post.createdAt || new Date().toISOString(),
+          dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
+          author: {
+            '@type': 'Person',
+            name: 'The Stylish Mama',
+          },
+        },
+        url: `${
+          process.env.NODE_ENV === 'production'
+            ? 'https://www.thestylishmama.com'
+            : 'http://localhost:3000'
+        }/productsreview?id=${post.id}`,
+      }));
+
+  // Find the specific post for dynamic meta tags if a post ID is in the query
+  const selectedPost = postIdFromQuery
+    ? filteredPosts.find((p) => p.id === postIdFromQuery)
+    : null;
 
   return (
     <div className={styles.productsReviewPage}>
       <Head>
-        <title>Product Reviews | The Stylish Mama</title>
+        <title>
+          {selectedPost
+            ? `${selectedPost.title} | The Stylish Mama`
+            : `Product Reviews - Page ${pagination.offset / pagination.limit + 1} | The Stylish Mama`}
+        </title>
         <meta
           name="description"
-          content="Read detailed product reviews to help you make informed decisions. Find the best products for your needs."
+          content={
+            selectedPost
+              ? `${selectedPost.content.replace(/<[^>]+>/g, '').substring(0, 160) || 'Read this detailed product review.'}`
+              : `Browse product reviews on page ${pagination.offset / pagination.limit + 1}. Find the best products for your needs.`
+          }
         />
         <meta name="keywords" content="product reviews, best products, buying guide" />
         <meta name="robots" content="index, follow" />
@@ -134,12 +183,23 @@ export default function ProductsReview({ initialPosts, initialCategories, initia
             process.env.NODE_ENV === 'production'
               ? 'https://www.thestylishmama.com'
               : 'http://localhost:3000'
-          }/productsreview`}
+          }/productsreview${postIdFromQuery ? `?id=${postIdFromQuery}` : `?limit=${pagination.limit}&offset=${pagination.offset}`}`}
         />
-        <meta property="og:title" content="Product Reviews | The Stylish Mama" />
+        <meta
+          property="og:title"
+          content={
+            selectedPost
+              ? `${selectedPost.title} | The Stylish Mama`
+              : `Product Reviews - Page ${pagination.offset / pagination.limit + 1} | The Stylish Mama`
+          }
+        />
         <meta
           property="og:description"
-          content="Read detailed product reviews to help you make informed decisions. Find the best products for your needs."
+          content={
+            selectedPost
+              ? `${selectedPost.content.replace(/<[^>]+>/g, '').substring(0, 160) || 'Read this detailed product review.'}`
+              : `Browse product reviews on page ${pagination.offset / pagination.limit + 1}. Find the best products for your needs.`
+          }
         />
         <meta
           property="og:url"
@@ -147,20 +207,39 @@ export default function ProductsReview({ initialPosts, initialCategories, initia
             process.env.NODE_ENV === 'production'
               ? 'https://www.thestylishmama.com'
               : 'http://localhost:3000'
-          }/productsreview`}
+          }/productsreview${postIdFromQuery ? `?id=${postIdFromQuery}` : ''}`}
         />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="/default-product-image.jpg" />
+        <meta
+          property="og:image"
+          content={selectedPost?.imageUrl || 'https://www.thestylishmama.com/default-product-image.jpg'}
+        />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Product Reviews | The Stylish Mama" />
+        <meta
+          name="twitter:title"
+          content={
+            selectedPost
+              ? `${selectedPost.title} | The Stylish Mama`
+              : `Product Reviews - Page ${pagination.offset / pagination.limit + 1} | The Stylish Mama`
+          }
+        />
         <meta
           name="twitter:description"
-          content="Read detailed product reviews to help you make informed decisions. Find the best products for your needs."
+          content={
+            selectedPost
+              ? `${selectedPost.content.replace(/<[^>]+>/g, '').substring(0, 160) || 'Read this detailed product review.'}`
+              : `Browse product reviews on page ${pagination.offset / pagination.limit + 1}. Find the best products for your needs.`
+          }
         />
-        <meta name="twitter:image" content="/default-product-image.jpg" />
+        <meta
+          name="twitter:image"
+          content={selectedPost?.imageUrl || 'https://www.thestylishmama.com/default-product-image.jpg'}
+        />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(postIdFromQuery ? [structuredData] : structuredData),
+          }}
         />
         {pagination.offset > 0 && (
           <link
@@ -243,7 +322,7 @@ export default function ProductsReview({ initialPosts, initialCategories, initia
                           height={337}
                           onError={(e) => {
                             console.error('Image failed to load:', post.imageUrl);
-                            e.target.src = '/default-product-image.jpg';
+                            e.target.src = 'https://www.thestylishmama.com/default-product-image.jpg';
                           }}
                           loading="lazy"
                         />
@@ -316,6 +395,11 @@ export async function getServerSideProps({ query }) {
           ? JSON.parse(post.titleStyle)
           : post.titleStyle
         : { color: '#000', fontSize: '1.5rem', textAlign: 'left' },
+      imageUrl: post.imageUrl?.startsWith('http')
+        ? post.imageUrl
+        : post.imageUrl
+        ? `https://www.thestylishmama.com${post.imageUrl}`
+        : null,
     }));
 
     const uniqueCategories = [

@@ -98,7 +98,7 @@ const Navbar = () => {
     <AppBar
       position="sticky"
       sx={{
-        backgroundColor: '#0b9299', // Teal base color
+        backgroundColor: '#2980b9',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
         top: 0, // Ensures stickiness at the top
         zIndex: 1200, // Above content
@@ -112,7 +112,7 @@ const Navbar = () => {
               src={imageLogo.src}
               alt="The Stylish Mama Logo"
               style={{
-                height: '50px',
+                height: '60px',
                 objectFit: 'contain',
                 transition: 'transform 0.3s ease',
                 '&:hover': { transform: 'scale(1.05)' },
@@ -148,7 +148,7 @@ const Navbar = () => {
                       position: 'absolute',
                       top: '100%',
                       left: 0,
-                      backgroundColor: '#0b9299',
+                      backgroundColor: '#2980b9',
                       borderRadius: '8px',
                       boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)',
                       minWidth: '150px',

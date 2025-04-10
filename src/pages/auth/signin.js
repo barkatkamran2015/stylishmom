@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import auth  from '../../../lib/firebaseConfig';
-import  { useAuth }  from '../../../context/AuthContext';
+import { auth } from '../../../lib/firebaseConfig';
+import { useAuth } from '../../../context/AuthContext';
 import styles from '../../styles/auth.module.css';
 
 export default function SignIn() {
@@ -15,17 +15,23 @@ export default function SignIn() {
   const router = useRouter();
   const { user } = useAuth();
 
+  console.log('Auth object in SignIn:', auth); // Debug log
+
   const handleSignIn = async (e) => {
     e.preventDefault();
     if (!auth) {
-      setError('Authentication service is not available');
+      console.error('Auth object is not initialized. Check Firebase configuration.');
+      setError('Authentication service is not available. Please try again later.');
       return;
     }
     setLoading(true);
     try {
+      console.log('Attempting to sign in with email:', email);
       await signInWithEmailAndPassword(auth, email, password);
+      console.log('Sign-in successful, redirecting to dashboard');
       router.push('/dashboard');
     } catch (err) {
+      console.error('Sign-in error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -35,6 +41,7 @@ export default function SignIn() {
   const handleSignOut = () => {
     if (auth) {
       auth.signOut();
+      console.log('User signed out successfully');
     } else {
       console.error('Auth is not initialized');
     }

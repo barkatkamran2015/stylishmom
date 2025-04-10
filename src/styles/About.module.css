@@ -1,39 +1,174 @@
 .aboutContainer {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
+    min-height: 100vh;
+    padding: 5rem 2rem;
+    background: #ffffff;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .hero {
     text-align: center;
-}
-
-.header1 {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.aboutTextTop {
+    margin-bottom: 4rem;
+  }
+  
+  .title {
+    font-size: 3rem;
+    font-family: 'Cinzel', serif;
+    color: #3277a8;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    letter-spacing: 2px;
+  }
+  
+  .titleUnderline {
+    height: 5px;
+    background: linear-gradient(to right, #ff69b4, #ffd700);
+    margin: 1rem auto;
+    border-radius: 5px;
+  }
+  
+  .content {
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+  
+  .intro {
+    font-size: 1.4rem;
+    line-height: 1.9;
+    font-family: 'Lora', serif;
+    background: #3277a8;
+    padding: 2rem;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    margin-bottom: 3rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  }
+  
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+    position: relative;
+  }
+  
+  .imageContainer {
+    position: relative;
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(to right, transparent 50%, #e0f7ff 100%); /* Beautiful color on right side */
+    display: flex;
+    justify-content: flex-start;
+  }
+  
+  .profileImage {
+    object-fit: cover;
+    transition: transform 0.5s ease; /* Smooth animation for sliding */
+  }
+  
+  .profileImage:hover {
+    transform: translateX(80px); /* Slides to the right on hover */
+  }
+  
+  .imageGlow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(0, 187, 255, 0.2), transparent 50%);
+    pointer-events: none;
+  }
+  
+  .imageContainer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(255, 105, 180, 0.3), transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  .textContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    position: relative;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8e1ff 0%, #d9f5ff 50%, #fff5e6 100%); /* Gradient you loved */
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .textContainer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(255, 105, 180, 0.3), transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+  }
+  
+  .textContainer p {
     font-size: 1.2rem;
-    line-height: 1.6;
-    margin-bottom: 20px;
-}
-
-.aboutMiddleSection {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: left;
-    margin-top: 20px;
-}
-
-.aboutTextSide {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.about1Icon {
-    width: 100%;
-    max-width: 400px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-}
+    line-height: 1.8;
+    font-family: 'Lora', serif;
+    background: #3277a8;
+    padding: 1.5rem;
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .textContainer p:hover {
+    transform: translateY(-5px);
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .title {
+      font-size: 2.5rem;
+    }
+  
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .intro {
+      font-size: 1.2rem;
+    }
+  
+    .imageContainer {
+      background: linear-gradient(to bottom, transparent 50%, #e0f7ff 100%);
+    }
+  
+    .imageContainer::after {
+      width: 100%;
+      background: radial-gradient(circle at bottom center, rgba(255, 105, 180, 0.3), transparent 70%);
+    }
+  
+    .textContainer {
+      padding: 1rem;
+    }
+  }
+  
+  /* Background Animation */
+  @keyframes subtlePulse {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  .aboutContainer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg, #ff69b4, #ffd700, #00ced1);
+    opacity: 0.1;
+    animation: subtlePulse 15s ease infinite;
+    z-index: -1;
+  }

@@ -1,61 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import dynamic from 'next/dynamic';
-import DOMPurify from 'dompurify';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useAuth } from '../../../context/AuthContext';
 import styles from '../../styles/AdminDashboard.module.css';
-import 'react-quill/dist/quill.snow.css';
+import { useEditor, EditorContent } from '@tiptap/react';
+import { useTipTapExtensions } from '../_app';
+import PostContent from '../components/PostContent';
+import EditorToolbar from '../components/EditorToolbar';
+
+// Dynamically import DOMPurify to ensure it only runs on the client side
+const loadDOMPurify = async () => {
+  const DOMPurifyModule = await import('dompurify');
+  return DOMPurifyModule.default;
+};
 
 // Use dynamic API URL based on environment
-const API_URL = 'https://www.barkatkamran.com/api.php';
-
-// Dynamically import ReactQuill with SSR disabled
-const ReactQuill = dynamic(() => import('react-quill'), {
-  ssr: false,
-  loading: () => <p>Loading editor...</p>,
-});
-
-// PostContent Component (updated to display category and tags)
-const PostContent = ({ content, category, tags }) => {
-  const sanitizedContent = DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: [
-      'img', 'p', 'div', 'span', 'br', 'strong', 'em', 'a',
-      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li',
-      'blockquote', 'code', 'pre',
-    ],
-    ALLOWED_ATTR: ['src', 'width', 'height', 'alt', 'style', 'class', 'align', 'href', 'target', 'rel'],
-  });
-
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(sanitizedContent, 'text/html');
-
-  doc.querySelectorAll('img').forEach((img) => {
-    const width = img.getAttribute('width') || img.style.width;
-    const height = img.getAttribute('height') || img.style.height;
-    if (width) img.style.width = width.endsWith('px') ? width : `${width}px`;
-    if (height) img.style.height = height.endsWith('px') ? height : `${height}px`;
-  });
-
-  return (
-    <div>
-      <div
-        className={styles.postContent}
-        dangerouslySetInnerHTML={{ __html: doc.body.innerHTML }}
-      />
-      {category && (
-        <p className={styles.postMeta}>
-          <strong>Category:</strong> {category}
-        </p>
-      )}
-      {tags && Array.isArray(tags) && tags.length > 0 && (
-        <p className={styles.postMeta}>
-          <strong>Tags:</strong> {tags.join(', ')}
-        </p>
-      )}
-    </div>
-  );
-};
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/posts';
+const PHP_API_URL = 'https://www.barkatkamran.com/api.php';
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -80,31 +41,37 @@ export default function Dashboard() {
   const [currentPostId, setCurrentPostId] = useState(null);
   const [selectedPage, setSelectedPage] = useState('Blog');
   const [pagination, setPagination] = useState({ limit: 10, offset: 0, total: 0, totalPages: 0 });
-  const [quillModules, setQuillModules] = useState({
-    toolbar: {
-      container: [
-        [{ 'font': [] }],
-        [{ 'size': ['8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px', '48px', '56px', '64px', '72px'] }],
-        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ 'color': [] }, { 'background': [] }],
-        [{ 'align': ['', 'center', 'right', 'justify'] }],
-        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-        [{ 'indent': '-1' }, { 'indent': '+1' }],
-        ['blockquote', 'code-block'],
-        ['link', 'image', 'video'],
-        [{ 'direction': 'rtl' }],
-        ['clean'],
-      ],
+  const [domPurifyInstance, setDomPurifyInstance] = useState(null);
+  const editorContainerRef = useRef(null);
+  const imageInputRef = useRef(null);
+
+  // State for the link dialog
+  const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState('');
+
+  const { extensions } = useTipTapExtensions();
+
+  const editor = useEditor({
+    extensions,
+    content: newPost.content || '<p>Start writing...</p>',
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      setNewPost((prev) => ({ ...prev, content: html }));
     },
-    clipboard: {
-      matchVisual: false,
+    editorProps: {
+      attributes: {
+        class: styles.tiptapEditor,
+      },
     },
   });
-  const quillRef = useRef(null);
-  const editorContainerRef = useRef(null);
 
-  // Handle auth state properly to prevent redirect on refresh
+  // Load DOMPurify on the client side when the component mounts
+  useEffect(() => {
+    loadDOMPurify().then((DOMPurify) => {
+      setDomPurifyInstance(() => DOMPurify);
+    });
+  }, []);
+
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
@@ -112,122 +79,48 @@ export default function Dashboard() {
     }
   }, [user, authLoading, router]);
 
-  // Quill Setup - Enhanced with more features
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const Quill = ReactQuill.Quill;
-    if (!Quill) {
-      console.error('Quill is not available');
-      return;
+    if (editor && newPost.content && editMode) {
+      editor.commands.setContent(newPost.content);
     }
+  }, [editor, newPost.content, editMode]);
 
-    const Size = Quill.import('formats/size');
-    Size.whitelist = ['8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px', '48px', '56px', '64px', '72px'];
-    Quill.register(Size, true);
-
-    const Font = Quill.import('formats/font');
-    Font.whitelist = [
-      'sans-serif', 'serif', 'monospace', 'roboto', 'open-sans', 'lato', 'slabo', 'oswald', 'montserrat',
-      'source-sans-pro', 'arial', 'times-new-roman', 'courier-new', 'comic-sans-ms', 'georgia', 'helvetica',
-      'verdana', 'calibri', 'garamond', 'tahoma', 'impact', 'trebuchet-ms', 'lucida-console', 'palatino',
-      'dancing-script', 'poppins', 'playfair-display', 'nunito', 'merriweather', 'ubuntu', 'playpen-sans',
-      'right-grotesk-wide', 'playwrite-deutschland-grundschrift', 'inter', 'raleway', 'fira-sans',
-      'pt-serif', 'lobster', 'quicksand', 'bitter', 'cabin', 'noto-sans', 'inconsolata', 'crimson-text',
-    ];
-    Quill.register(Font, true);
-
-    setQuillModules((prevModules) => ({
-      ...prevModules,
-      toolbar: {
-        container: [
-          [{ 'font': Font.whitelist }],
-          [{ 'size': Size.whitelist }],
-          [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-          ['bold', 'italic', 'underline', 'strike'],
-          [{ 'color': [] }, { 'background': [] }],
-          [{ 'align': ['', 'center', 'right', 'justify'] }],
-          [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-          [{ 'indent': '-1' }, { 'indent': '+1' }],
-          ['blockquote', 'code-block'],
-          ['link', 'image', 'video'],
-          [{ 'direction': 'rtl' }],
-          ['clean'],
-        ],
-      },
-    }));
-
-    import('quill-image-resize')
-      .then(({ ImageResize }) => {
-        if (!Quill.imports['modules/imageResize']) {
-          Quill.register('modules/imageResize', ImageResize);
-        }
-        setQuillModules((prevModules) => ({
-          ...prevModules,
-          imageResize: {
-            parchment: Quill.import('parchment'),
-            modules: ['Resize', 'DisplaySize', 'Toolbar'],
-          },
-        }));
-        console.log('ImageResize module loaded successfully');
-      })
-      .catch((err) => {
-        console.error('Failed to load quill-image-resize:', err);
-      });
-  }, []);
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
   const fetchPosts = useCallback(async (offset = 0) => {
     if (!user) return;
-  
+
     setIsLoading(true);
     try {
       const idToken = await user.getIdToken();
       const url = `${API_URL}?page=${encodeURIComponent(selectedPage)}&limit=${pagination.limit}&offset=${offset}`;
-      console.log('Fetching posts from:', url);
-  
-      let response;
-      try {
-        response = await fetch(url, {
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-          },
-        });
-      } catch (fetchError) {
-        console.error('Fetch error details:', fetchError);
-        throw new Error(`Network error: ${fetchError.message}. Is the API server running at ${API_URL}?`);
-      }
-  
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+
       if (!response.ok) {
-        const contentType = response.headers.get('content-type');
-        let errorMessage;
-        if (contentType && contentType.includes('application/json')) {
-          try {
-            const errorData = await response.json();
-            errorMessage = errorData.error || `HTTP error ${response.status}`;
-          } catch (jsonError) {
-            // If JSON parsing fails, fall back to reading the response as text
-            console.error('Failed to parse error response as JSON:', jsonError);
-            const text = await response.text();
-            errorMessage = `HTTP error ${response.status}: ${text.length > 100 ? text.substring(0, 100) + '...' : text}`;
-          }
-        } else {
-          const text = await response.text();
-          errorMessage = `HTTP error ${response.status}: ${text.length > 100 ? text.substring(0, 100) + '...' : text}`;
-        }
+        const errorMessage = await response.text();
         throw new Error(`Failed to fetch posts: ${errorMessage}`);
       }
-  
+
       const data = await response.json();
       if (!data.posts || !data.pagination) {
-        throw new Error('Invalid response format: Missing posts or pagination data');
+        throw new Error('Invalid response format');
       }
-  
+
       const postsWithPage = data.posts.map((post) => ({
         ...post,
         page: selectedPage,
         tags: post.tags ? (typeof post.tags === 'string' ? JSON.parse(post.tags) : post.tags) : [],
+        titleStyle: post.titleStyle ? (typeof post.titleStyle === 'string' ? JSON.parse(post.titleStyle) : post.titleStyle) : { color: '#000000', fontSize: '24px', textAlign: 'center' },
       }));
-      console.log('Fetched Posts:', postsWithPage);
       setPosts(postsWithPage);
       setAllPosts(postsWithPage);
       setPagination((prev) => ({
@@ -250,70 +143,154 @@ export default function Dashboard() {
     fetchPosts(0);
   }, [fetchPosts, selectedPage]);
 
-  const handleImageUpload = async (event) => {
+  const handleEditorImageUpload = async (event) => {
     const file = event.target.files[0];
-    if (!file) return;
-  
+    if (!file) {
+      setError('No file selected.');
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (!allowedTypes.includes(file.type)) {
+      setError('Only JPEG, PNG, GIF, and WebP images are allowed.');
+      return;
+    }
+    if (file.size > maxSize) {
+      setError('Image size must be less than 5MB.');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      if (!user) {
-        throw new Error('User not authenticated. Please sign in.');
-      }
-  
+      if (!user) throw new Error('User not authenticated.');
+
       const idToken = await user.getIdToken();
+      const queryParams = new URLSearchParams({
+        method: 'UPLOAD_IMAGE',
+        page: selectedPage || '',
+      });
+      const endpoint = `${PHP_API_URL}?${queryParams.toString()}`; // Direct to PHP API
+
       const formData = new FormData();
       formData.append('image', file);
-  
-      // Ensure the required fields are included
-      formData.append('id', newPost.id || '');  // Add default value if undefined
-      formData.append('title', newPost.title || '');  // Add default value if undefined
-      formData.append('content', newPost.content || '');  // Add default value if undefined
-      formData.append('creator_uid', newPost.creator_uid || '');  // Add default value if undefined
-  
-      // Upload the image
-      const imageResponse = await fetch(`${API_URL}?page=${selectedPage}`, {
+
+      const imageResponse = await fetch(endpoint, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${idToken}`,
         },
         body: formData,
       });
-  
+
+      const responseText = await imageResponse.text();
+      console.log('Editor Image Upload Response:', responseText);
+
       if (!imageResponse.ok) {
-        const errorData = await imageResponse.json();
-        throw new Error(errorData.error || 'Failed to upload image');
+        let errorData;
+        try {
+          errorData = JSON.parse(responseText);
+        } catch (parseError) {
+          throw new Error(`Failed to upload image: ${responseText}`);
+        }
+        throw new Error(errorData.message || 'Failed to upload image');
       }
-  
-      const imageData = await imageResponse.json();
+
+      const imageData = JSON.parse(responseText);
       const imageUrl = imageData.imageUrl;
-  
-      // Update the newPost state with the image URL
-      setNewPost((prev) => ({
-        ...prev,
-        imageUrl,
-      }));
-  
+
+      if (editor) {
+        editor.chain().focus().setImage({ src: imageUrl, alt: file.name, align: 'left' }).run();
+      }
+
       setError(null);
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Editor Image Upload Error:', error);
       setError(error.message);
     } finally {
       setIsLoading(false);
+      if (event.target) event.target.value = '';
     }
   };
-  
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+      setError('No file selected.');
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (!allowedTypes.includes(file.type)) {
+      setError('Only JPEG, PNG, GIF, and WebP images are allowed.');
+      return;
+    }
+    if (file.size > maxSize) {
+      setError('Image size must be less than 5MB.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      if (!user) throw new Error('User not authenticated.');
+
+      const idToken = await user.getIdToken();
+      const queryParams = new URLSearchParams({
+        method: 'UPLOAD_IMAGE',
+        page: selectedPage || '',
+      });
+      const endpoint = `${PHP_API_URL}?${queryParams.toString()}`; // Direct to PHP API
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const imageResponse = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: formData,
+      });
+
+      const responseText = await imageResponse.text();
+      console.log('Featured Image Upload Response:', responseText);
+
+      if (!imageResponse.ok) {
+        let errorData;
+        try {
+          errorData = JSON.parse(responseText);
+        } catch (parseError) {
+          throw new Error(`Failed to upload image: ${responseText}`);
+        }
+        throw new Error(errorData.message || 'Failed to upload image');
+      }
+
+      const imageData = JSON.parse(responseText);
+      const imageUrl = imageData.imageUrl;
+
+      setNewPost((prev) => ({ ...prev, imageUrl }));
+      setError(null);
+    } catch (error) {
+      console.error('Featured Image Upload Error:', error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+      if (event.target) event.target.value = '';
+    }
+  };
 
   const persistImageDimensions = (content) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, 'text/html');
 
     doc.querySelectorAll('img').forEach((img) => {
-      const width = img.style.width || img.getAttribute('width');
-      const height = img.style.height || img.getAttribute('height');
-      if (width) img.style.width = width.endsWith('px') ? width : `${width}px`;
-      if (height) img.style.height = height.endsWith('px') ? height : `${height}px`;
-      if (width) img.setAttribute('width', width.replace('px', ''));
-      if (height) img.setAttribute('height', height.replace('px', ''));
+      const width = img.style.width || img.getAttribute('width') || '300';
+      const height = img.style.height || img.getAttribute('height') || 'auto';
+      img.style.width = width.endsWith('px') ? width : `${width}px`;
+      img.style.height = height.endsWith('px') ? height : `${height}`;
+      img.setAttribute('width', width.replace('px', ''));
+      img.setAttribute('height', height === 'auto' ? 'auto' : height.replace('px', ''));
     });
 
     return doc.body.innerHTML;
@@ -321,166 +298,131 @@ export default function Dashboard() {
 
   const handleCreatePost = async () => {
     if (!user) {
-      setError('User not authenticated. Please sign in.');
+      setError('User not authenticated.');
       return;
     }
-  
-    // Validate required fields
+
+    if (!user.uid) {
+      setError('User UID is missing.');
+      return;
+    }
+
     if (!newPost.title.trim()) {
       setError('Title is required.');
       return;
     }
-  
-    if (!newPost.content.trim()) {
+    const editorContent = editor?.getHTML() || newPost.content;
+    if (!editorContent.trim() || editorContent === '<p></p>') {
       setError('Content is required.');
       return;
     }
-  
     if (!selectedPage) {
       setError('Page is required.');
       return;
     }
-  
     const trimmedCategory = newPost.category ? newPost.category.trim() : '';
     if (trimmedCategory.length > 50) {
       setError('Category must be 50 characters or less.');
       return;
     }
-  
     let processedTags = newPost.tags || [];
     if (!Array.isArray(processedTags)) {
       setError('Tags must be an array of strings.');
       return;
     }
-    processedTags = processedTags
-      .map((tag) => tag.trim())
-      .filter((tag) => tag.length > 0)
-      .slice(0, 5);
+    processedTags = processedTags.map((tag) => tag.trim()).filter((tag) => tag.length > 0).slice(0, 5);
     if (processedTags.some((tag) => tag.length > 30)) {
       setError('Each tag must be 30 characters or less.');
       return;
     }
-  
     const trimmedImageURL = newPost.imageUrl ? newPost.imageUrl.trim() : '';
-    if (trimmedImageURL) {
-      const isValidExternalURL = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL);
-      const isValidRelativeURL = /^\/uploads\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL);
-      if (!isValidExternalURL && !isValidRelativeURL) {
-        setError('Image URL must be a valid URL ending in .jpg, .jpeg, .png, .gif, or .webp, or a relative path like /uploads/image.jpg');
-        return;
-      }
-    }
-  
-    const trimmedBackgroundColor = newPost.backgroundColor ? newPost.backgroundColor.trim() : '#ffffff';
-    if (!/^#[0-9A-F]{6}$/i.test(trimmedBackgroundColor)) {
-      setError('Background color must be a valid hex color (e.g., #ffffff).');
+    if (trimmedImageURL && !/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL) && !/^\/uploads\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL)) {
+      setError('Image URL must be a valid URL ending in .jpg, .jpeg, .png, .gif, or .webp.');
       return;
     }
-  
-    const validateTitleStyle = (style) => {
-      const validColors = /^#[0-9A-F]{6}$/i;
-      const validFontSizes = ['8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px', '48px', '56px', '64px', '72px'];
-      const validTextAligns = ['left', 'center', 'right', 'justify'];
-  
-      return {
-        color: validColors.test(style.color) ? style.color : '#000000',
-        fontSize: validFontSizes.includes(style.fontSize) ? style.fontSize : '24px',
-        textAlign: validTextAligns.includes(style.textAlign) ? style.textAlign : 'center',
-      };
-    };
-  
+    const trimmedBackgroundColor = newPost.backgroundColor ? newPost.backgroundColor.trim() : '#ffffff';
+    if (!/^#[0-9A-F]{6}$/i.test(trimmedBackgroundColor)) {
+      setError('Background color must be a valid hex color.');
+      return;
+    }
+
+    if (!domPurifyInstance) {
+      setError('Sanitization library not loaded. Please try again.');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const idToken = await user.getIdToken();
       const validatedStyle = validateTitleStyle(newPost.titleStyle);
-      const processedContent = persistImageDimensions(newPost.content);
-      const sanitizedContent = DOMPurify.sanitize(processedContent, {
-        ALLOWED_TAGS: [
-          'img', 'p', 'div', 'span', 'br', 'strong', 'em', 'a',
-          'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li',
-          'blockquote', 'code', 'pre',
-        ],
+      const processedContent = persistImageDimensions(editorContent);
+      const sanitizedContent = domPurifyInstance.sanitize(processedContent, {
+        ALLOWED_TAGS: ['img', 'p', 'div', 'span', 'br', 'strong', 'em', 'a', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'code', 'pre'],
         ALLOWED_ATTR: ['src', 'width', 'height', 'alt', 'style', 'class', 'align', 'href', 'target', 'rel'],
       });
-  
-      const formData = new FormData();
-      formData.append('id', editMode ? currentPostId : `post_${Date.now()}`);
-      formData.append('title', newPost.title.trim());
-      formData.append('content', sanitizedContent);
-      formData.append('imageUrl', trimmedImageURL);
-      formData.append('backgroundColor', trimmedBackgroundColor);
-      formData.append('titleStyle', JSON.stringify(validatedStyle));
-      formData.append('creator_uid', user.uid);
-      formData.append('category', trimmedCategory);
-      formData.append('tags', JSON.stringify(processedTags));
-      formData.append('page', selectedPage);
-      if (editMode) {
-        formData.append('method', 'UPDATE_POST');
-        formData.append('postId', currentPostId);
-      } else {
-        formData.append('method', 'CREATE_POST');
-      }
-  
-      const endpoint = `${API_URL}`;
-      console.log('Submitting to endpoint:', endpoint);
-      console.log('Form Data:', Object.fromEntries(formData.entries()));
-  
-      const response = await fetch(endpoint, {
+
+      const postData = new URLSearchParams({
+        id: editMode ? currentPostId : `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        title: newPost.title.trim(),
+        content: sanitizedContent,
+        imageUrl: trimmedImageURL,
+        backgroundColor: trimmedBackgroundColor,
+        titleStyle: JSON.stringify(validatedStyle),
+        creator_uid: user.uid,
+        category: trimmedCategory,
+        tags: JSON.stringify(processedTags),
+        page: selectedPage,
+        method: editMode ? 'UPDATE_POST' : 'CREATE_POST',
+        ...(editMode && { postId: currentPostId }),
+      });
+
+      console.log('Post Data Fields:');
+      console.log('id:', editMode ? currentPostId : `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+      console.log('postId (editMode only):', editMode ? currentPostId : 'N/A');
+      console.log('title:', newPost.title.trim());
+      console.log('content:', sanitizedContent);
+      console.log('creator_uid:', user.uid);
+      console.log('method:', editMode ? 'UPDATE_POST' : 'CREATE_POST');
+      console.log('Request URL:', API_URL);
+      console.log('Request Body:', postData.toString());
+
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${idToken}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: formData,
+        body: postData,
       });
-  
+
       const responseText = await response.text();
-      console.log('API Raw Response:', responseText);
-      console.log('API Response Status:', response.status);
-  
       if (!response.ok) {
+        let errorData;
         try {
-          const errorData = JSON.parse(responseText);
-          console.error('API Error Response:', errorData);
-          throw new Error(
-            errorData.error && typeof errorData.error === 'string'
-              ? errorData.error
-              : `Failed to ${editMode ? 'update' : 'create'} post: ${JSON.stringify(errorData)}`
-          );
-        } catch (jsonError) {
-          throw new Error(`Failed to ${editMode ? 'update' : 'create'} post: Invalid JSON response - ${responseText}`);
+          errorData = JSON.parse(responseText);
+          const errorMessage = errorData.error || errorData.message || `Failed to ${editMode ? 'update' : 'create'} post`;
+          throw new Error(`${errorMessage} (Status: ${response.status})`);
+        } catch (parseError) {
+          throw new Error(`Failed to ${editMode ? 'update' : 'create'} post: ${responseText} (Status: ${response.status})`);
         }
       }
-  
+
       const responseData = JSON.parse(responseText);
-      console.log('API Success Response:', responseData);
-  
-      setSuccessMessage(
-        responseData.message || (editMode ? 'Post updated successfully!' : 'Post created successfully!')
-      );
-  
-      // Reset the form and refresh posts
-      setNewPost({
-        title: '',
-        content: '',
-        image: null,
-        imageUrl: '',
-        backgroundColor: '#ffffff',
-        titleStyle: { color: '#000000', fontSize: '24px', textAlign: 'center' },
-        category: '',
-        tags: [],
-      });
+      setSuccessMessage(responseData.message || (editMode ? 'Post updated!' : 'Post created!'));
+      setNewPost({ title: '', content: '', image: null, imageUrl: '', backgroundColor: '#ffffff', titleStyle: { color: '#000000', fontSize: '24px', textAlign: 'center' }, category: '', tags: [] });
+      editor?.commands.clearContent();
       setEditMode(false);
       setCurrentPostId(null);
       fetchPosts(0);
       setError(null);
     } catch (error) {
       console.error(`Error ${editMode ? 'updating' : 'creating'} post:`, error);
-      setError(`Failed to ${editMode ? 'update' : 'create'} post: ${error.message}`);
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   const handleDelete = async (postId, page) => {
     if (!user) {
       setError('You must be signed in to delete a post.');
@@ -494,17 +436,13 @@ export default function Dashboard() {
       const idToken = await user.getIdToken();
       const response = await fetch(`${API_URL}?page=${encodeURIComponent(page)}&id=${postId}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
+        headers: { Authorization: `Bearer ${idToken}` },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete post');
-      }
+      if (!response.ok) throw new Error('Failed to delete post');
 
       const responseData = await response.json();
-      setSuccessMessage(responseData.message || 'Post deleted successfully!');
+      setSuccessMessage(responseData.message || 'Post deleted!');
       fetchPosts(pagination.offset);
     } catch (err) {
       console.error('Error deleting post:', err);
@@ -515,13 +453,14 @@ export default function Dashboard() {
   };
 
   const handleEdit = (post) => {
+    const parsedTitleStyle = typeof post.titleStyle === 'string' ? JSON.parse(post.titleStyle) : post.titleStyle;
     setNewPost({
       title: post.title,
       content: persistImageDimensions(post.content),
       image: null,
       imageUrl: post.imageUrl || '',
       backgroundColor: post.backgroundColor || '#ffffff',
-      titleStyle: post.titleStyle || { color: '#000000', fontSize: '24px', textAlign: 'center' },
+      titleStyle: parsedTitleStyle || { color: '#000000', fontSize: '24px', textAlign: 'center' },
       category: post.category || '',
       tags: post.tags || [],
     });
@@ -555,20 +494,82 @@ export default function Dashboard() {
     setNewPost((prev) => ({ ...prev, tags: tagsArray }));
   };
 
+  // Function to open the link dialog
+  const openLinkDialog = () => {
+    if (!editor) {
+      setError('Editor is not initialized.');
+      return;
+    }
+
+    const { from, to } = editor.state.selection;
+    if (from === to) {
+      setError('Please select some text to add a link.');
+      return;
+    }
+
+    const previousUrl = editor.getAttributes('link').href;
+    setLinkUrl(previousUrl || '');
+    setIsLinkDialogOpen(true);
+  };
+
+  // Function to set the link
+  const handleSetLink = () => {
+    if (!editor) {
+      setError('Editor is not initialized.');
+      return;
+    }
+  
+    // Debug the current selection and URL
+    console.log('Current selection:', editor.state.selection);
+    console.log('Link URL:', linkUrl);
+  
+    if (linkUrl === '') {
+      console.log('Unsetting link');
+      editor.chain().focus().unsetLink().run();
+    } else {
+      // Check if the URL starts with http://, https://, or www.
+      let formattedUrl = linkUrl.trim();
+      const hasProtocol = formattedUrl.match(/^(https?:\/\/)/);
+      const startsWithWww = formattedUrl.match(/^www\./);
+  
+      if (!hasProtocol) {
+        // If the URL doesn't start with http:// or https://, prepend https://
+        if (startsWithWww) {
+          formattedUrl = `https://${formattedUrl}`; // e.g., www.example.com -> https://www.example.com
+        } else {
+          // For URLs like example.com, also prepend https://
+          formattedUrl = `https://${formattedUrl}`; // e.g., example.com -> https://example.com
+        }
+      }
+  
+      console.log('Applying link:', formattedUrl);
+      editor
+        .chain()
+        .focus()
+        .extendMarkRange('link')
+        .setLink({ href: formattedUrl, target: '_blank', rel: 'noopener noreferrer' })
+        .run();
+    }
+  
+    // Close the dialog and reset state
+    setIsLinkDialogOpen(false);
+    setLinkUrl('');
+    setError(null);
+  
+    // Debug the editor content after applying the link
+    console.log('Editor HTML after link operation:', editor.getHTML());
+  };
+
   if (authLoading) {
-    return (
-      <div className={styles.adminDashboard}>
-        <p>Loading authentication...</p>
-      </div>
-    );
+    return <div className={styles.adminDashboard}><p>Loading authentication...</p></div>;
   }
 
   if (!user) {
-    return (
-      <div className={styles.adminDashboard}>
-        <p>Redirecting to Sign In...</p>
-      </div>
-    );
+    return <div className={styles.adminDashboard}><p>Redirecting to Sign In...</p></div>;
+  }
+
+  if (!editor) {
+    return <div className={styles.adminDashboard}><p>Loading editor...</p></div>;
   }
 
   return (
@@ -674,15 +675,17 @@ export default function Dashboard() {
 
         <div className={styles.editorContainer} style={{ backgroundColor: newPost.backgroundColor }}>
           <label htmlFor="rich-editor" className={styles.formLabel}>Write Content:</label>
-          <ReactQuill
-            ref={quillRef}
-            value={newPost.content}
-            onChange={(value) => setNewPost((prev) => ({ ...prev, content: value }))}
-            theme="snow"
-            modules={quillModules}
-            className={styles.quillEditor}
-            style={{ backgroundColor: newPost.backgroundColor }}
+          <EditorToolbar
+            editor={editor}
+            openLinkDialog={openLinkDialog}
+            isLinkDialogOpen={isLinkDialogOpen}
+            linkUrl={linkUrl}
+            setLinkUrl={setLinkUrl}
+            handleSetLink={handleSetLink}
+            imageInputRef={imageInputRef}
+            handleEditorImageUpload={handleEditorImageUpload}
           />
+          <EditorContent editor={editor} />
         </div>
 
         <div className={styles.formGroup}>
@@ -784,10 +787,7 @@ export default function Dashboard() {
               <div
                 key={post.id}
                 className={styles.postItem}
-                style={{
-                  backgroundColor: post.backgroundColor || '#ffffff',
-                  transition: 'background-color 0.3s ease',
-                }}
+                style={{ backgroundColor: post.backgroundColor || '#ffffff' }}
               >
                 <h4
                   className={styles.postTitle}
@@ -811,17 +811,11 @@ export default function Dashboard() {
                     }
                     alt={post.title}
                     className={styles.postImage}
-                    onError={(e) => {
-                      e.target.src = '/default-image.jpg';
-                      e.target.onerror = null;
-                    }}
+                    onError={(e) => { e.target.src = '/default-image.jpg'; e.target.onerror = null; }}
                   />
                 )}
 
-                <p className={styles.postMeta}>
-                  <strong>Page:</strong> {post.page}
-                </p>
-
+                <p className={styles.postMeta}><strong>Page:</strong> {post.page}</p>
                 {post.createdAt && (
                   <p className={styles.postMeta}>
                     <strong>Created At:</strong>{" "}
@@ -832,11 +826,8 @@ export default function Dashboard() {
                     })}
                   </p>
                 )}
-
                 {post.views !== undefined && (
-                  <p className={styles.postMeta}>
-                    <strong>Views:</strong> {post.views}
-                  </p>
+                  <p className={styles.postMeta}><strong>Views:</strong> {post.views}</p>
                 )}
 
                 <div className={styles.postActions}>
@@ -848,24 +839,16 @@ export default function Dashboard() {
 
             <div className={styles.pagination}>
               {pagination.offset > 0 && (
-                <button
-                  onClick={() => fetchPosts(pagination.offset - pagination.limit)}
-                  className={styles.paginationLink}
-                >
+                <button onClick={() => fetchPosts(pagination.offset - pagination.limit)} className={styles.paginationLink}>
                   Previous
                 </button>
               )}
               {pagination.offset + pagination.limit < pagination.total && (
-                <button
-                  onClick={() => fetchPosts(pagination.offset + pagination.limit)}
-                  className={styles.paginationLink}
-                >
+                <button onClick={() => fetchPosts(pagination.offset + pagination.limit)} className={styles.paginationLink}>
                   Next
                 </button>
               )}
-              <p>
-                Page {pagination.offset / pagination.limit + 1} of {pagination.totalPages}
-              </p>
+              <p>Page {pagination.offset / pagination.limit + 1} of {pagination.totalPages}</p>
             </div>
           </>
         )}
@@ -873,3 +856,9 @@ export default function Dashboard() {
     </div>
   );
 }
+
+const validateTitleStyle = (style) => ({
+  color: /^#[0-9A-F]{6}$/i.test(style.color) ? style.color : '#000000',
+  fontSize: ['8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px', '48px', '56px', '64px', '72px'].includes(style.fontSize) ? style.fontSize : '24px',
+  textAlign: ['left', 'center', 'right', 'justify'].includes(style.textAlign) ? style.textAlign : 'center',
+});

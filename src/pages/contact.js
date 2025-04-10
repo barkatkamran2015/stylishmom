@@ -1,16 +1,23 @@
 import { useState } from 'react';
-import styles from '../styles/Contact.module.css'; // Use module CSS for Next.js
+import styles from '../styles/Contact.module.css';
 
 export default function ContactPage() {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [message, setMessage] = useState('');
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        message: ''
+    });
     const [status, setStatus] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        const formData = { name, email, message };
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.id]: e.target.value });
+    };
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        
         try {
             const response = await fetch('/api/sendmail', {
                 method: 'POST',
@@ -22,56 +29,69 @@ export default function ContactPage() {
             setStatus(result.success ? 'Message sent successfully!' : 'Error sending message.');
             
             if (result.success) {
-                setName('');
-                setEmail('');
-                setMessage('');
+                setFormData({ name: '', email: '', message: '' });
             }
         } catch (error) {
             setStatus('Error: Unable to send message.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     return (
         <div className={styles.contactPage}>
             <div className={styles.contactFormContainer}>
-                <h2>Contact Me</h2>
+                <h2 className={styles.title}>Get in Touch</h2>
                 <form onSubmit={handleSubmit} className={styles.contactForm}>
                     <div className={styles.formGroup}>
-                        <label htmlFor="name">Name</label>
+                        <label htmlFor="name" className={styles.label}>Name</label>
                         <input
                             type="text"
                             id="name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Enter your name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            placeholder="Your Name"
                             required
+                            className={styles.input}
                         />
                     </div>
                     <div className={styles.formGroup}>
-                        <label htmlFor="email">Email</label>
+                        <label htmlFor="email" className={styles.label}>Email</label>
                         <input
                             type="email"
                             id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="your@email.com"
                             required
+                            className={styles.input}
                         />
                     </div>
                     <div className={styles.formGroup}>
-                        <label htmlFor="message">Message</label>
+                        <label htmlFor="message" className={styles.label}>Message</label>
                         <textarea
                             id="message"
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                            placeholder="Type your message here"
+                            value={formData.message}
+                            onChange={handleChange}
+                            placeholder="Your message here..."
                             rows="6"
                             required
+                            className={styles.textarea}
                         />
                     </div>
-                    <button type="submit" className={styles.submitButton}>Send Message</button>
+                    <button 
+                        type="submit" 
+                        className={styles.submitButton}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? 'Sending...' : 'Send Message'}
+                    </button>
                 </form>
-                {status && <p className={styles.status}>{status}</p>}
+                {status && (
+                    <p className={`${styles.status} ${status.includes('Error') ? styles.error : styles.success}`}>
+                        {status}
+                    </p>
+                )}
             </div>
         </div>
     );
