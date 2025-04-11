@@ -7,6 +7,11 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import { useTipTapExtensions } from '../_app';
 import PostContent from '../components/PostContent';
 import EditorToolbar from '../components/EditorToolbar';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableCell from '@tiptap/extension-table-cell';
+import TableHeader from '@tiptap/extension-table-header';
+import Embed from '../../extensions/Embed'
 
 // Dynamically import DOMPurify to ensure it only runs on the client side
 const loadDOMPurify = async () => {
@@ -49,7 +54,19 @@ export default function Dashboard() {
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
 
-  const { extensions } = useTipTapExtensions();
+  const { extensions: baseExtensions } = useTipTapExtensions();
+
+  // Extend the base extensions with Table and Embed
+  const extensions = [
+    ...baseExtensions,
+    Table.configure({
+      resizable: false, // Disable resizing for simplicity; enable if needed
+    }),
+    TableRow,
+    TableCell,
+    TableHeader,
+    Embed, // Add the custom Embed extension
+  ];
 
   const editor = useEditor({
     extensions,
@@ -65,12 +82,51 @@ export default function Dashboard() {
     },
   });
 
-  // Load DOMPurify on the client side when the component mounts
+  // Load DOMPurify on the client side and configure it for embeds
   useEffect(() => {
     loadDOMPurify().then((DOMPurify) => {
-      setDomPurifyInstance(() => DOMPurify);
+      const instance = DOMPurify(window);
+      // Add hooks to allow specific attributes for embeds
+      instance.addHook('uponSanitizeElement', (node, data) => {
+        // Only process element nodes (nodeType === 1)
+        if (node.nodeType !== Node.ELEMENT_NODE || !node.tagName) {
+          return; // Skip non-element nodes (e.g., text nodes, comment nodes)
+        }
+        if (node.tagName.toLowerCase() === 'iframe' && node.getAttribute('src')?.includes('youtube.com')) {
+          node.setAttribute('allowfullscreen', 'true');
+        }
+        if (node.tagName.toLowerCase() === 'script' && node.getAttribute('src')?.includes('instagram.com/embed.js')) {
+          node.setAttribute('type', 'text/javascript');
+        }
+      });
+      setDomPurifyInstance(() => instance);
     });
   }, []);
+
+  // Load Instagram embed script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://www.instagram.com/embed.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      if (window.instgrm) {
+        window.instgrm.Embeds.process();
+      }
+    };
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  // Re-process Instagram embeds when content updates
+  useEffect(() => {
+    if (newPost.content && window.instgrm) {
+      window.instgrm.Embeds.process();
+    }
+  }, [newPost.content]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -96,25 +152,31 @@ export default function Dashboard() {
 
   const fetchPosts = useCallback(async (offset = 0) => {
     if (!user) return;
-
+  
     setIsLoading(true);
     try {
       const idToken = await user.getIdToken();
-      const url = `${API_URL}?page=${encodeURIComponent(selectedPage)}&limit=${pagination.limit}&offset=${offset}`;
+      const queryParams = new URLSearchParams({
+        method: 'GET_POSTS',
+        page: encodeURIComponent(selectedPage),
+        limit: pagination.limit,
+        offset: offset,
+      });
+      const url = `${PHP_API_URL}?${queryParams.toString()}`; // Use PHP_API_URL
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${idToken}` },
       });
-
+  
       if (!response.ok) {
         const errorMessage = await response.text();
         throw new Error(`Failed to fetch posts: ${errorMessage}`);
       }
-
+  
       const data = await response.json();
       if (!data.posts || !data.pagination) {
         throw new Error('Invalid response format');
       }
-
+  
       const postsWithPage = data.posts.map((post) => ({
         ...post,
         page: selectedPage,
@@ -297,151 +359,171 @@ export default function Dashboard() {
   };
 
   const handleCreatePost = async () => {
-  if (!user) {
-    setError('User not authenticated.');
-    return;
-  }
-
-  if (!user.uid) {
-    setError('User UID is missing.');
-    return;
-  }
-
-  if (!newPost.title.trim()) {
-    setError('Title is required.');
-    return;
-  }
-  const editorContent = editor?.getHTML() || newPost.content;
-  if (!editorContent.trim() || editorContent === '<p></p>') {
-    setError('Content is required.');
-    return;
-  }
-  if (!selectedPage) {
-    setError('Page is required.');
-    return;
-  }
-  const trimmedCategory = newPost.category ? newPost.category.trim() : '';
-  if (trimmedCategory.length > 50) {
-    setError('Category must be 50 characters or less.');
-    return;
-  }
-  let processedTags = newPost.tags || [];
-  if (!Array.isArray(processedTags)) {
-    setError('Tags must be an array of strings.');
-    return;
-  }
-  processedTags = processedTags.map((tag) => tag.trim()).filter((tag) => tag.length > 0).slice(0, 5);
-  if (processedTags.some((tag) => tag.length > 30)) {
-    setError('Each tag must be 30 characters or less.');
-    return;
-  }
-  const trimmedImageURL = newPost.imageUrl ? newPost.imageUrl.trim() : '';
-  if (trimmedImageURL && !/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL) && !/^\/uploads\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL)) {
-    setError('Image URL must be a valid URL ending in .jpg, .jpeg, .png, .gif, or .webp.');
-    return;
-  }
-  const trimmedBackgroundColor = newPost.backgroundColor ? newPost.backgroundColor.trim() : '#ffffff';
-  if (!/^#[0-9A-F]{6}$/i.test(trimmedBackgroundColor)) {
-    setError('Background color must be a valid hex color.');
-    return;
-  }
-
-  if (!domPurifyInstance) {
-    setError('Sanitization library not loaded. Please try again.');
-    return;
-  }
-
-  setIsLoading(true);
-  try {
-    const idToken = await user.getIdToken();
-    const validatedStyle = validateTitleStyle(newPost.titleStyle);
-    const processedContent = persistImageDimensions(editorContent);
-    const sanitizedContent = domPurifyInstance.sanitize(processedContent, {
-      ALLOWED_TAGS: ['img', 'p', 'div', 'span', 'br', 'strong', 'em', 'a', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'code', 'pre'],
-      ALLOWED_ATTR: ['src', 'width', 'height', 'alt', 'style', 'class', 'align', 'href', 'target', 'rel'],
-    });
-
-    const postData = new URLSearchParams();
-    postData.append('id', editMode ? currentPostId : `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
-    postData.append('title', newPost.title.trim());
-    postData.append('content', sanitizedContent);
-    postData.append('imageUrl', trimmedImageURL);
-    postData.append('backgroundColor', trimmedBackgroundColor);
-    postData.append('titleStyle', JSON.stringify(validatedStyle));
-    postData.append('creator_uid', user.uid);
-    postData.append('category', trimmedCategory);
-    postData.append('tags', JSON.stringify(processedTags));
-    postData.append('page', selectedPage);
-    postData.append('method', editMode ? 'UPDATE_POST' : 'CREATE_POST');
-    if (editMode) {
-      postData.append('postId', currentPostId);
+    if (!user) {
+      setError('User not authenticated.');
+      return;
     }
-
-    console.log('Post Data Fields:');
-    console.log('id:', editMode ? currentPostId : `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
-    console.log('postId (editMode only):', editMode ? currentPostId : 'N/A');
-    console.log('title:', newPost.title.trim());
-    console.log('content:', sanitizedContent);
-    console.log('creator_uid:', user.uid);
-    console.log('method:', editMode ? 'UPDATE_POST' : 'CREATE_POST');
-    console.log('Request URL:', API_URL);
-    console.log('Request Body:', postData.toString());
-
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: postData.toString(), // Ensure the body is a string
-    });
-
-    const responseText = await response.text();
-    if (!response.ok) {
-      let errorData;
-      try {
-        errorData = JSON.parse(responseText);
-        const errorMessage = errorData.error || errorData.message || `Failed to ${editMode ? 'update' : 'create'} post`;
-        throw new Error(`${errorMessage} (Status: ${response.status})`);
-      } catch (parseError) {
-        throw new Error(`Failed to ${editMode ? 'update' : 'create'} post: ${responseText} (Status: ${response.status})`);
+  
+    if (!user.uid) {
+      setError('User UID is missing.');
+      return;
+    }
+  
+    if (!newPost.title.trim()) {
+      setError('Title is required.');
+      return;
+    }
+    const editorContent = editor?.getHTML() || newPost.content;
+    if (!editorContent.trim() || editorContent === '<p></p>') {
+      setError('Content is required.');
+      return;
+    }
+    if (!selectedPage) {
+      setError('Page is required.');
+      return;
+    }
+    const trimmedCategory = newPost.category ? newPost.category.trim() : '';
+    if (trimmedCategory.length > 50) {
+      setError('Category must be 50 characters or less.');
+      return;
+    }
+    let processedTags = newPost.tags || [];
+    if (!Array.isArray(processedTags)) {
+      setError('Tags must be an array of strings.');
+      return;
+    }
+    processedTags = processedTags.map((tag) => tag.trim()).filter((tag) => tag.length > 0).slice(0, 5);
+    if (processedTags.some((tag) => tag.length > 30)) {
+      setError('Each tag must be 30 characters or less.');
+      return;
+    }
+    const trimmedImageURL = newPost.imageUrl ? newPost.imageUrl.trim() : '';
+    if (trimmedImageURL && !/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL) && !/^\/uploads\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(trimmedImageURL)) {
+      setError('Image URL must be a valid URL ending in .jpg, .jpeg, .png, .gif, or .webp.');
+      return;
+    }
+    const trimmedBackgroundColor = newPost.backgroundColor ? newPost.backgroundColor.trim() : '#ffffff';
+    if (!/^#[0-9A-F]{6}$/i.test(trimmedBackgroundColor)) {
+      setError('Background color must be a valid hex color.');
+      return;
+    }
+  
+    if (!domPurifyInstance) {
+      setError('Sanitization library not loaded. Please try again.');
+      return;
+    }
+  
+    setIsLoading(true);
+    try {
+      const idToken = await user.getIdToken();
+      const validatedStyle = validateTitleStyle(newPost.titleStyle);
+      const processedContent = persistImageDimensions(editorContent);
+      const sanitizedContent = domPurifyInstance.sanitize(processedContent, {
+        ALLOWED_TAGS: [
+          'img', 'p', 'div', 'span', 'br', 'strong', 'em', 'a', 'u',
+          'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li',
+          'blockquote', 'code', 'pre',
+          'table', 'tr', 'td', 'th', // Add table tags
+          'iframe', 'script', // Add embed tags
+        ],
+        ALLOWED_ATTR: [
+          'src', 'width', 'height', 'alt', 'style', 'class', 'align', 'href',
+          'target', 'rel', 'color', 'font-family', 'font-size', 'text-align',
+          'colspan', 'rowspan', // Add table attributes
+          'frameborder', 'allowfullscreen', // Add YouTube iframe attributes
+          'data-instgrm-permalink', 'data-instgrm-version', 'data-embed', 'data-src', 'data-platform', // Add Instagram attributes
+        ],
+      });
+  
+      const postData = new URLSearchParams({
+        id: editMode ? currentPostId : `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        title: newPost.title.trim(),
+        content: sanitizedContent,
+        imageUrl: trimmedImageURL,
+        backgroundColor: trimmedBackgroundColor,
+        titleStyle: JSON.stringify(validatedStyle),
+        creator_uid: user.uid,
+        category: trimmedCategory,
+        tags: JSON.stringify(processedTags),
+        ...(editMode && { postId: currentPostId }),
+      });
+  
+      console.log('Post Data Fields:');
+      console.log('id:', editMode ? currentPostId : `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+      console.log('postId (editMode only):', editMode ? currentPostId : 'N/A');
+      console.log('title:', newPost.title.trim());
+      console.log('content:', sanitizedContent);
+      console.log('creator_uid:', user.uid);
+      console.log('method:', editMode ? 'UPDATE_POST' : 'CREATE_POST');
+      console.log('Request Body:', postData.toString());
+  
+      const queryParams = new URLSearchParams({
+        method: editMode ? 'UPDATE_POST' : 'CREATE_POST',
+        page: selectedPage,
+      });
+      const endpoint = `${PHP_API_URL}?${queryParams.toString()}`; // Use PHP_API_URL
+  
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: postData,
+      });
+  
+      const responseText = await response.text();
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = JSON.parse(responseText);
+          const errorMessage = errorData.error || errorData.message || `Failed to ${editMode ? 'update' : 'create'} post`;
+          throw new Error(`${errorMessage} (Status: ${response.status})`);
+        } catch (parseError) {
+          throw new Error(`Failed to ${editMode ? 'update' : 'create'} post: ${responseText} (Status: ${response.status})`);
+        }
       }
+  
+      const responseData = JSON.parse(responseText);
+      setSuccessMessage(responseData.message || (editMode ? 'Post updated!' : 'Post created!'));
+      setNewPost({ title: '', content: '', image: null, imageUrl: '', backgroundColor: '#ffffff', titleStyle: { color: '#000000', fontSize: '24px', textAlign: 'center' }, category: '', tags: [] });
+      editor?.commands.clearContent();
+      setEditMode(false);
+      setCurrentPostId(null);
+      fetchPosts(0);
+      setError(null);
+    } catch (error) {
+      console.error(`Error ${editMode ? 'updating' : 'creating'} post:`, error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
-
-    const responseData = JSON.parse(responseText);
-    setSuccessMessage(responseData.message || (editMode ? 'Post updated!' : 'Post created!'));
-    setNewPost({ title: '', content: '', image: null, imageUrl: '', backgroundColor: '#ffffff', titleStyle: { color: '#000000', fontSize: '24px', textAlign: 'center' }, category: '', tags: [] });
-    editor?.commands.clearContent();
-    setEditMode(false);
-    setCurrentPostId(null);
-    fetchPosts(0);
-    setError(null);
-  } catch (error) {
-    console.error(`Error ${editMode ? 'updating' : 'creating'} post:`, error);
-    setError(error.message);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const handleDelete = async (postId, page) => {
     if (!user) {
       setError('You must be signed in to delete a post.');
       return;
     }
-
+  
     if (!window.confirm('Are you sure you want to delete this post?')) return;
-
+  
     try {
       setIsLoading(true);
       const idToken = await user.getIdToken();
-      const response = await fetch(`${API_URL}?page=${encodeURIComponent(page)}&id=${postId}`, {
+      const queryParams = new URLSearchParams({
+        method: 'DELETE',
+        page: encodeURIComponent(page),
+        id: postId,
+      });
+      const url = `${PHP_API_URL}?${queryParams.toString()}`; // Use PHP_API_URL
+      const response = await fetch(url, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${idToken}` },
       });
-
+  
       if (!response.ok) throw new Error('Failed to delete post');
-
+  
       const responseData = await response.json();
       setSuccessMessage(responseData.message || 'Post deleted!');
       fetchPosts(pagination.offset);
@@ -520,7 +602,6 @@ export default function Dashboard() {
       return;
     }
   
-    // Debug the current selection and URL
     console.log('Current selection:', editor.state.selection);
     console.log('Link URL:', linkUrl);
   
@@ -528,18 +609,15 @@ export default function Dashboard() {
       console.log('Unsetting link');
       editor.chain().focus().unsetLink().run();
     } else {
-      // Check if the URL starts with http://, https://, or www.
       let formattedUrl = linkUrl.trim();
       const hasProtocol = formattedUrl.match(/^(https?:\/\/)/);
       const startsWithWww = formattedUrl.match(/^www\./);
   
       if (!hasProtocol) {
-        // If the URL doesn't start with http:// or https://, prepend https://
         if (startsWithWww) {
-          formattedUrl = `https://${formattedUrl}`; // e.g., www.example.com -> https://www.example.com
+          formattedUrl = `https://${formattedUrl}`;
         } else {
-          // For URLs like example.com, also prepend https://
-          formattedUrl = `https://${formattedUrl}`; // e.g., example.com -> https://example.com
+          formattedUrl = `https://${formattedUrl}`;
         }
       }
   
@@ -552,12 +630,10 @@ export default function Dashboard() {
         .run();
     }
   
-    // Close the dialog and reset state
     setIsLinkDialogOpen(false);
     setLinkUrl('');
     setError(null);
   
-    // Debug the editor content after applying the link
     console.log('Editor HTML after link operation:', editor.getHTML());
   };
 
