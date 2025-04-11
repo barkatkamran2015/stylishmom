@@ -1,131 +1,95 @@
-// src/pages/api/posts.js
 import fetch from 'node-fetch';
-import getRawBody from 'raw-body';
 
 const PHP_API_URL = 'https://www.barkatkamran.com/api.php';
 
-export default async function handler(req, res) {
-  try {
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-      'https://www.barkatkamran.com',
-      'https://stylishmom.vercel.app',
-      'https://thestylishmama.com',
-    ];
-
-    const origin = req.headers.origin || '';
-    console.log('Incoming Request Origin:', origin);
-
-    const isDev = process.env.NODE_ENV !== 'production';
-    if (isDev && !origin) {
-      console.log('Allowing empty origin in development mode');
-      res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-    } else if (allowedOrigins.includes(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-    } else {
-      console.log('Origin not allowed:', origin);
-      console.log('Allowed origins:', allowedOrigins);
-      return res.status(403).json({ error: 'Origin not allowed' });
-    }
-
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
-    res.setHeader('Cache-Control', 'no-store, max-age=0');
-
-    if (req.method === 'OPTIONS') {
-      console.log('Handling OPTIONS preflight request');
-      return res.status(200).end();
-    }
-
-    let body;
-    let contentType = req.headers['content-type'] || '';
-    console.log('Content-Type:', contentType);
-
-    if (req.method !== 'GET' && req.method !== 'DELETE') {
-      if (contentType.includes('application/json')) {
-        const rawBody = await getRawBody(req);
-        body = rawBody.length ? JSON.parse(rawBody.toString()) : {};
-        console.log('Parsed JSON Body:', body);
-        contentType = 'application/json';
-      } else if (contentType.includes('multipart/form-data')) {
-        body = await getRawBody(req);
-        console.log('Forwarding multipart/form-data body');
-      } else if (contentType.includes('application/x-www-form-urlencoded')) {
-        body = await getRawBody(req);
-        console.log('Forwarding form data body:', body.toString());
-      } else {
-        console.log('Unsupported Content-Type:', contentType);
-        return res.status(400).json({ error: 'Unsupported Content-Type' });
-      }
-    }
-
-    console.log('Incoming Request Method:', req.method);
-    console.log('Incoming Request Query:', req.query);
-    console.log('Incoming Request Body:', body);
-    console.log('Incoming Request Headers:', req.headers);
-
-    const queryString = new URLSearchParams(req.query).toString();
-    const url = `${PHP_API_URL}${queryString ? `?${queryString}` : ''}`;
-    console.log('Forwarding to PHP API URL:', url);
-
-    const headers = {
-      ...(req.headers.authorization && { Authorization: req.headers.authorization }),
-      'Origin': 'https://stylishmom.vercel.app',
-    };
-
-    if (req.method !== 'GET' && req.method !== 'DELETE') {
-      if (contentType.includes('multipart/form-data')) {
-        // Do not set Content-Type; let the PHP API handle it
-      } else if (contentType.includes('application/x-www-form-urlencoded')) {
-        headers['Content-Type'] = 'application/x-www-form-urlencoded';
-      } else {
-        headers['Content-Type'] = 'application/json';
-        body = body ? JSON.stringify(body) : undefined;
-        console.log('Forwarding JSON body:', body);
-      }
-    }
-
-    console.log('Headers sent to PHP API:', headers); // Add logging
-
-    const response = await fetch(url, {
-      method: req.method,
-      headers,
-      body,
-    });
-
-    const responseText = await response.text();
-    console.log('PHP API Response Status:', response.status);
-    console.log('PHP API Response Text:', responseText);
-
-    if (!response.ok) {
-      let errorData;
-      try {
-        errorData = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('Failed to parse PHP API error response:', responseText);
-        return res.status(response.status).json({ error: `PHP API error: ${responseText}` });
-      }
-      return res.status(response.status).json({ error: `PHP API error: ${errorData.message || responseText}` });
-    }
-
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('Failed to parse PHP API response as JSON:', responseText);
-      return res.status(500).json({ error: 'Invalid response from PHP API', details: responseText });
-    }
-
-    res.status(response.status).json(data);
-  } catch (error) {
-    console.error('Error proxying to PHP API:', error);
-    res.status(500).json({ error: 'Internal Server Error', details: error.message });
-  }
-}
-
+// Disable Next.js body parser to handle multipart/form-data correctly
 export const config = {
   api: {
     bodyParser: false,
   },
 };
+
+export default async function handler(req, res) {
+  try {
+    // Set CORS headers dynamically based on environment
+    const allowedOrigin =
+      process.env.NODE_ENV === 'production'
+        ? 'https://stylishmom.vercel.app' // Update to your current production domain
+        : 'http://localhost:3000';
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    res.setHeader('Cache-Control', 'no-store, max-age=0');
+
+    // Handle preflight CORS requests
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+
+    // Extract all query parameters
+    const {
+      page,
+      limit,
+      offset,
+      method,
+      postId,
+      id,
+      title,
+      content,
+      creator_uid,
+      imageUrl,
+      backgroundColor,
+      titleStyle,
+      category,
+      tags,
+    } = req.query;
+
+    // Construct the backend API URL with all query parameters
+    const queryParams = new URLSearchParams({
+      page: page || 'all',
+      limit: limit || '10',
+      offset: offset || '0',
+      method: method || '',
+      postId: postId || '',
+      id: id || '',
+      title: title || '',
+      content: content || '',
+      creator_uid: creator_uid || '',
+      imageUrl: imageUrl || '',
+      backgroundColor: backgroundColor || '',
+      titleStyle: titleStyle || '',
+      category: category || '',
+      tags: tags || '',
+    });
+    const url = `${PHP_API_URL}?${queryParams.toString()}`;
+    console.log('Proxying request to:', url);
+
+    // Log the headers being sent to the backend
+    const headers = {
+      ...(req.headers.authorization && { Authorization: req.headers.authorization }),
+      // Forward the Content-Type header for multipart/form-data
+      ...(req.headers['content-type'] && { 'Content-Type': req.headers['content-type'] }),
+    };
+    console.log('Headers sent to backend:', headers);
+
+    // Forward the request to the PHP API
+    const response = await fetch(url, {
+      method: req.method,
+      headers,
+      // Forward the raw body for POST requests (e.g., FormData for image uploads)
+      body: req.method !== 'GET' && req.method !== 'DELETE' ? req : undefined,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log('Backend error response:', errorText);
+      return res.status(response.status).json({ error: `PHP API error: ${errorText}` });
+    }
+
+    const data = await response.json();
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('Error proxying to PHP API:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: error.message });
+  }
+}
