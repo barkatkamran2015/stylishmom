@@ -1,4 +1,4 @@
-// pages/api/posts.js
+// src/pages/api/posts.js
 import fetch from 'node-fetch';
 import getRawBody from 'raw-body';
 
@@ -17,7 +17,6 @@ export default async function handler(req, res) {
     const origin = req.headers.origin || '';
     console.log('Incoming Request Origin:', origin);
 
-    // Allow empty origins in development mode for testing
     const isDev = process.env.NODE_ENV !== 'production';
     if (isDev && !origin) {
       console.log('Allowing empty origin in development mode');
@@ -72,6 +71,7 @@ export default async function handler(req, res) {
 
     const headers = {
       ...(req.headers.authorization && { Authorization: req.headers.authorization }),
+      'Origin': 'https://stylishmom.vercel.app', // Explicitly set the Origin header
     };
 
     if (req.method !== 'GET' && req.method !== 'DELETE') {
