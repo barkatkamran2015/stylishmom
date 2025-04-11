@@ -8,7 +8,7 @@ import styles from '../styles/Drinks.module.css';
 // Use the same API URL as blog.js
 const API_URL =
   process.env.NODE_ENV === 'production'
-    ? 'https://www.thestylishmama.com/api/posts'
+    ? 'https://stylishmom.vercel.app/api/posts'
     : 'http://localhost:3000/api/posts';
 
 export default function Drinks({ initialPosts, initialCategories, initialTags, initialError, pagination }) {
@@ -58,8 +58,8 @@ export default function Drinks({ initialPosts, initialCategories, initialTags, i
   const handleShare = (post) => {
     const baseUrl =
       process.env.NODE_ENV === 'production'
-        ? 'https://www.thestylishmama.com'
-        : 'http://localhost:3000';
+    ? 'https://stylishmom.vercel.app'
+    : 'http://localhost:3000';
     const postUrl = `${baseUrl}/drinks?id=${post.id}`;
 
     if (navigator.share) {
@@ -102,8 +102,8 @@ export default function Drinks({ initialPosts, initialCategories, initialTags, i
     image: post.imageUrl || '/default-drinks-image.jpg',
     url: `${
       process.env.NODE_ENV === 'production'
-        ? 'https://www.thestylishmama.com'
-        : 'http://localhost:3000'
+    ? 'https://stylishmom.vercel.app'
+    : 'http://localhost:3000'
     }/drinks?id=${post.id}`,
   }));
 
@@ -121,8 +121,8 @@ export default function Drinks({ initialPosts, initialCategories, initialTags, i
           rel="canonical"
           href={`${
             process.env.NODE_ENV === 'production'
-              ? 'https://www.thestylishmama.com'
-              : 'http://localhost:3000'
+    ? 'https://stylishmom.vercel.app'
+    : 'http://localhost:3000'
           }/drinks`}
         />
         <meta property="og:title" content="Refreshing Drink Recipes | The Stylish Mama" />
@@ -134,8 +134,8 @@ export default function Drinks({ initialPosts, initialCategories, initialTags, i
           property="og:url"
           content={`${
             process.env.NODE_ENV === 'production'
-              ? 'https://www.thestylishmama.com'
-              : 'http://localhost:3000'
+    ? 'https://stylishmom.vercel.app'
+    : 'http://localhost:3000'
           }/drinks`}
         />
         <meta property="og:type" content="website" />
@@ -156,8 +156,8 @@ export default function Drinks({ initialPosts, initialCategories, initialTags, i
             rel="prev"
             href={`${
               process.env.NODE_ENV === 'production'
-                ? 'https://www.thestylishmama.com'
-                : 'http://localhost:3000'
+    ? 'https://stylishmom.vercel.app'
+    : 'http://localhost:3000'
             }/drinks?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
           />
         )}
@@ -166,8 +166,8 @@ export default function Drinks({ initialPosts, initialCategories, initialTags, i
             rel="next"
             href={`${
               process.env.NODE_ENV === 'production'
-                ? 'https://www.thestylishmama.com'
-                : 'http://localhost:3000'
+    ? 'https://stylishmom.vercel.app'
+    : 'http://localhost:3000'
             }/drinks?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
           />
         )}
