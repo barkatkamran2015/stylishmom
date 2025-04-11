@@ -1,11 +1,14 @@
 import styles from '../../styles/AdminDashboard.module.css';
+import { useState, useRef, useEffect } from 'react';
 
-const ToolbarButton = ({ onClick, disabled, children, isActive }) => (
+const ToolbarButton = ({ onClick, disabled, children, isActive, title, ariaLabel }) => (
   <button
     onClick={onClick}
     disabled={disabled}
     className={`${styles.toolbarButton} ${isActive ? styles.active : ''}`}
     type="button"
+    title={title}
+    aria-label={ariaLabel || title}
   >
     {children}
   </button>
@@ -23,6 +26,19 @@ const EditorToolbar = ({
 }) => {
   if (!editor) return null;
 
+  // State for embed dialog
+  const [isEmbedDialogOpen, setIsEmbedDialogOpen] = useState(false);
+  const [embedUrl, setEmbedUrl] = useState('');
+  const [embedError, setEmbedError] = useState('');
+  const embedInputRef = useRef(null);
+
+  // Focus the embed input when the dialog opens
+  useEffect(() => {
+    if (isEmbedDialogOpen && embedInputRef.current) {
+      embedInputRef.current.focus();
+    }
+  }, [isEmbedDialogOpen]);
+
   // Function to set image alignment
   const setImageAlignment = (align) => {
     const { state } = editor.view;
@@ -39,12 +55,52 @@ const EditorToolbar = ({
     }
   };
 
+  // Function to handle embed insertion
+  const handleInsertEmbed = async () => {
+    if (!embedUrl) {
+      setIsEmbedDialogOpen(false);
+      return;
+    }
+
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(?:watch\?v=)?([a-zA-Z0-9_-]{11})/;
+    const instagramRegex = /^(https?:\/\/)?(www\.)?instagram\.com\/(p|reel)\/([a-zA-Z0-9_-]+)/;
+
+    let embedType, embedData;
+
+    if (youtubeRegex.test(embedUrl)) {
+      const match = embedUrl.match(youtubeRegex);
+      const videoId = match[4];
+      embedType = 'youtube';
+      embedData = { src: `https://www.youtube.com/embed/${videoId}`, platform: 'youtube' };
+    } else if (instagramRegex.test(embedUrl)) {
+      const match = embedUrl.match(instagramRegex);
+      const postId = match[4];
+      embedType = 'instagram';
+      embedData = { src: `https://www.instagram.com/p/${postId}/embed`, platform: 'instagram' };
+    } else {
+      setEmbedError('Invalid URL. Please enter a valid YouTube or Instagram URL.');
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .setEmbed(embedData)
+      .run();
+
+    setEmbedUrl('');
+    setEmbedError('');
+    setIsEmbedDialogOpen(false);
+  };
+
   return (
     <div className={styles.tiptapToolbar}>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
         isActive={editor.isActive('bold')}
+        title="Toggle Bold"
+        ariaLabel="Toggle Bold"
       >
         <strong>B</strong>
       </ToolbarButton>
@@ -52,6 +108,8 @@ const EditorToolbar = ({
         onClick={() => editor.chain().focus().toggleItalic().run()}
         disabled={!editor.can().chain().focus().toggleItalic().run()}
         isActive={editor.isActive('italic')}
+        title="Toggle Italic"
+        ariaLabel="Toggle Italic"
       >
         <em>I</em>
       </ToolbarButton>
@@ -59,6 +117,8 @@ const EditorToolbar = ({
         onClick={() => editor.chain().focus().toggleUnderline().run()}
         disabled={!editor.can().chain().focus().toggleUnderline().run()}
         isActive={editor.isActive('underline')}
+        title="Toggle Underline"
+        ariaLabel="Toggle Underline"
       >
         <u>U</u>
       </ToolbarButton>
@@ -72,6 +132,7 @@ const EditorToolbar = ({
           }
         }}
         value={editor.isActive('heading') ? editor.getAttributes('heading').level : ''}
+        aria-label="Select heading level"
       >
         <option value="">Paragraph</option>
         <option value="1">H1</option>
@@ -84,6 +145,7 @@ const EditorToolbar = ({
       <select
         onChange={(e) => editor.chain().focus().setFontFamily(e.target.value).run()}
         value={editor.getAttributes('textStyle')?.fontFamily || ''}
+        aria-label="Select font family"
       >
         <option value="">Default Font</option>
         <option value="Arial">Arial</option>
@@ -108,76 +170,92 @@ const EditorToolbar = ({
         <option value="Poppins">Poppins</option>
       </select>
       <select
-  onChange={(e) => editor.chain().focus().setFontSize(e.target.value).run()}
-  value={editor.getAttributes('textStyle')?.fontSize || ''}
->
-  <option value="">Default Size</option>
-  <option value="12px">12px</option>
-  <option value="14px">14px</option>
-  <option value="16px">16px</option>
-  <option value="18px">18px</option>
-  <option value="20px">20px</option>
-  <option value="22px">22px</option>
-  <option value="24px">24px</option>
-  <option value="26px">26px</option>
-  <option value="28px">28px</option>
-  <option value="30px">30px</option>
-  <option value="32px">32px</option>
-  <option value="36px">36px</option>
-  <option value="40px">40px</option>
-  <option value="44px">44px</option>
-  <option value="48px">48px</option>
-  <option value="56px">56px</option>
-  <option value="64px">64px</option>
-  <option value="72px">72px</option>
-  <option value="80px">80px</option>
-  <option value="96px">96px</option>
-</select>
-
+        onChange={(e) => editor.chain().focus().setFontSize(e.target.value).run()}
+        value={editor.getAttributes('textStyle')?.fontSize || ''}
+        aria-label="Select font size"
+      >
+        <option value="">Default Size</option>
+        <option value="12px">12px</option>
+        <option value="14px">14px</option>
+        <option value="16px">16px</option>
+        <option value="18px">18px</option>
+        <option value="20px">20px</option>
+        <option value="22px">22px</option>
+        <option value="24px">24px</option>
+        <option value="26px">26px</option>
+        <option value="28px">28px</option>
+        <option value="30px">30px</option>
+        <option value="32px">32px</option>
+        <option value="36px">36px</option>
+        <option value="40px">40px</option>
+        <option value="44px">44px</option>
+        <option value="48px">48px</option>
+        <option value="56px">56px</option>
+        <option value="64px">64px</option>
+        <option value="72px">72px</option>
+        <option value="80px">80px</option>
+        <option value="96px">96px</option>
+      </select>
       <input
         type="color"
         onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
         value={editor.getAttributes('textStyle')?.color || '#000000'}
+        title="Select text color"
+        aria-label="Select text color"
       />
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         isActive={editor.isActive('bulletList')}
+        title="Toggle Bullet List"
+        ariaLabel="Toggle Bullet List"
       >
         Bullet List
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         isActive={editor.isActive('orderedList')}
+        title="Toggle Ordered List"
+        ariaLabel="Toggle Ordered List"
       >
         Ordered List
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
         isActive={editor.isActive('blockquote')}
+        title="Toggle Blockquote"
+        ariaLabel="Toggle Blockquote"
       >
         Blockquote
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
         isActive={editor.isActive({ textAlign: 'left' })}
+        title="Align Left"
+        ariaLabel="Align Left"
       >
         Align Left
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().setTextAlign('center').run()}
         isActive={editor.isActive({ textAlign: 'center' })}
+        title="Align Center"
+        ariaLabel="Align Center"
       >
         Align Center
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().setTextAlign('right').run()}
         isActive={editor.isActive({ textAlign: 'right' })}
+        title="Align Right"
+        ariaLabel="Align Right"
       >
         Align Right
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().setTextAlign('justify').run()}
         isActive={editor.isActive({ textAlign: 'justify' })}
+        title="Justify"
+        ariaLabel="Justify"
       >
         Justify
       </ToolbarButton>
@@ -185,16 +263,24 @@ const EditorToolbar = ({
         onClick={openLinkDialog}
         disabled={editor.state.selection.empty}
         isActive={editor.isActive('link')}
+        title="Add Link"
+        ariaLabel="Add Link"
       >
         Add Link
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().unsetLink().run()}
         disabled={!editor.isActive('link')}
+        title="Remove Link"
+        ariaLabel="Remove Link"
       >
         Remove Link
       </ToolbarButton>
-      <ToolbarButton onClick={() => imageInputRef.current?.click()}>
+      <ToolbarButton
+        onClick={() => imageInputRef.current?.click()}
+        title="Add Image"
+        ariaLabel="Add Image"
+      >
         Add Image
       </ToolbarButton>
       <input
@@ -203,11 +289,14 @@ const EditorToolbar = ({
         ref={imageInputRef}
         style={{ display: 'none' }}
         onChange={handleEditorImageUpload}
+        aria-label="Upload image"
       />
       <ToolbarButton
         onClick={() => setImageAlignment('left')}
         disabled={!editor.isActive('image')}
         isActive={editor.isActive('image', { align: 'left' })}
+        title="Align Image Left"
+        ariaLabel="Align Image Left"
       >
         Image Left
       </ToolbarButton>
@@ -215,6 +304,8 @@ const EditorToolbar = ({
         onClick={() => setImageAlignment('center')}
         disabled={!editor.isActive('image')}
         isActive={editor.isActive('image', { align: 'center' })}
+        title="Align Image Center"
+        ariaLabel="Align Image Center"
       >
         Image Center
       </ToolbarButton>
@@ -222,32 +313,130 @@ const EditorToolbar = ({
         onClick={() => setImageAlignment('right')}
         disabled={!editor.isActive('image')}
         isActive={editor.isActive('image', { align: 'right' })}
+        title="Align Image Right"
+        ariaLabel="Align Image Right"
       >
         Image Right
       </ToolbarButton>
 
+      {/* Table Controls */}
+      <ToolbarButton
+        onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+        disabled={!editor.can().insertTable()}
+        title="Insert a 3x3 table"
+        ariaLabel="Insert a 3x3 table"
+      >
+        Insert Table
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().addRowAfter().run()}
+        disabled={!editor.can().addRowAfter()}
+        title="Add Row After"
+        ariaLabel="Add Row After"
+      >
+        Add Row
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().addColumnAfter().run()}
+        disabled={!editor.can().addColumnAfter()}
+        title="Add Column After"
+        ariaLabel="Add Column After"
+      >
+        Add Column
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().deleteRow().run()}
+        disabled={!editor.can().deleteRow()}
+        title="Delete Row"
+        ariaLabel="Delete Row"
+      >
+        Delete Row
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().deleteColumn().run()}
+        disabled={!editor.can().deleteColumn()}
+        title="Delete Column"
+        ariaLabel="Delete Column"
+      >
+        Delete Column
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().deleteTable().run()}
+        disabled={!editor.can().deleteTable()}
+        title="Delete Table"
+        ariaLabel="Delete Table"
+      >
+        Delete Table
+      </ToolbarButton>
+
+      {/* Embed Controls */}
+      <ToolbarButton
+        onClick={() => setIsEmbedDialogOpen(true)}
+        title="Add YouTube or Instagram Embed"
+        ariaLabel="Add YouTube or Instagram Embed"
+      >
+        Add Embed
+      </ToolbarButton>
+
       {/* Link Dialog */}
       {isLinkDialogOpen && (
-        <div className={styles.linkDialog}>
+        <div className={styles.linkDialog} role="dialog" aria-labelledby="link-dialog-title">
+          <h3 id="link-dialog-title" className={styles.srOnly}>Link Dialog</h3>
           <input
             type="text"
             value={linkUrl}
             onChange={(e) => setLinkUrl(e.target.value)}
             placeholder="Enter URL (e.g., https://example.com)"
             className={styles.linkInput}
+            aria-label="Enter URL"
           />
           <button
-            type="button" // Prevent form submission
+            type="button"
             onClick={handleSetLink}
             className={styles.linkButton}
           >
             OK
           </button>
           <button
-            type="button" // Prevent form submission
+            type="button"
             onClick={() => {
-              setLinkUrl(''); // Reset the URL
-              handleSetLink(); // Call handleSetLink to close the dialog
+              setLinkUrl('');
+              handleSetLink();
+            }}
+            className={styles.linkButton}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {/* Embed Dialog */}
+      {isEmbedDialogOpen && (
+        <div className={styles.linkDialog} role="dialog" aria-labelledby="embed-dialog-title">
+          <h3 id="embed-dialog-title" className={styles.srOnly}>Embed URL Dialog</h3>
+          {embedError && <p className={styles.error}>{embedError}</p>}
+          <input
+            type="text"
+            value={embedUrl}
+            onChange={(e) => setEmbedUrl(e.target.value)}
+            placeholder="Enter YouTube or Instagram URL"
+            className={styles.linkInput}
+            ref={embedInputRef}
+            aria-label="Enter YouTube or Instagram URL"
+          />
+          <button
+            type="button"
+            onClick={handleInsertEmbed}
+            className={styles.linkButton}
+          >
+            OK
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setEmbedUrl('');
+              setEmbedError('');
+              setIsEmbedDialogOpen(false);
             }}
             className={styles.linkButton}
           >
