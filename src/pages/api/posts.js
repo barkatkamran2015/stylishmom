@@ -71,7 +71,7 @@ export default async function handler(req, res) {
 
     const headers = {
       ...(req.headers.authorization && { Authorization: req.headers.authorization }),
-      'Origin': 'https://stylishmom.vercel.app', // Explicitly set the Origin header
+      'Origin': 'https://stylishmom.vercel.app',
     };
 
     if (req.method !== 'GET' && req.method !== 'DELETE') {
@@ -85,6 +85,8 @@ export default async function handler(req, res) {
         console.log('Forwarding JSON body:', body);
       }
     }
+
+    console.log('Headers sent to PHP API:', headers); // Add logging
 
     const response = await fetch(url, {
       method: req.method,
