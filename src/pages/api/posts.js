@@ -8,12 +8,10 @@ export default async function handler(req, res) {
   try {
     const allowedOrigins = [
       'http://localhost:3000',
-      'http://localhost:3001', // Add this if your frontend is running on port 3001
       'http://127.0.0.1:3000',
       'https://www.barkatkamran.com',
       'https://stylishmom.vercel.app',
       'https://thestylishmama.com',
-      // Add your deployed frontend domain here, e.g., 'https://your-app.vercel.app'
     ];
 
     const origin = req.headers.origin || '';
