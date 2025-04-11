@@ -1,8 +1,16 @@
-// components/PostContent.js
+// src/components/PostContent.js
 import DOMPurify from 'dompurify';
 import styles from '../../styles/AdminDashboard.module.css';
 
+// Check if we're in a Node.js environment (SSR/SSG)
+if (typeof window === 'undefined') {
+  const { JSDOM } = require('jsdom');
+  const window = new JSDOM('').window;
+  DOMPurify(window);
+}
+
 const PostContent = ({ content, category, tags }) => {
+  // Sanitize the HTML content
   const sanitizedContent = DOMPurify.sanitize(content, {
     ALLOWED_TAGS: [
       'img', 'p', 'div', 'span', 'br', 'strong', 'em', 'a', 'u',
@@ -12,9 +20,20 @@ const PostContent = ({ content, category, tags }) => {
     ALLOWED_ATTR: ['src', 'width', 'height', 'alt', 'style', 'class', 'align', 'href', 'target', 'rel'],
   });
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(sanitizedContent, 'text/html');
+  // Parse the sanitized HTML
+  let doc;
+  if (typeof window === 'undefined') {
+    // Use jsdom in Node.js environment
+    const { JSDOM } = require('jsdom');
+    const dom = new JSDOM(sanitizedContent);
+    doc = dom.window.document;
+  } else {
+    // Use DOMParser in the browser
+    const parser = new DOMParser();
+    doc = parser.parseFromString(sanitizedContent, 'text/html');
+  }
 
+  // Adjust img tag styles
   doc.querySelectorAll('img').forEach((img) => {
     const width = img.getAttribute('width') || img.style.width;
     const height = img.getAttribute('height') || img.style.height;
