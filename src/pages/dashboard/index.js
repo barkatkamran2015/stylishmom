@@ -16,6 +16,7 @@ const loadDOMPurify = async () => {
 
 // Use dynamic API URL based on environment
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/posts';
+const PHP_API_URL = 'https://www.barkatkamran.com/api.php';
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
