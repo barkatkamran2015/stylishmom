@@ -1,4 +1,3 @@
-// src/components/PostContent.js
 import sanitizeHtml from 'sanitize-html';
 import styles from '../../styles/AdminDashboard.module.css';
 
@@ -9,11 +8,19 @@ const PostContent = ({ content, category, tags }) => {
       'img', 'p', 'div', 'span', 'br', 'strong', 'em', 'a', 'u',
       'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li',
       'blockquote', 'code', 'pre',
+      'table', 'tr', 'td', 'th', // Add table-related tags
+      'iframe', 'script', // For YouTube/Instagram embeds
     ],
     allowedAttributes: {
       img: ['src', 'width', 'height', 'alt', 'style', 'class', 'align'],
       a: ['href', 'target', 'rel'],
-      '*': ['style', 'class'],
+      table: ['style', 'class'], // Allow style for table borders
+      td: ['style', 'class', 'colspan', 'rowspan'],
+      th: ['style', 'class', 'colspan', 'rowspan'],
+      iframe: ['src', 'frameborder', 'allowfullscreen', 'style'],
+      script: ['src', 'type'],
+      blockquote: ['class', 'data-instgrm-permalink', 'data-instgrm-version'],
+      '*': ['style', 'class'], // Allow style and class on all tags
     },
   });
 
