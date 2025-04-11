@@ -24,9 +24,7 @@ const EditorToolbar = ({
   imageInputRef,
   handleEditorImageUpload,
 }) => {
-  if (!editor) return null;
-
-  // State for embed dialog
+  // Define all hooks at the top level
   const [isEmbedDialogOpen, setIsEmbedDialogOpen] = useState(false);
   const [embedUrl, setEmbedUrl] = useState('');
   const [embedError, setEmbedError] = useState('');
@@ -38,6 +36,9 @@ const EditorToolbar = ({
       embedInputRef.current.focus();
     }
   }, [isEmbedDialogOpen]);
+
+  // Early return after hooks
+  if (!editor) return null;
 
   // Function to set image alignment
   const setImageAlignment = (align) => {
@@ -321,7 +322,36 @@ const EditorToolbar = ({
 
       {/* Table Controls */}
       <ToolbarButton
-        onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+        onClick={() =>
+          editor
+            .chain()
+            .focus()
+            .insertTable({
+              rows: 3,
+              cols: 3,
+              withHeaderRow: true,
+            })
+            .setNode('table', () => ({
+              attrs: {
+                style: 'border-collapse: collapse; border: 1px solid #ccc;',
+              },
+            }))
+            .command(({ tr, dispatch }) => {
+              if (dispatch) {
+                tr.doc.descendants((node, pos) => {
+                  if (node.type.name === 'table_cell' || node.type.name === 'table_header') {
+                    tr.setNodeMarkup(pos, null, {
+                      ...node.attrs,
+                      style: 'border: 1px solid #ccc; padding: 8px;',
+                    });
+                  }
+                });
+                dispatch(tr);
+              }
+              return true;
+            })
+            .run()
+        }
         disabled={!editor.can().insertTable()}
         title="Insert a 3x3 table"
         ariaLabel="Insert a 3x3 table"
