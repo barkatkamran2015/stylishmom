@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import getRawBody from 'raw-body';
 
-const PHP_API_URL = 'https://www.barkatkamran.com/api.php';
+const PHP_API_URL = process.env.PHP_API_URL || 'https://www.barkatkamran.com/api.php';
 
 // Disable Next.js body parser to handle multipart/form-data correctly
 export const config = {
