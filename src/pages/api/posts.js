@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import getRawBody from 'raw-body';
 
 const PHP_API_URL = 'https://www.barkatkamran.com/api.php';
 
@@ -14,7 +15,7 @@ export default async function handler(req, res) {
     // Set CORS headers dynamically based on environment
     const allowedOrigin =
       process.env.NODE_ENV === 'production'
-        ? 'https://stylishmom.vercel.app' // Update to your current production domain
+        ? 'https://stylishmom.vercel.app'
         : 'http://localhost:3000';
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -26,7 +27,7 @@ export default async function handler(req, res) {
       return res.status(200).end();
     }
 
-    // Extract all query parameters
+    // Extract query parameters
     const {
       page,
       limit,
@@ -44,7 +45,26 @@ export default async function handler(req, res) {
       tags,
     } = req.query;
 
-    // Construct the backend API URL with all query parameters
+    // Handle the request body for non-GET and non-DELETE requests
+    let body;
+    let contentType = req.headers['content-type'] || '';
+    console.log('Content-Type:', contentType);
+
+    if (req.method !== 'GET' && req.method !== 'DELETE') {
+      if (contentType.includes('application/json')) {
+        const rawBody = await getRawBody(req);
+        body = rawBody.length ? JSON.parse(rawBody.toString()) : {};
+        console.log('Parsed JSON Body:', body);
+      } else if (contentType.includes('multipart/form-data') || contentType.includes('application/x-www-form-urlencoded')) {
+        body = req; // Forward the raw body for FormData or URL-encoded data
+        console.log('Forwarding raw body for:', contentType);
+      } else {
+        console.log('Unsupported Content-Type:', contentType);
+        return res.status(400).json({ error: 'Unsupported Content-Type' });
+      }
+    }
+
+    // Construct the backend API URL with query parameters
     const queryParams = new URLSearchParams({
       page: page || 'all',
       limit: limit || '10',
@@ -61,13 +81,20 @@ export default async function handler(req, res) {
       category: category || '',
       tags: tags || '',
     });
+
+    // If the request has a body (e.g., POST with JSON), merge body parameters into queryParams
+    if (body && req.method !== 'GET' && req.method !== 'DELETE') {
+      Object.entries(body).forEach(([key, value]) => {
+        queryParams.set(key, value);
+      });
+    }
+
     const url = `${PHP_API_URL}?${queryParams.toString()}`;
     console.log('Proxying request to:', url);
 
     // Log the headers being sent to the backend
     const headers = {
       ...(req.headers.authorization && { Authorization: req.headers.authorization }),
-      // Forward the Content-Type header for multipart/form-data
       ...(req.headers['content-type'] && { 'Content-Type': req.headers['content-type'] }),
     };
     console.log('Headers sent to backend:', headers);
@@ -76,8 +103,7 @@ export default async function handler(req, res) {
     const response = await fetch(url, {
       method: req.method,
       headers,
-      // Forward the raw body for POST requests (e.g., FormData for image uploads)
-      body: req.method !== 'GET' && req.method !== 'DELETE' ? req : undefined,
+      body: req.method !== 'GET' && req.method !== 'DELETE' && contentType.includes('multipart/form-data') ? body : undefined,
     });
 
     if (!response.ok) {
