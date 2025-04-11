@@ -9,7 +9,7 @@ import styles from '../styles/Food.module.css';
 // Use dynamic API URL based on environment
 const API_URL =
   process.env.NODE_ENV === 'production'
-    ? 'https://www.thestylishmama.com/api/posts'
+    ? 'https://stylishmom.vercel.app/api/posts'
     : 'http://localhost:3000/api/posts';
 
 export default function Food({ initialPosts, initialCategories, initialTags, initialError, pagination }) {
@@ -59,7 +59,7 @@ export default function Food({ initialPosts, initialCategories, initialTags, ini
   const handleShare = (post) => {
     const baseUrl =
       process.env.NODE_ENV === 'production'
-        ? 'https://www.thestylishmama.com'
+        ? 'https://stylishmom.vercel.app'
         : 'http://localhost:3000';
     const postUrl = `${baseUrl}/food?id=${post.id}`;
 
@@ -104,7 +104,7 @@ export default function Food({ initialPosts, initialCategories, initialTags, ini
     image: post.imageUrl || '/default-food-image.jpg',
     url: `${
       process.env.NODE_ENV === 'production'
-        ? 'https://www.thestylishmama.com'
+        ? 'https://stylishmom.vercel.app'
         : 'http://localhost:3000'
     }/food?id=${post.id}`,
     recipeCategory: post.category || 'General',
@@ -133,7 +133,7 @@ export default function Food({ initialPosts, initialCategories, initialTags, ini
           rel="canonical"
           href={`${
             process.env.NODE_ENV === 'production'
-              ? 'https://www.thestylishmama.com'
+              ? 'https://stylishmom.vercel.app'
               : 'http://localhost:3000'
           }/food`}
         />
@@ -146,7 +146,7 @@ export default function Food({ initialPosts, initialCategories, initialTags, ini
           property="og:url"
           content={`${
             process.env.NODE_ENV === 'production'
-              ? 'https://www.thestylishmama.com'
+              ? 'https://stylishmom.vercel.app'
               : 'http://localhost:3000'
           }/food`}
         />
@@ -169,7 +169,7 @@ export default function Food({ initialPosts, initialCategories, initialTags, ini
             rel="prev"
             href={`${
               process.env.NODE_ENV === 'production'
-                ? 'https://www.thestylishmama.com'
+                ? 'https://stylishmom.vercel.app'
                 : 'http://localhost:3000'
             }/food?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
           />
@@ -179,7 +179,7 @@ export default function Food({ initialPosts, initialCategories, initialTags, ini
             rel="next"
             href={`${
               process.env.NODE_ENV === 'production'
-                ? 'https://www.thestylishmama.com'
+                ? 'https://stylishmom.vercel.app'
                 : 'http://localhost:3000'
             }/food?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
           />
