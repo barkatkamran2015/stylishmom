@@ -19,7 +19,7 @@ export default function Footer() {
           <h2>Quick Links</h2>
           <ul>
             <li><Link href="/about">About</Link></li>
-            <li><Link href="/contact">Contact Us</Link></li>
+            <li><Link href="/contact">Contact Me</Link></li>
             <li><Link href="/productsreview">Products Review</Link></li>
             <li><Link href="/food">Recipe</Link></li>
             <li><Link href="/blog">Blog</Link></li>
