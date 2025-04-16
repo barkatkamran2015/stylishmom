@@ -24,20 +24,20 @@ export default async function handler(req, res) {
       { loc: `${baseUrl}/productsreview`, lastmod: new Date().toISOString().split('T')[0], changefreq: 'weekly', priority: '0.9' },
     ];
 
-    const sections = ['Blog', 'ProductsReview', 'Food', 'Drinks', 'Dessert'];
-    const sectionToUrlMap = {
-      Blog: 'blog',
-      ProductsReview: 'productsreview',
-      Food: 'food',
-      Drinks: 'drinks',
-      Dessert: 'dessert',
-    };
+    const sections = [
+      { section: 'Blog', table: 'Blog', urlPath: 'blog' },
+      { section: 'ProductsReview', table: 'ProductsReview', urlPath: 'productsreview' },
+      { section: 'Food', table: 'Recipe', urlPath: 'food' },
+      { section: 'Drinks', table: 'Drinks', urlPath: 'drinks' },
+      { section: 'Dessert', table: 'Dessert', urlPath: 'dessert' },
+    ];
 
     // Fetch dynamic posts from the API
     const dynamicPages = [];
-    for (const section of sections) {
+    for (const { section, table, urlPath } of sections) {
       try {
-        const apiUrl = `${baseUrl}/api/posts?page=${section}`;
+        const apiUrl = `${baseUrl}/api/posts?page=${table}`; // Use table name in API call
+        console.log(`Fetching posts for ${section} (table: ${table}) from ${apiUrl}`);
         const response = await fetch(apiUrl, { signal: AbortSignal.timeout(5000) });
         if (!response.ok) {
           console.error(`Failed to fetch posts for ${section}: ${response.status} ${response.statusText}`);
@@ -46,14 +46,15 @@ export default async function handler(req, res) {
         const data = await response.json();
         const posts = data.posts || [];
         if (posts.length === 0) {
-          console.log(`No posts found for section ${section}`);
+          console.log(`No posts found for section ${section} (table: ${table})`);
+        } else {
+          console.log(`Found ${posts.length} posts for section ${section} (table: ${table})`);
         }
-        const urlPath = sectionToUrlMap[section] || section.toLowerCase();
 
         posts.forEach(post => {
           if (post.slug) {
             const lastmodRaw = post.updated_at || post.createdAt || new Date().toISOString();
-            // Format lastmod as W3C Datetime (e.g., "2025-04-14T19:09:50+00:00")
+            // Format lastmod as W3C Datetime
             const lastmod = new Date(lastmodRaw).toISOString();
             dynamicPages.push({
               loc: `${baseUrl}/${urlPath}/${post.slug}`,
@@ -61,10 +62,12 @@ export default async function handler(req, res) {
               changefreq: 'weekly',
               priority: '0.7',
             });
+          } else {
+            console.log(`Post in ${section} missing slug:`, post);
           }
         });
       } catch (err) {
-        console.error(`Error fetching posts for ${section}:`, err.message);
+        console.error(`Error fetching posts for ${section} (table: ${table}):`, err.message);
       }
     }
 
