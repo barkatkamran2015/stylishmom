@@ -2,10 +2,10 @@
 .blogPage {
   max-width: 1250px;
   margin: 0 auto;
-  padding: 25px 30px; /* Increased padding on the sides for breathing room */
+  padding: 25px 30px;
   box-sizing: border-box;
   overflow-x: hidden;
-  background-color: #f9f9f9;
+  background-color: #fff; /* Plain white background for the entire container */
 }
 
 /* Header/Search Container */
@@ -17,33 +17,29 @@
 .blogPageContentWrapper {
   width: 100%;
   box-sizing: border-box;
-  padding: 0 15px; /* Added padding to ensure content doesn't touch edges */
+  padding: 0 15px;
 }
 
-/* Grid Layout for Posts */
+/* Grid Layout for Post List */
 .blogPageGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(920px, 1fr));
-  gap: 20px;
-  padding: 0 10px; /* Added padding to the grid to prevent edge overflow */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 3 columns on wide screens */
+  gap: 30px; /* Spacing between posts */
+  padding: 0 10px;
 }
 
-/* Individual Post Card */
+/* Individual Post (No Card Styling) */
 .blogPageCard {
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  padding: 35px; /* Increased padding inside the card for better spacing */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  position: relative;
-  box-sizing: border-box; /* Ensure padding doesn't cause overflow */
+  background-color: transparent; /* No background */
+  padding: 15px; /* Reduced padding for a tighter layout */
+  box-sizing: border-box;
 }
 
-.blogPageCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+/* Single Post Container (for [slug].js) */
+.blogPageSingle {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 15px;
 }
 
 /* Title */
@@ -52,37 +48,45 @@
   font-weight: bold;
   color: #333;
   margin-bottom: 10px;
-  line-height: 1.2;
+  line-height: 1.3;
 }
 
-/* Content */
-.blogPageContent {
-  font-size: 1rem;
-  color: #555;
-  line-height: 1.6;
+.blogPageSingle .blogPageTitle {
+  font-size: 2rem;
   margin-bottom: 15px;
-  padding: 0 10px; /* Added padding to prevent text from touching card edges */
-  word-wrap: break-word; /* Ensure long words break to avoid overflow */
 }
 
-.blogPageContent p {
-  margin: 0 0 10px;
+.blogPageTitleLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.blogPageTitleLink:hover {
+  text-decoration: underline;
 }
 
 /* Image */
 .blogPageImage {
-  width: 100%;
-  height: auto;
+  width: 300px;
+  height: 300px;
   border-radius: 8px;
   object-fit: cover;
   margin-bottom: 15px;
   display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.blogPageSingle .blogPageImage {
+  width: 100%;
+  max-height: 400px;
+  height: auto;
 }
 
 /* Image Placeholder */
 .blogPageImagePlaceholder {
-  width: 100%;
-  height: 200px;
+  width: 300px;
+  height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,6 +95,31 @@
   font-size: 1rem;
   border-radius: 8px;
   margin-bottom: 15px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.blogPageSingle .blogPageImagePlaceholder {
+  width: 100%;
+  height: 250px;
+}
+
+/* Content (Excerpt) */
+.blogPageContent {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 15px;
+  word-wrap: break-word;
+}
+
+.blogPageSingle .blogPageContent {
+  padding: 0;
+  font-size: 1.1rem;
+}
+
+.blogPageContent p {
+  margin: 0 0 10px;
 }
 
 /* Share Button */
@@ -105,6 +134,8 @@
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  width: 100%;
+  justify-content: center;
 }
 
 .shareButton:hover {
@@ -113,6 +144,14 @@
 
 .shareIcon {
   font-size: 1rem;
+}
+
+/* Meta (e.g., published date) */
+.blogPageMeta {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 15px;
+  text-align: right;
 }
 
 /* Pagination */
@@ -188,7 +227,8 @@
 
 /* Animation */
 @keyframes beat {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1) rotate(-45deg);
   }
   50% {
@@ -199,43 +239,53 @@
 /* Responsive Design */
 @media (max-width: 1024px) {
   .blogPage {
-    padding: 15px 20px; /* Adjusted padding for medium screens */
+    padding: 15px 20px;
   }
   .blogPageGrid {
-    grid-template-columns: repeat(auto-fill, minmax(600px, 1fr)); /* Adjusted min width for better fit */
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
     padding: 0 5px;
+  }
+  .blogPageSingle {
+    padding: 15px 10px;
   }
   .blogPageTitle {
     font-size: 1.4rem;
   }
+  .blogPageSingle .blogPageTitle {
+    font-size: 1.8rem;
+  }
   .blogPageContent {
-    font-size: 0.95rem;
-    padding: 0 8px; /* Adjusted padding for content */
+    font-size: 0.9rem;
   }
   .blogPageCard {
-    padding: 20px;
+    padding: 15px;
   }
 }
 
 @media (max-width: 768px) {
   .blogPage {
-    padding: 10px 15px; /* More padding for smaller screens */
+    padding: 10px 15px;
   }
   .blogPageGrid {
-    grid-template-columns: 1fr; /* Single column for smaller screens */
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
     padding: 0 5px;
+  }
+  .blogPageSingle {
+    padding: 10px 5px;
   }
   .blogPageTitle {
     font-size: 1.3rem;
   }
+  .blogPageSingle .blogPageTitle {
+    font-size: 1.6rem;
+  }
   .blogPageContent {
-    font-size: 0.9rem;
-    padding: 0 5px; /* Adjusted padding */
+    font-size: 0.85rem;
   }
   .blogPageCard {
-    padding: 15px;
+    padding: 10px;
   }
   .shareButton {
     padding: 8px 12px;
@@ -248,20 +298,26 @@
 
 @media (max-width: 480px) {
   .blogPage {
-    padding: 10px 10px; /* Adjusted padding for very small screens */
+    padding: 10px;
   }
   .blogPageGrid {
+    grid-template-columns: 1fr;
     padding: 0 2px;
+  }
+  .blogPageSingle {
+    padding: 10px 5px;
   }
   .blogPageTitle {
     font-size: 1.2rem;
   }
+  .blogPageSingle .blogPageTitle {
+    font-size: 1.4rem;
+  }
   .blogPageContent {
-    font-size: 0.85rem;
-    padding: 0 5px; /* Ensure padding on small screens */
+    font-size: 0.8rem;
   }
   .blogPageCard {
-    padding: 20px 15px; /* Adjusted padding for better spacing */
+    padding: 10px;
   }
   .blogPageImagePlaceholder {
     height: 150px;

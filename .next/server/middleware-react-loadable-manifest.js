@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{\"pages/dashboard/index.js -> dompurify\":{\"id\":\"pages/dashboard/index.js -> dompurify\",\"files\":[]}}"
+self.__REACT_LOADABLE_MANIFEST="{}"

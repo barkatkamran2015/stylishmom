@@ -24,23 +24,22 @@ if (typeof window !== 'undefined') {
 
 const API_URL = 'https://www.barkatkamran.com/api.php';
 
-export async function getServerSideProps(context) {
-  const { query } = context;
-  const { limit = 10, offset = 0 } = query;
+export async function getStaticProps({ params }) {
+  const limit = 10;
+  const offset = 0;
 
   try {
-    const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`, {
-      headers: { 'Cache-Control': 's-maxage=3600, stale-while-revalidate' },
-    });
+    const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`);
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Error response body in getServerSideProps:', errorText);
+      console.error('Error response body in getStaticProps:', errorText);
       return {
         props: {
           initialPosts: [],
           initialPagination: { total: 0, limit: 10, offset: 0, totalPages: 0 },
           error: `Failed to fetch posts: ${response.status}`,
         },
+        revalidate: 60,
       };
     }
 
@@ -69,15 +68,17 @@ export async function getServerSideProps(context) {
         initialPagination: pagination,
         error: null,
       },
+      revalidate: 60,
     };
   } catch (error) {
-    console.error('Error in getServerSideProps:', error);
+    console.error('Error in getStaticProps:', error);
     return {
       props: {
         initialPosts: [],
         initialPagination: { total: 0, limit: 10, offset: 0, totalPages: 0 },
         error: error.message,
       },
+      revalidate: 60,
     };
   }
 }
@@ -101,8 +102,51 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
   };
 
   useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch posts: ${response.status}`);
+        }
+        const { posts, pagination: newPagination } = await response.json();
+        const parsedPosts = posts.map((post) => {
+          const imageMatch = (post.content || post.post_content || post.body)?.match(/<img[^>]+src=["'](.*?)["']/i);
+          const thumbnailUrl = post.imageUrl || post.image_url || (imageMatch ? imageMatch[1] : '/default-image.jpg');
+          const createdAt = post.createdAt ? new Date(post.createdAt) : new Date();
+          const isRecentlyUpdated = (new Date() - createdAt) < 24 * 60 * 60 * 1000;
+          return {
+            id: post.id,
+            title: post.title || 'Untitled',
+            contentHtml: post.content || post.post_content || post.body || '',
+            thumbnailUrl,
+            createdAt: post.createdAt || new Date().toISOString(),
+            page: post.page,
+            titleStyle: post.titleStyle || { color: "#000", fontSize: "1.8rem", textAlign: "left" },
+            userId: post.creator_uid,
+            isRecentlyUpdated,
+          };
+        });
+
+        setPosts(parsedPosts);
+        setFilteredPosts(parsedPosts);
+        setPagination(newPagination);
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (router.isReady && (Number(offset) !== initialPagination.offset || Number(limit) !== initialPagination.limit)) {
+      fetchPosts();
+    }
+  }, [limit, offset, router.isReady, initialPagination.offset, initialPagination.limit]);
+
+  useEffect(() => {
     setIsClient(true);
-    setFilteredPosts(initialPosts); // Sync with SSR data
+    setFilteredPosts(initialPosts);
   }, [initialPosts]);
 
   const handleSearch = (query) => {
@@ -116,7 +160,7 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
   };
 
   const navigateToPost = (postId, page) => {
-    const path = pagePaths[page] ? `${pagePaths[page]}?id=${postId}` : `/blog?id=${postId}`;
+    const path = pagePaths[page] ? `${pagePaths[page]}#${page.toLowerCase()}-post-${postId}` : `/blog#blog-post-${postId}`;
     router.push(path);
   };
 
@@ -141,61 +185,66 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
     arrows: true,
   };
 
-  const structuredData = filteredPosts.map((post) => ({
+  const structuredData = {
     '@context': 'https://schema.org',
-    '@type': post.page === 'Recipe' ? 'Recipe' : post.page === 'ProductsReview' ? 'Review' : 'BlogPosting',
-    ...(post.page === 'Recipe'
-      ? {
-          name: post.title,
-          description: post.contentHtml.replace(/<[^>]+>/g, '').substring(0, 160),
-          recipeCategory: post.category || 'General',
-          recipeInstructions: post.contentHtml
-            .replace(/<[^>]+>/g, '')
-            .split('. ')
-            .filter((step) => step.trim() !== '')
-            .map((step, index) => ({
-              '@type': 'HowToStep',
-              text: step,
-              name: `Step ${index + 1}`,
-            })),
-        }
-      : post.page === 'ProductsReview'
-      ? {
-          itemReviewed: { '@type': 'Product', name: post.title },
-          reviewBody: post.contentHtml.replace(/<[^>]+>/g, '').substring(0, 160),
-        }
-      : {
+    '@type': 'WebPage',
+    name: 'Barkat Kamran | Lifestyle Blog, Reviews & Recipes',
+    description: 'Discover Barkat Kamran\'s lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!',
+    url: 'https://www.thestylishmama.com/',
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: filteredPosts.map((post, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'BlogPosting',
           headline: post.title,
           description: post.contentHtml.replace(/<[^>]+>/g, '').substring(0, 160),
-        }),
-    datePublished: post.createdAt || new Date().toISOString(),
-    dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
-    author: { '@type': 'Person', name: 'Admin' },
-    image: post.thumbnailUrl || '/default-image.jpg',
-    url: `https://www.thestylishmama.com${pagePaths[post.page] || '/blog'}?id=${post.id}`,
-  }));
+          datePublished: post.createdAt || new Date().toISOString(),
+          dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
+          author: { '@type': 'Person', name: 'Admin' },
+          image: post.thumbnailUrl || '/default-image.jpg',
+          url: `https://www.thestylishmama.com${pagePaths[post.page] || '/blog'}#${post.page.toLowerCase()}-post-${post.id}`,
+        },
+      })),
+    },
+  };
 
   if (!isClient) return <p>Loading...</p>;
 
   return (
     <div className={styles.homePage}>
       <Head>
-        <title>Barkat Kamran | Blogs, Reviews, Recipes & More</title>
-        <meta name="description" content="Explore Barkat Kamran for inspiring blogs, product reviews, and delicious recipes." />
-        <meta name="keywords" content="blogs, product reviews, recipes, lifestyle, parenting, barkat kamran" />
-        <meta name="robots" content="index, follow" />
+        <title>Barkat Kamran | Lifestyle Blog, Reviews & Recipes</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="description"
+          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
+        />
         <link rel="canonical" href="https://www.thestylishmama.com/" />
-        <meta property="og:title" content="Barkat Kamran | Blogs, Reviews, Recipes & More" />
-        <meta property="og:description" content="Explore Barkat Kamran for inspiring blogs, product reviews, and delicious recipes." />
+        <link rel="icon" href="/favicon.ico" />
+        <meta property="og:title" content="Barkat Kamran | Lifestyle Blog, Reviews & Recipes" />
+        <meta
+          property="og:description"
+          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
+        />
         <meta property="og:url" content="https://www.thestylishmama.com/" />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="/default-image.jpg" />
+        <meta property="og:image" content="https://www.thestylishmama.com/default-image.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="Barkat Kamran" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Barkat Kamran | Blogs, Reviews, Recipes & More" />
-        <meta name="twitter:description" content="Explore Barkat Kamran for inspiring blogs, product reviews, and delicious recipes." />
-        <meta name="twitter:image" content="/default-image.jpg" />
+        <meta name="twitter:title" content="Barkat Kamran | Lifestyle Blog, Reviews & Recipes" />
+        <meta
+          name="twitter:description"
+          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
+        />
+        <meta name="twitter:image" content="https://www.thestylishmama.com/default-image.jpg" />
+        <meta name="twitter:site" content="@YourTwitterHandle" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-        {pagination.offset > 0 && (
+        {pagination.offset > 0 && pagination.offset - pagination.limit >= 0 && (
           <link rel="prev" href={`https://www.thestylishmama.com/?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`} />
         )}
         {pagination.offset + pagination.limit < pagination.total && (
@@ -211,27 +260,69 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
         <>
           <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
             <div>
-              <img src={imageBlog.src} alt="Blog" className={styles.homePage__sliderImage} />
+              <Image
+                src={imageBlog}
+                alt="Blog"
+                className={styles.homePage__sliderImage}
+                width={1200}
+                height={600}
+                priority
+              />
               <h3 className={styles.homePage__sliderText}>Explore Inspiring Blogs</h3>
             </div>
             <div>
-              <img src={imageNature.src} alt="Natures Beauty" className={styles.homePage__sliderImage} />
+              <Image
+                src={imageNature}
+                alt="Natures Beauty"
+                className={styles.homePage__sliderImage}
+                width={1200}
+                height={600}
+                priority
+              />
               <h3 className={styles.homePage__sliderText}>Discover Natures Beauty</h3>
             </div>
             <div>
-              <img src={imageRecipe.src} alt="Recipe" className={styles.homePage__sliderImage} />
+              <Image
+                src={imageRecipe}
+                alt="Recipe"
+                className={styles.homePage__sliderImage}
+                width={1200}
+                height={600}
+                priority
+              />
               <h3 className={styles.homePage__sliderText}>Healthy Recipe Ideas</h3>
             </div>
             <div>
-              <img src={imageGarden.src} alt="Garden" className={styles.homePage__sliderImage} />
+              <Image
+                src={imageGarden}
+                alt="Garden"
+                className={styles.homePage__sliderImage}
+                width={1200}
+                height={600}
+                priority
+              />
               <h3 className={styles.homePage__sliderText}>Butcher Garden Visit</h3>
             </div>
             <div>
-              <img src={imageTulip.src} alt="Tulip" className={styles.homePage__sliderImage} />
+              <Image
+                src={imageTulip}
+                alt="Tulip"
+                className={styles.homePage__sliderImage}
+                width={1200}
+                height={600}
+                priority
+              />
               <h3 className={styles.homePage__sliderText}>Tulip Festival BC</h3>
             </div>
             <div>
-              <img src={imageFall.src} alt="Fall" className={styles.homePage__sliderImage} />
+              <Image
+                src={imageFall}
+                alt="Fall"
+                className={styles.homePage__sliderImage}
+                width={1200}
+                height={600}
+                priority
+              />
               <h3 className={styles.homePage__sliderText}>Beautiful Fall Season</h3>
             </div>
           </Slider>
@@ -311,13 +402,19 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
 
                 <div className={styles.pagination}>
                   {pagination.offset > 0 && (
-                    <Link href={`/?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`} passHref>
-                      <a className={styles.paginationLink}>Previous</a>
+                    <Link
+                      href={`/?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
+                      className={styles.paginationLink}
+                    >
+                      Previous
                     </Link>
                   )}
                   {pagination.offset + pagination.limit < pagination.total && (
-                    <Link href={`/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`} passHref>
-                      <a className={styles.paginationLink}>Next</a>
+                    <Link
+                      href={`/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
+                      className={styles.paginationLink}
+                    >
+                      Next
                     </Link>
                   )}
                   <p>Page {pagination.offset / pagination.limit + 1} of {pagination.totalPages}</p>

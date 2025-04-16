@@ -1,232 +1,264 @@
 /* src/styles/Food.module.css */
 .foodPage {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 25px;
-    background-color: #f5f7fa;
-    min-height: 100vh;
-  }
-  
-  .foodPageSearchContainer {
-    margin-bottom: 30px;
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 25px 30px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  background-color: #fff; /* Plain white background for the entire container */
+}
+
+.foodPageHeading {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.foodPageContentWrapper {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 15px;
+}
+
+/* Override for single post view to match Blog/Dessert */
+.foodPageContentWrapper:has(> .foodPageTitle) {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.foodPageErrorMessage,
+.foodPageNoPostsMessage {
+  text-align: center;
+  color: #e53e3e;
+  font-size: 1.2rem;
+  font-family: 'Inter', sans-serif;
+  margin: 30px 0;
+  padding: 10px;
+  background-color: #fef5f5;
+  border-radius: 4px;
+}
+
+.foodPageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+  padding: 0 10px;
+}
+
+.foodPageCard {
+  background-color: transparent;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.foodPageCard:hover {
+  transform: scale(1.03);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.foodPageTitle {
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+  line-height: 1.3;
+  transition: color 0.3s ease;
+}
+
+/* Adjust title for list view */
+.foodPageGrid .foodPageTitle {
+  font-size: 1.5rem;
+}
+
+/* Larger title for single post view */
+.foodPageContentWrapper > .foodPageTitle {
+  font-size: 2.5rem;
+  text-align: center;
+}
+
+.foodPageTitle:hover {
+  color: #6b7280; /* Food-themed olive gray */
+}
+
+.foodPageExcerpt {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.foodPageContent {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #4a4a4a;
+  margin-bottom: 20px;
+}
+
+.foodPageContent img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.foodPageMeta {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #777;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.foodPageImage {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+/* Adjust image for list view */
+.foodPageGrid .foodPageImage {
+  height: 200px;
+  object-fit: cover;
+}
+
+/* Adjust image for single post view */
+.foodPageContentWrapper > .foodPageImage {
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+.foodPageImagePlaceholder {
+  width: 100%;
+  background-color: #e5e5e5;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+}
+
+/* Adjust placeholder for list view */
+.foodPageGrid .foodPageImagePlaceholder {
+  height: 200px;
+}
+
+/* Adjust placeholder for single post view */
+.foodPageContentWrapper > .foodPageImagePlaceholder {
+  height: 450px;
+  font-size: 1rem;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 30px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.paginationLink {
+  padding: 8px 16px;
+  background-color: #6b7280; /* Food-themed olive gray */
+  color: white;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.paginationLink:hover {
+  background-color: #4b5563;
+}
+
+@media (max-width: 768px) {
+  .foodPage {
     padding: 15px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
-  
+
   .foodPageContentWrapper {
-    padding: 20px 0;
+    padding: 15px;
   }
-  
-  .foodPageErrorMessage,
-  .foodPageNoPostsMessage {
-    text-align: center;
-    color: #ff4d4f;
-    font-size: 1.2rem;
-    font-family: 'Inter', sans-serif;
-    margin: 30px 0;
-    padding: 10px;
-    background-color: #fff5f5;
-    border-radius: 4px;
-  }
-  
+
   .foodPageGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(920px, 1fr));
-    gap: 25px;
-    padding: 10 10px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
   }
-  
+
   .foodPageCard {
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    background: linear-gradient(145deg, #ffffff, #e6f4ea); /* Food-themed light green gradient */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    animation: fadeIn 0.5s ease forwards;
-    opacity: 0;
-    animation-delay: calc(var(--index) * 0.1s);
+    padding: 15px;
   }
-  
-  .foodPageCard:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  }
-  
+
   .foodPageTitle {
-    margin-bottom: 15px;
-    font-family: 'Quicksand', sans-serif;
-    font-weight: 600;
-    line-height: 1.4;
-    transition: color 0.3s ease;
+    font-size: 1.3rem;
   }
-  
-  .foodPageTitle:hover {
-    color: #2980b9;
+
+  .foodPageContentWrapper > .foodPageTitle {
+    font-size: 2rem;
   }
-  
+
+  .foodPageExcerpt {
+    font-size: 0.9rem;
+  }
+
   .foodPageContent {
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    line-height: 1.7;
-    color: #4a4a4a;
-    margin-bottom: 20px;
-    margin-left: 10px;
-  }
-  
-  .foodPageContent img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 4px;
-    margin: 10px 0;
-  }
-  
-  .foodPageImage {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    object-fit: cover;
-    aspect-ratio: 16 / 9;
-  }
-  
-  .foodPageImagePlaceholder {
-    width: 100%;
-    height: 200px;
-    background-color: #e0e0e0;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Inter', sans-serif;
-    color: #888;
-    font-size: 1rem;
-    margin-bottom: 20px;
-  }
-  
-  .shareButton {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background-color: #2980b9;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
     font-size: 0.95rem;
-    font-weight: 500;
-    transition: background-color 0.3s ease, transform 0.2s ease;
   }
-  
-  .shareButton:hover {
-    background-color: #256428;
-    transform: scale(1.05);
+
+  .foodPageMeta {
+    font-size: 0.85rem;
   }
-  
-  .shareButton:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.3);
+
+  .foodPageImage,
+  .foodPageImagePlaceholder {
+    height: 180px;
   }
-  
-  .shareIcon {
-    font-size: 1.1rem;
+
+  .foodPageContentWrapper > .foodPageImage,
+  .foodPageContentWrapper > .foodPageImagePlaceholder {
+    height: auto;
+    max-height: 350px;
   }
-  
-  .loadingContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 50vh;
+}
+
+@media (max-width: 480px) {
+  .foodPageGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
-  
-  .heartLoader {
-    width: 50px;
-    height: 50px;
-    background: url('../pages/Assets/heart-loader.gif') no-repeat center;
-    background-size: contain;
+
+  .foodPageCard {
+    padding: 12px;
   }
-  
-  .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 2rem;
-    font-size: 1rem;
+
+  .foodPageTitle {
+    font-size: 1.2rem;
   }
-  
-  .paginationLink {
-    padding: 0.5rem 1rem;
-    background-color: #0070f3;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    transition: background-color 0.3s;
+
+  .foodPageContentWrapper > .foodPageTitle {
+    font-size: 1.8rem;
   }
-  
-  .paginationLink:hover {
-    background-color: #005bb5;
+
+  .foodPageImage,
+  .foodPageImagePlaceholder {
+    height: 160px;
   }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+
+  .foodPageContentWrapper > .foodPageImage,
+  .foodPageContentWrapper > .foodPageImagePlaceholder {
+    height: auto;
+    max-height: 300px;
   }
-  
-  @media (max-width: 768px) {
-    .foodPage {
-      padding: 15px;
-    }
-  
-    .foodPageGrid {
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
-  
-    .foodPageCard {
-      padding: 20px;
-    }
-  
-    .foodPageTitle {
-      font-size: 1.3rem;
-    }
-  
-    .foodPageContent {
-      font-size: 0.95rem;
-    }
-  
-    .shareButton {
-      padding: 8px 16px;
-      font-size: 0.9rem;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .foodPageGrid {
-      grid-template-columns: 1fr;
-      gap: 15px;
-    }
-  
-    .foodPageCard {
-      padding: 25px;
-      
-    }
-  
-    .foodPageTitle {
-      font-size: 1.2rem;
-    }
-  
-    .foodPageImage,
-    .foodPageImagePlaceholder {
-      height: 180px;
-    }
-  }
+}

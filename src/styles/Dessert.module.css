@@ -1,208 +1,312 @@
 /* src/styles/Dessert.module.css */
 .dessertPage {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f5f7fa;
-    min-height: 100vh;
-  }
-  
-  .dessertPageSearchContainer {
-    margin-bottom: 30px;
-    padding: 15px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  }
-  
-  .dessertPageContentWrapper {
-    padding: 20px 0;
-  }
-  
-  .dessertPageErrorMessage,
-  .dessertPageNoPostsMessage {
-    text-align: center;
-    color: #ff4d4f;
-    font-size: 1.2rem;
-    font-family: 'Inter', sans-serif;
-    margin: 30px 0;
-    padding: 10px;
-    background-color: #fff5f5;
-    border-radius: 4px;
-  }
-  
-  .dessertPageGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(920px, 1fr));
-    gap: 25px;
-    padding: 0 10px;
-  }
-  
-  .dessertPageCard {
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    background: linear-gradient(145deg, #ffffff, #fef5e7); /* Dessert-themed light cream gradient */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    animation: fadeIn 0.5s ease forwards;
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 25px 30px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  background-color: #fff;
+}
+
+.dessertPageHeading {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.dessertPageContentWrapper {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 15px;
+}
+
+.dessertPageErrorMessage,
+.dessertPageNoPostsMessage {
+  text-align: center;
+  color: #e53e3e;
+  font-size: 1.2rem;
+  font-family: 'Inter', sans-serif;
+  margin: 30px 0;
+  padding: 10px;
+}
+
+.dessertPageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 0 10px;
+}
+
+.dessertPageCard:hover {
+  transform: scale(1.03);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.dessertPageTitle {
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+  line-height: 1.3;
+  transition: color 0.3s ease;
+}
+
+/* Adjust title for list view */
+.dessertPageGrid .dessertPageTitle {
+  font-size: 1.5rem;
+}
+
+/* Larger title for single post view */
+.dessertPageContentWrapper > .dessertPageTitle {
+  font-size: 2.5rem;
+  text-align: center; /* Center title on single post page, matching Blog */
+}
+
+.dessertPageTitle:hover {
+  color: #d2691e; /* Dessert-themed chocolate color */
+}
+
+.dessertPageExcerpt {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.dessertPageContent {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #4a4a4a;
+  margin-bottom: 20px;
+}
+
+.dessertPageContent img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.dessertPageMeta {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #777;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.dessertPageImage {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+/* Adjust image for list view */
+.dessertPageGrid .dessertPageImage {
+  height: 200px;
+  object-fit: cover;
+}
+
+/* Adjust image for single post view */
+.dessertPageContentWrapper > .dessertPageImage {
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9; /* Respect 800x450 ratio */
+}
+
+.dessertPageImagePlaceholder {
+  width: 100%;
+  background-color: #e5e5e5;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+}
+
+/* Adjust placeholder for list view */
+.dessertPageGrid .dessertPageImagePlaceholder {
+  height: 200px;
+}
+
+/* Adjust placeholder for single post view */
+.dessertPageContentWrapper > .dessertPageImagePlaceholder {
+  height: 450px; /* Match the single post image height */
+  font-size: 1rem;
+}
+
+.dessertPageReadMore {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #d2691e; /* Dessert-themed chocolate color */
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.dessertPageReadMore:hover {
+  color: #b3591a;
+  text-decoration: underline;
+}
+
+.shareButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #d2691e; /* Dessert-themed chocolate color */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 10px;
+}
+
+.shareButton:hover {
+  background-color: #b3591a;
+  transform: scale(1.05);
+}
+
+.shareButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(210, 105, 30, 0.3);
+}
+
+.shareIcon {
+  font-size: 1rem;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 30px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.paginationLink {
+  padding: 8px 16px;
+  background-color: #d2691e; /* Dessert-themed chocolate color */
+  color: white;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.paginationLink:hover {
+  background-color: #b3591a;
+}
+
+@keyframes fadeIn {
+  from {
     opacity: 0;
-    animation-delay: calc(var(--index) * 0.1s);
+    transform: translateY(15px);
   }
-  
-  .dessertPageCard:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .dessertPageTitle {
-    margin-bottom: 15px;
-    font-family: 'Quicksand', sans-serif;
-    font-weight: 600;
-    line-height: 1.4;
-    transition: color 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .dessertPage {
+    padding: 15px;
   }
-  
-  .dessertPageTitle:hover {
-    color: #d2691e; /* Dessert-themed chocolate color */
-  }
-  
-  .dessertPageContent {
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    line-height: 1.7;
-    color: #4a4a4a;
-    margin-bottom: 20px;
-  }
-  
-  .dessertPageContent img {
+
+  .dessertPageContentWrapper {
     max-width: 100%;
-    height: auto;
-    border-radius: 4px;
-    margin: 10px 0;
+    padding: 15px;
   }
-  
-  .dessertPageImage {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    object-fit: cover;
-    aspect-ratio: 16 / 9;
+
+  .dessertPageGrid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
   }
-  
-  .dessertPageImagePlaceholder {
-    width: 100%;
-    height: 200px;
-    background-color: #e0e0e0;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Inter', sans-serif;
-    color: #888;
-    font-size: 1rem;
-    margin-bottom: 20px;
+
+  .dessertPageCard {
+    padding: 15px;
   }
-  
-  .shareButton {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background-color: #d2691e; /* Dessert-themed chocolate color */
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
+
+  .dessertPageTitle {
+    font-size: 1.3rem;
+  }
+
+  .dessertPageContentWrapper > .dessertPageTitle {
+    font-size: 2rem;
+  }
+
+  .dessertPageExcerpt {
+    font-size: 0.9rem;
+  }
+
+  .dessertPageContent {
     font-size: 0.95rem;
-    font-weight: 500;
-    transition: background-color 0.3s ease, transform 0.2s ease;
   }
-  
-  .shareButton:hover {
-    background-color: #b3591a;
-    transform: scale(1.05);
+
+  .dessertPageMeta {
+    font-size: 0.85rem;
   }
-  
-  .shareButton:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(210, 105, 30, 0.3);
+
+  .dessertPageImage,
+  .dessertPageImagePlaceholder {
+    height: 180px;
   }
-  
-  .shareIcon {
-    font-size: 1.1rem;
+
+  .dessertPageContentWrapper > .dessertPageImage,
+  .dessertPageContentWrapper > .dessertPageImagePlaceholder {
+    height: auto;
+    max-height: 350px;
   }
-  
-  .loadingContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 50vh;
+}
+
+@media (max-width: 480px) {
+  .dessertPageGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
-  
-  .heartLoader {
-    width: 50px;
-    height: 50px;
-    background: url('/heart-loader.gif') no-repeat center;
-    background-size: contain;
+
+  .dessertPageCard {
+    padding: 12px;
   }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+
+  .dessertPageTitle {
+    font-size: 1.2rem;
   }
-  
-  @media (max-width: 768px) {
-    .dessertPage {
-      padding: 15px;
-    }
-  
-    .dessertPageGrid {
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
-  
-    .dessertPageCard {
-      padding: 20px;
-    }
-  
-    .dessertPageTitle {
-      font-size: 1.3rem;
-    }
-  
-    .dessertPageContent {
-      font-size: 0.95rem;
-    }
-  
-    .shareButton {
-      padding: 8px 16px;
-      font-size: 0.9rem;
-    }
+
+  .dessertPageContentWrapper > .dessertPageTitle {
+    font-size: 1.8rem;
   }
-  
-  @media (max-width: 480px) {
-    .dessertPageGrid {
-      grid-template-columns: 1fr;
-      gap: 15px;
-    }
-  
-    .dessertPageCard {
-      padding: 15px;
-    }
-  
-    .dessertPageTitle {
-      font-size: 1.2rem;
-    }
-  
-    .dessertPageImage,
-    .dessertPageImagePlaceholder {
-      height: 180px;
-    }
+
+  .dessertPageImage,
+  .dessertPageImagePlaceholder {
+    height: 160px;
   }
+
+  .dessertPageContentWrapper > .dessertPageImage,
+  .dessertPageContentWrapper > .dessertPageImagePlaceholder {
+    height: auto;
+    max-height: 300px;
+  }
+
+  .dessertPageReadMore,
+  .shareButton {
+    font-size: 0.85rem;
+  }
+}

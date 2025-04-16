@@ -10,6 +10,7 @@ import Footer from '../pages/footer';
 import { AuthProvider } from '../../context/AuthContext';
 import theme from '../styles/theme';
 import '../styles/globals.css';
+import { useEffect } from 'react'; // Added for route tracking
 
 // TipTap Extensions
 import StarterKit from '@tiptap/starter-kit';
@@ -194,7 +195,6 @@ const CustomLink = Link.configure({
 });
 
 // Configure the Image Extension with resize, drag, and alignment
-// In _app.js
 const CustomImage = Image.extend({
   addAttributes() {
     return {
@@ -268,6 +268,19 @@ export default function MyApp({ Component, pageProps }) {
   const router = useRouter();
   const hideNavbarAndFooter = ['/auth/signin', '/auth/signup'].includes(router.pathname);
 
+  // Google Analytics route change tracking
+  useEffect(() => {
+    const handleRouteChange = (url) => {
+      window.gtag('config', 'G-RLTSW4SWV4', {
+        page_path: url,
+      });
+    };
+    router.events.on('routeChangeComplete', handleRouteChange);
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, [router.events]);
+
   return (
     <CacheProvider value={cache}>
       <AuthProvider>
@@ -278,6 +291,18 @@ export default function MyApp({ Component, pageProps }) {
               <link
                 href="https://fonts.googleapis.com/css2?family=Lobster&family=Quicksand&family=Inter&display=swap"
                 rel="stylesheet"
+              />
+              {/* Google Analytics GA4 Script */}
+              <script async src="https://www.googletagmanager.com/gtag/js?id=G-RLTSW4SWV4"></script>
+              <script
+                dangerouslySetInnerHTML={{
+                  __html: `
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', 'G-RLTSW4SWV4');
+                  `,
+                }}
               />
             </Head>
             {!hideNavbarAndFooter && <Navbar />}

@@ -2,259 +2,267 @@
 .productsReviewPage {
   max-width: 1250px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 25px 30px;
   box-sizing: border-box;
   overflow-x: hidden;
-  background-color: #f7f7f7; /* Light gray for a professional feel */
+  background-color: #fff; /* Plain white background for the entire container */
 }
 
-/* Header/Search Container */
-.productsReviewPageSearchContainer {
-  margin-bottom: 20px;
+.productsReviewPageHeading {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
 }
 
-/* Content Wrapper */
 .productsReviewPageContentWrapper {
   width: 100%;
   box-sizing: border-box;
+  padding: 0 15px;
 }
 
-/* Grid Layout for Posts */
+/* Override for single post view to match Blog/Dessert/Food */
+.productsReviewPageContentWrapper:has(> .productsReviewPageTitle) {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.productsReviewPageErrorMessage,
+.productsReviewPageNoPostsMessage {
+  text-align: center;
+  color: #e53e3e;
+  font-size: 1.2rem;
+  font-family: 'Inter', sans-serif;
+  margin: 30px 0;
+  padding: 10px;
+  background-color: #fef5f5;
+  border-radius: 4px;
+}
+
 .productsReviewPageGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(920px, 1fr));
-  gap: 20px;
-  padding: 0;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+  padding: 0 10px;
 }
 
-/* Individual Post Card */
 .productsReviewPageCard {
-  background-color: #fff;
-  border: 1px solid #dcdcdc;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  padding: 20px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  position: relative;
+  background-color: transparent;
+  padding: 15px;
+  box-sizing: border-box;
 }
 
 .productsReviewPageCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: scale(1.03);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
-/* Title */
 .productsReviewPageTitle {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333333; /* Dark gray for readability */
-  margin-bottom: 10px;
-  line-height: 1.2;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+  line-height: 1.3;
+  transition: color 0.3s ease;
+  cursor: pointer; /* Indicate clickable */
 }
 
-/* Content */
-.productsReviewPageContent {
-  font-size: 1rem;
-  color: #666666;
+/* Adjust title for list view */
+.productsReviewPageGrid .productsReviewPageTitle {
+  font-size: 1.5rem;
+}
+
+/* Larger title for single post view */
+.productsReviewPageContentWrapper > .productsReviewPageTitle {
+  font-size: 2.5rem;
+  text-align: center;
+}
+
+.productsReviewPageTitle:hover {
+  color: #2b6cb0; /* Product review-themed teal */
+}
+
+.productsReviewPageExcerpt {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
   line-height: 1.6;
+  color: #555;
   margin-bottom: 15px;
 }
 
-.productsReviewPageContent p {
-  margin: 0 0 10px;
+.productsReviewPageContent {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #4a4a4a;
+  margin-bottom: 20px;
 }
 
-/* Image */
+.productsReviewPageContent img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.productsReviewPageMeta {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #777;
+  margin-top: 20px;
+  text-align: center;
+}
+
 .productsReviewPageImage {
   width: 100%;
-  height: auto;
   border-radius: 8px;
-  object-fit: cover;
   margin-bottom: 15px;
-  display: block;
+  cursor: pointer; /* Indicate clickable */
 }
 
-/* Image Placeholder */
+/* Adjust image for list view */
+.productsReviewPageGrid .productsReviewPageImage {
+  height: 200px;
+  object-fit: cover;
+}
+
+/* Adjust image for single post view */
+.productsReviewPageContentWrapper > .productsReviewPageImage {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+  background-color: #f5f5f5; /* Add background color for empty space */
+}
+
 .productsReviewPageImagePlaceholder {
   width: 100%;
-  height: 200px;
+  background-color: #e5e5e5;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #e9ecef;
-  color: #868e96;
-  font-size: 1rem;
-  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  color: #888;
+  font-size: 0.9rem;
   margin-bottom: 15px;
+  cursor: pointer; /* Indicate clickable */
 }
 
-/* Share Button */
-.shareButton {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: #28a745; /* Green for a "buy/review" vibe */
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+/* Adjust placeholder for list view */
+.productsReviewPageGrid .productsReviewPageImagePlaceholder {
+  height: 200px;
 }
 
-.shareButton:hover {
-  background-color: #218838;
-}
-
-.shareIcon {
+/* Adjust placeholder for single post view */
+.productsReviewPageContentWrapper > .productsReviewPageImagePlaceholder {
+  height: 450px;
   font-size: 1rem;
 }
 
-/* Pagination */
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
   margin-top: 30px;
-  font-size: 1rem;
-  color: #333333;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: #555;
 }
 
 .paginationLink {
   padding: 8px 16px;
-  background-color: #28a745;
+  background-color: #2b6cb0; /* Product review-themed teal */
   color: white;
-  text-decoration: none;
   border-radius: 5px;
+  text-decoration: none;
   transition: background-color 0.3s ease;
 }
 
 .paginationLink:hover {
-  background-color: #218838;
-}
-
-/* Loading Container */
-.loadingContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #fff;
-}
-
-.productLoader {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(45deg, #28a745, #17a2b8); /* Green to teal gradient */
-  border-radius: 8px;
-  animation: pulse 1.2s infinite ease-in-out;
-}
-
-.productLoader::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 40px;
-  height: 40px;
-  background-color: #fff;
-  border-radius: 6px;
-  transform: translate(-50%, -50%);
-}
-
-/* Error and No Posts Messages */
-.productsReviewPageErrorMessage,
-.productsReviewPageNoPostsMessage {
-  text-align: center;
-  font-size: 1.2rem;
-  color: #dc3545;
-  margin: 20px 0;
-}
-
-/* Animation */
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.8;
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .productsReviewPage {
-    padding: 15px;
-  }
-  .productsReviewPageGrid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 15px;
-  }
-  .productsReviewPageTitle {
-    font-size: 1.4rem;
-  }
-  .productsReviewPageContent {
-    font-size: 0.95rem;
-  }
+  background-color: #1a4971; /* Darker teal on hover */
 }
 
 @media (max-width: 768px) {
   .productsReviewPage {
-    padding: 10px;
+    padding: 15px;
   }
+
+  .productsReviewPageContentWrapper {
+    padding: 15px;
+  }
+
   .productsReviewPageGrid {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
   }
-  .productsReviewPageTitle {
-    font-size: 1.3rem;
-  }
-  .productsReviewPageContent {
-    font-size: 0.9rem;
-  }
+
   .productsReviewPageCard {
     padding: 15px;
   }
-  .shareButton {
-    padding: 8px 12px;
+
+  .productsReviewPageTitle {
+    font-size: 1.3rem;
   }
-  .pagination {
-    flex-direction: column;
-    gap: 10px;
+
+  .productsReviewPageContentWrapper > .productsReviewPageTitle {
+    font-size: 2rem;
+  }
+
+  .productsReviewPageExcerpt {
+    font-size: 0.9rem;
+  }
+
+  .productsReviewPageContent {
+    font-size: 0.95rem;
+  }
+
+  .productsReviewPageMeta {
+    font-size: 0.85rem;
+  }
+
+  .productsReviewPageImage,
+  .productsReviewPageImagePlaceholder {
+    height: 180px;
+  }
+
+  .productsReviewPageContentWrapper > .productsReviewPageImage,
+  .productsReviewPageContentWrapper > .productsReviewPageImagePlaceholder {
+    height: auto;
+    max-height: 350px;
   }
 }
 
 @media (max-width: 480px) {
-  .productsReviewPage {
-    padding: 5px;
+  .productsReviewPageGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
+
+  .productsReviewPageCard {
+    padding: 12px;
+  }
+
   .productsReviewPageTitle {
     font-size: 1.2rem;
   }
-  .productsReviewPageContent {
-    font-size: 0.85rem;
+
+  .productsReviewPageContentWrapper > .productsReviewPageTitle {
+    font-size: 1.8rem;
   }
-  .productsReviewPageCard {
-    padding: 10px;
-  }
+
+  .productsReviewPageImage,
   .productsReviewPageImagePlaceholder {
-    height: 150px;
+    height: 160px;
   }
-  .shareButton {
-    width: 100%;
-    justify-content: center;
-  }
-  .productLoader {
-    width: 50px;
-    height: 50px;
-  }
-  .productLoader::before {
-    width: 30px;
-    height: 30px;
+
+  .productsReviewPageContentWrapper > .productsReviewPageImage,
+  .productsReviewPageContentWrapper > .productsReviewPageImagePlaceholder {
+    height: auto;
+    max-height: 300px;
   }
 }

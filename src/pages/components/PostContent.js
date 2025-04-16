@@ -1,51 +1,34 @@
-// src/components/PostContent.js
-import DOMPurify from 'dompurify';
+import sanitizeHtml from 'sanitize-html';
 import styles from '../../styles/AdminDashboard.module.css';
-
-// Check if we're in a Node.js environment (SSR/SSG)
-if (typeof window === 'undefined') {
-  const { JSDOM } = require('jsdom');
-  const window = new JSDOM('').window;
-  DOMPurify(window);
-}
 
 const PostContent = ({ content, category, tags }) => {
   // Sanitize the HTML content
-  const sanitizedContent = DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: [
+  const sanitizedContent = sanitizeHtml(content, {
+    allowedTags: [
       'img', 'p', 'div', 'span', 'br', 'strong', 'em', 'a', 'u',
       'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li',
       'blockquote', 'code', 'pre',
+      'table', 'tr', 'td', 'th', // Add table-related tags
+      'iframe', 'script', // For YouTube/Instagram embeds
     ],
-    ALLOWED_ATTR: ['src', 'width', 'height', 'alt', 'style', 'class', 'align', 'href', 'target', 'rel'],
-  });
-
-  // Parse the sanitized HTML
-  let doc;
-  if (typeof window === 'undefined') {
-    // Use jsdom in Node.js environment
-    const { JSDOM } = require('jsdom');
-    const dom = new JSDOM(sanitizedContent);
-    doc = dom.window.document;
-  } else {
-    // Use DOMParser in the browser
-    const parser = new DOMParser();
-    doc = parser.parseFromString(sanitizedContent, 'text/html');
-  }
-
-  // Adjust img tag styles
-  doc.querySelectorAll('img').forEach((img) => {
-    const width = img.getAttribute('width') || img.style.width;
-    const height = img.getAttribute('height') || img.style.height;
-    if (width) img.style.width = width.endsWith('px') ? width : `${width}px`;
-    if (height) img.style.height = height.endsWith('px') ? height : `${height}px`;
+    allowedAttributes: {
+      img: ['src', 'width', 'height', 'alt', 'style', 'class', 'align'],
+      a: ['href', 'target', 'rel'],
+      table: ['style', 'class'], // Allow style for table borders
+      td: ['style', 'class', 'colspan', 'rowspan'],
+      th: ['style', 'class', 'colspan', 'rowspan'],
+      iframe: ['src', 'frameborder', 'allowfullscreen', 'style'],
+      script: ['src', 'type'],
+      blockquote: ['class', 'data-instgrm-permalink', 'data-instgrm-version'],
+      '*': ['style', 'class'], // Allow style and class on all tags
+    },
   });
 
   return (
     <div>
       <div
         className={styles.postContent}
-        dangerouslySetInnerHTML={{ __html: doc.body.innerHTML }}
+        dangerouslySetInnerHTML={{ __html: sanitizedContent }}
       />
       {category && (
         <p className={styles.postMeta}>

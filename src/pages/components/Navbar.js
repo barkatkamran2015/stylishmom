@@ -1,4 +1,3 @@
-// src/pages/components/Navbar.js
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -27,7 +26,8 @@ const Navbar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState({});
   const [isClient, setIsClient] = useState(false);
-  const dropdownRef = useRef(null);
+  const desktopDropdownRef = useRef(null); // Ref for desktop dropdown
+  const mobileDropdownRef = useRef(null);  // Ref for mobile dropdown
   const router = useRouter();
   const { user } = useAuth();
 
@@ -45,7 +45,10 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      const isOutsideDesktop = desktopDropdownRef.current && !desktopDropdownRef.current.contains(event.target);
+      const isOutsideMobile = mobileDropdownRef.current && !mobileDropdownRef.current.contains(event.target);
+      // Only close dropdown if the click is outside both desktop and mobile dropdowns
+      if (isOutsideDesktop && isOutsideMobile) {
         setMobileMenuOpen({});
       }
     };
@@ -99,15 +102,15 @@ const Navbar = () => {
       position="sticky"
       sx={{
         backgroundColor: '#2980b9',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
-        top: 0, // Ensures stickiness at the top
-        zIndex: 1200, // Above content
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        top: 0,
+        zIndex: 1200,
       }}
     >
       <Toolbar sx={{ justifyContent: 'space-between', padding: { xs: '0 10px', md: '0 20px' } }}>
         {/* Logo */}
         <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
-          <Link href="/" passHref>
+          <Link href="/">
             <img
               src={imageLogo.src}
               alt="The Stylish Mama Logo"
@@ -122,7 +125,7 @@ const Navbar = () => {
         </Typography>
 
         {/* Desktop Menu */}
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2, alignItems: 'center' }} ref={dropdownRef}>
+        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2, alignItems: 'center' }} ref={desktopDropdownRef}>
           {menuItems.map((menu, index) =>
             menu.dropdown ? (
               <Box key={index} sx={{ position: 'relative' }}>
@@ -218,8 +221,8 @@ const Navbar = () => {
                 component={Link}
                 href="/auth/signup"
                 sx={{
-                  backgroundColor: '#FFD700', // Gold for contrast
-                  color: '#0b9299', // Matches navbar bg
+                  backgroundColor: '#FFD700',
+                  color: '#0b9299',
                   fontWeight: 600,
                   padding: '8px 16px',
                   borderRadius: '8px',
@@ -286,7 +289,7 @@ const Navbar = () => {
             </IconButton>
           </Box>
           <Divider sx={{ my: 2, backgroundColor: 'rgba(255, 255, 255, 0.3)' }} />
-          <List>
+          <List ref={mobileDropdownRef}>
             {menuItems.map((menu, index) =>
               menu.dropdown ? (
                 <Box key={index}>
