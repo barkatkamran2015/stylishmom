@@ -45,12 +45,16 @@ export default async function handler(req, res) {
         }
         const data = await response.json();
         const posts = data.posts || [];
+        if (posts.length === 0) {
+          console.log(`No posts found for section ${section}`);
+        }
         const urlPath = sectionToUrlMap[section] || section.toLowerCase();
 
         posts.forEach(post => {
           if (post.slug) {
             const lastmodRaw = post.updated_at || post.createdAt || new Date().toISOString();
-            const lastmod = new Date(lastmodRaw).toISOString().split('T')[0];
+            // Format lastmod as W3C Datetime (e.g., "2025-04-14T19:09:50+00:00")
+            const lastmod = new Date(lastmodRaw).toISOString();
             dynamicPages.push({
               loc: `${baseUrl}/${urlPath}/${post.slug}`,
               lastmod,
