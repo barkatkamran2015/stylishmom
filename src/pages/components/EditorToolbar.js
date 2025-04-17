@@ -24,7 +24,9 @@ const EditorToolbar = ({
   imageInputRef,
   handleEditorImageUpload,
 }) => {
-  // Move all Hooks to the top, before any early returns
+  if (!editor) return null;
+
+  // State for embed dialog
   const [isEmbedDialogOpen, setIsEmbedDialogOpen] = useState(false);
   const [embedUrl, setEmbedUrl] = useState('');
   const [embedError, setEmbedError] = useState('');
@@ -36,9 +38,6 @@ const EditorToolbar = ({
       embedInputRef.current.focus();
     }
   }, [isEmbedDialogOpen]);
-
-  // Early return after all Hooks are called
-  if (!editor) return null;
 
   // Function to set image alignment
   const setImageAlignment = (align) => {
@@ -92,6 +91,15 @@ const EditorToolbar = ({
     setEmbedUrl('');
     setEmbedError('');
     setIsEmbedDialogOpen(false);
+  };
+
+  // Function to set line spacing
+  const setLineSpacing = (lineHeight) => {
+    editor
+      .chain()
+      .focus()
+      .updateAttributes('paragraph', { lineHeight })
+      .run();
   };
 
   return (
@@ -204,6 +212,17 @@ const EditorToolbar = ({
         title="Select text color"
         aria-label="Select text color"
       />
+      <select
+        onChange={(e) => setLineSpacing(e.target.value)}
+        value={editor.isActive('paragraph') ? editor.getAttributes('paragraph').lineHeight || '1.0' : '1.0'}
+        aria-label="Select line spacing"
+      >
+        <option value="1.0">1.0 (Single)</option>
+        <option value="1.5">1.5 (1.5x)</option>
+        <option value="2.0">2.0 (Double)</option>
+        <option value="2.5">2.5 (2.5x)</option>
+        <option value="3.0">3.0 (Triple)</option>
+      </select>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         isActive={editor.isActive('bulletList')}
