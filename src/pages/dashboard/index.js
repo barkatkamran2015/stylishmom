@@ -11,7 +11,8 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
-import Embed from '../../extensions/Embed'
+import Embed from '../../extensions/Embed';
+import CustomParagraph from '../../extensions/Paragraph'; // Import the custom paragraph extension
 
 // Dynamically import DOMPurify to ensure it only runs on the client side
 const loadDOMPurify = async () => {
@@ -56,16 +57,28 @@ export default function Dashboard() {
 
   const { extensions: baseExtensions } = useTipTapExtensions();
 
-  // Extend the base extensions with Table and Embed
+  // Extend the base extensions with Table, Embed, and CustomParagraph
   const extensions = [
-    ...baseExtensions,
+    ...baseExtensions.map(ext => {
+      // Disable the default Paragraph extension from StarterKit
+      if (ext.name === 'paragraph') {
+        return null;
+      }
+      if (ext.name === 'starterKit') {
+        return ext.configure({
+          paragraph: false, // Disable default Paragraph
+        });
+      }
+      return ext;
+    }).filter(ext => ext !== null), // Remove null entries
+    CustomParagraph, // Add the custom paragraph extension
     Table.configure({
-      resizable: false, // Disable resizing for simplicity; enable if needed
+      resizable: false,
     }),
     TableRow,
     TableCell,
     TableHeader,
-    Embed, // Add the custom Embed extension
+    Embed,
   ];
 
   const editor = useEditor({
@@ -86,11 +99,9 @@ export default function Dashboard() {
   useEffect(() => {
     loadDOMPurify().then((DOMPurify) => {
       const instance = DOMPurify(window);
-      // Add hooks to allow specific attributes for embeds
       instance.addHook('uponSanitizeElement', (node, data) => {
-        // Only process element nodes (nodeType === 1)
         if (node.nodeType !== Node.ELEMENT_NODE || !node.tagName) {
-          return; // Skip non-element nodes (e.g., text nodes, comment nodes)
+          return;
         }
         if (node.tagName.toLowerCase() === 'iframe' && node.getAttribute('src')?.includes('youtube.com')) {
           node.setAttribute('allowfullscreen', 'true');
@@ -162,7 +173,7 @@ export default function Dashboard() {
         limit: pagination.limit,
         offset: offset,
       });
-      const url = `${PHP_API_URL}?${queryParams.toString()}`; // Use PHP_API_URL
+      const url = `${PHP_API_URL}?${queryParams.toString()}`;
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${idToken}` },
       });
@@ -232,7 +243,7 @@ export default function Dashboard() {
         method: 'UPLOAD_IMAGE',
         page: selectedPage || '',
       });
-      const endpoint = `${PHP_API_URL}?${queryParams.toString()}`; // Direct to PHP API
+      const endpoint = `${PHP_API_URL}?${queryParams.toString()}`;
 
       const formData = new FormData();
       formData.append('image', file);
@@ -302,7 +313,7 @@ export default function Dashboard() {
         method: 'UPLOAD_IMAGE',
         page: selectedPage || '',
       });
-      const endpoint = `${PHP_API_URL}?${queryParams.toString()}`; // Direct to PHP API
+      const endpoint = `${PHP_API_URL}?${queryParams.toString()}`;
 
       const formData = new FormData();
       formData.append('image', file);
@@ -423,15 +434,15 @@ export default function Dashboard() {
           'img', 'p', 'div', 'span', 'br', 'strong', 'em', 'a', 'u',
           'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li',
           'blockquote', 'code', 'pre',
-          'table', 'tr', 'td', 'th', // Add table tags
-          'iframe', 'script', // Add embed tags
+          'table', 'tr', 'td', 'th',
+          'iframe', 'script',
         ],
         ALLOWED_ATTR: [
           'src', 'width', 'height', 'alt', 'style', 'class', 'align', 'href',
           'target', 'rel', 'color', 'font-family', 'font-size', 'text-align',
-          'colspan', 'rowspan', // Add table attributes
-          'frameborder', 'allowfullscreen', // Add YouTube iframe attributes
-          'data-instgrm-permalink', 'data-instgrm-version', 'data-embed', 'data-src', 'data-platform', // Add Instagram attributes
+          'colspan', 'rowspan',
+          'frameborder', 'allowfullscreen',
+          'data-instgrm-permalink', 'data-instgrm-version', 'data-embed', 'data-src', 'data-platform',
         ],
       });
   
@@ -461,7 +472,7 @@ export default function Dashboard() {
         method: editMode ? 'UPDATE_POST' : 'CREATE_POST',
         page: selectedPage,
       });
-      const endpoint = `${PHP_API_URL}?${queryParams.toString()}`; // Use PHP_API_URL
+      const endpoint = `${PHP_API_URL}?${queryParams.toString()}`;
   
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -516,7 +527,7 @@ export default function Dashboard() {
         page: encodeURIComponent(page),
         id: postId,
       });
-      const url = `${PHP_API_URL}?${queryParams.toString()}`; // Use PHP_API_URL
+      const url = `${PHP_API_URL}?${queryParams.toString()}`;
       const response = await fetch(url, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${idToken}` },
@@ -577,7 +588,6 @@ export default function Dashboard() {
     setNewPost((prev) => ({ ...prev, tags: tagsArray }));
   };
 
-  // Function to open the link dialog
   const openLinkDialog = () => {
     if (!editor) {
       setError('Editor is not initialized.');
@@ -595,7 +605,6 @@ export default function Dashboard() {
     setIsLinkDialogOpen(true);
   };
 
-  // Function to set the link
   const handleSetLink = () => {
     if (!editor) {
       setError('Editor is not initialized.');
@@ -792,7 +801,7 @@ export default function Dashboard() {
             }
             className={styles.sizeSelect}
           >
-            {['8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px', '48px', '56px', '64px', '72px'].map((size) => (
+            {['8px', '10px', '12px', '14px', '16px', '20px', '24px', '28px', '32px', '36px', '40px', '48px', '56px', '64px', '72px'].map((size) => (
               <option key={size} value={size}>{size}</option>
             ))}
           </select>
