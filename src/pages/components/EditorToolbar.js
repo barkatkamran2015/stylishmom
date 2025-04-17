@@ -24,9 +24,7 @@ const EditorToolbar = ({
   imageInputRef,
   handleEditorImageUpload,
 }) => {
-  if (!editor) return null;
-
-  // State for embed dialog
+  // Move all hooks to the top, before any early returns
   const [isEmbedDialogOpen, setIsEmbedDialogOpen] = useState(false);
   const [embedUrl, setEmbedUrl] = useState('');
   const [embedError, setEmbedError] = useState('');
@@ -38,6 +36,9 @@ const EditorToolbar = ({
       embedInputRef.current.focus();
     }
   }, [isEmbedDialogOpen]);
+
+  // Early return after hooks are declared
+  if (!editor) return null;
 
   // Function to set image alignment
   const setImageAlignment = (align) => {
