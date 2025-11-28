@@ -101,9 +101,9 @@ const Navbar = () => {
     <AppBar
   position="sticky"
   sx={{
-    background: 'rgba(155, 29, 42, 0.94)',           // Deep mulled-wine red with subtle transparency
-    backdropFilter: 'blur(14px)',                    // Glassmorphism (modern luxury)
-    borderBottom: '3px solid #d4af37',               // Festive gold underline
+    background: 'rgba(155, 29, 42, 0.94)',
+    backdropFilter: 'blur(14px)',
+    borderBottom: '3px solid #d4af37',
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
     top: 0,
     zIndex: 1200,
@@ -123,8 +123,8 @@ const Navbar = () => {
             filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))',
             transition: 'transform 0.3s ease',
           }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
         />
       </Link>
     </Typography>
@@ -145,7 +145,6 @@ const Navbar = () => {
                 padding: '10px 20px',
                 borderRadius: '12px',
                 position: 'relative',
-                overflow: 'hidden',
                 '&:after': {
                   content: '""',
                   position: 'absolute',
@@ -157,18 +156,13 @@ const Navbar = () => {
                   transition: 'all 0.35s ease',
                   transform: 'translateX(-50%)',
                 },
-                '&:hover:after': {
-                  width: '70%',
-                },
-                '&:hover': {
-                  backgroundColor: 'rgba(212, 175, 55, 0.15)',
-                },
+                '&:hover:after': { width: '70%' },
+                '&:hover': { backgroundColor: 'rgba(212, 175, 55, 0.15)' },
               }}
             >
               {menu.label}
             </Button>
 
-            {/* Dropdown */}
             {mobileMenuOpen[menu.label] && (
               <Box
                 sx={{
@@ -197,9 +191,7 @@ const Navbar = () => {
                       textAlign: 'left',
                       textTransform: 'none',
                       fontWeight: 500,
-                      '&:hover': {
-                        backgroundColor: 'rgba(212, 175, 55, 0.2)',
-                      },
+                      '&:hover': { backgroundColor: 'rgba(212, 175, 55, 0.2)' },
                     }}
                   >
                     {item.label}
@@ -241,7 +233,7 @@ const Navbar = () => {
         )
       )}
 
-      {/* Sign In & Sign Up */}
+      {/* Auth Buttons */}
       {!user ? (
         <>
           <Button
@@ -278,43 +270,22 @@ const Navbar = () => {
           </Button>
         </>
       ) : (
-        <Button onClick={handleLogout} sx={{ color: '#fdf2f2', fontWeight: 600, padding: '10px 20px', borderRadius: '12px', '&:hover': { backgroundColor: 'rgba(212, 175, 55, 0.15)' } }}>
+        <Button
+          onClick={handleLogout}
+          sx={{
+            color: '#fdf2f2',
+            fontWeight: 600,
+            padding: '10px 20px',
+            borderRadius: '12px',
+            '&:hover': { backgroundColor: 'rgba(212, 175, 55, 0.15)' },
+          }}
+        >
           Logout
         </Button>
       )}
     </Box>
-                Sign In
-              </Button>
-              <Button
-                component={Link}
-                href="/auth/signup"
-                sx={{
-                  backgroundColor: '#FFD700',
-                  color: '#0b9299',
-                  fontWeight: 600,
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  '&:hover': { backgroundColor: '#ffea00' },
-                }}
-              >
-                Sign Up
-              </Button>
-            </>
-          ) : (
-            <Button
-              onClick={handleLogout}
-              sx={{
-                color: 'white',
-                fontWeight: 600,
-                padding: '8px 16px',
-                borderRadius: '8px',
-                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-              }}
-            >
-              Logout
-            </Button>
-          )}
-        </Box>
+
+   
 
         {/* Mobile Menu Button */}
         <IconButton
