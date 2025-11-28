@@ -103,7 +103,7 @@ export default function BlogPost({ post, error }) {
 
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structedData) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}  // ← FIXED: "structuredData"
         />
       </Head>
 
@@ -122,7 +122,7 @@ export default function BlogPost({ post, error }) {
         {post.imageUrl ? (
           <Image
             src={post.imageUrl}
-            alt={`${post.title || 'Blog post'} - The Stylish Mama`}
+            alt={`Image for ${post.title || 'Untitled'} - The Stylish Mama`}  // ← FIXED: Added fallback
             className={styles.blogPageImage}
             width={800}
             height={450}
