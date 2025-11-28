@@ -18,7 +18,8 @@ const normalizeSlug = (slug) => {
     .replace(/\s+/g, '-')           // spaces → dashes
     .replace(/%20/g, '-')           // %20 → dash
     .replace(/[_]+/g, '-')          // underscores → dash
-    .replace(/[^\w-]+/g, '')        // remove all special chars except letters, numbers, dash
+    // Only remove truly dangerous chars, keep &, (), !, ? etc.
+    .replace(/[.#$[\]]/g, '')       // only remove chars that break URLs or Next.js
     .replace(/-+/g, '-')            // collapse multiple dashes
     .replace(/^-+|-+$/g, '');       // trim dashes from start/end
 };
