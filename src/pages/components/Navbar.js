@@ -99,122 +99,190 @@ const Navbar = () => {
 
   return (
     <AppBar
-      position="sticky"
-      sx={{
-        backgroundColor: '#9b1d2a',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-        top: 0,
-        zIndex: 1200,
-      }}
-    >
-      <Toolbar sx={{ justifyContent: 'space-between', padding: { xs: '0 10px', md: '0 20px' } }}>
-        {/* Logo */}
-        <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
-          <Link href="/">
-            <img
-              src={imageLogo.src}
-              alt="The Stylish Mama Logo"
-              style={{
-                height: '60px',
-                objectFit: 'contain',
-                transition: 'transform 0.3s ease',
-                '&:hover': { transform: 'scale(1.05)' },
-              }}
-            />
-          </Link>
-        </Typography>
+  position="sticky"
+  sx={{
+    background: 'rgba(155, 29, 42, 0.94)',           // Deep mulled-wine red with subtle transparency
+    backdropFilter: 'blur(14px)',                    // Glassmorphism (modern luxury)
+    borderBottom: '3px solid #d4af37',               // Festive gold underline
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+    top: 0,
+    zIndex: 1200,
+    transition: 'all 0.3s ease',
+  }}
+>
+  <Toolbar sx={{ justifyContent: 'space-between', padding: { xs: '0 16px', md: '0 32px' }, minHeight: '80px' }}>
+    {/* Logo */}
+    <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+      <Link href="/">
+        <img
+          src={imageLogo.src}
+          alt="The Stylish Mama Logo"
+          style={{
+            height: '68px',
+            objectFit: 'contain',
+            filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))',
+            transition: 'transform 0.3s ease',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        />
+      </Link>
+    </Typography>
 
-        {/* Desktop Menu */}
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2, alignItems: 'center' }} ref={desktopDropdownRef}>
-          {menuItems.map((menu, index) =>
-            menu.dropdown ? (
-              <Box key={index} sx={{ position: 'relative' }}>
-                <Button
-                  onClick={() => toggleMobileMenu(menu.label)}
-                  endIcon={<ExpandMoreIcon />}
-                  sx={{
-                    color: 'white',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                  }}
-                >
-                  {menu.label}
-                </Button>
-                {mobileMenuOpen[menu.label] && (
-                  <Box
+    {/* Desktop Menu */}
+    <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2, alignItems: 'center' }} ref={desktopDropdownRef}>
+      {menuItems.map((menu, index) =>
+        menu.dropdown ? (
+          <Box key={index} sx={{ position: 'relative' }}>
+            <Button
+              onClick={() => toggleMobileMenu(menu.label)}
+              endIcon={<ExpandMoreIcon />}
+              sx={{
+                color: '#fdf2f2',
+                fontWeight: 600,
+                fontSize: '1rem',
+                textTransform: 'none',
+                padding: '10px 20px',
+                borderRadius: '12px',
+                position: 'relative',
+                overflow: 'hidden',
+                '&:after': {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: 10,
+                  left: '50%',
+                  width: 0,
+                  height: '2.5px',
+                  background: '#d4af37',
+                  transition: 'all 0.35s ease',
+                  transform: 'translateX(-50%)',
+                },
+                '&:hover:after': {
+                  width: '70%',
+                },
+                '&:hover': {
+                  backgroundColor: 'rgba(212, 175, 55, 0.15)',
+                },
+              }}
+            >
+              {menu.label}
+            </Button>
+
+            {/* Dropdown */}
+            {mobileMenuOpen[menu.label] && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  background: 'rgba(155, 29, 42, 0.98)',
+                  borderRadius: '12px',
+                  boxShadow: '0 12px 30px rgba(0, 0, 0, 0.3)',
+                  minWidth: '180px',
+                  mt: 1,
+                  overflow: 'hidden',
+                  border: '1px solid rgba(212, 175, 55, 0.2)',
+                }}
+              >
+                {menu.dropdown.map((item, idx) => (
+                  <Button
+                    key={idx}
+                    component={Link}
+                    href={item.path}
+                    onClick={() => setMobileMenuOpen({})}
                     sx={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: 0,
-                      backgroundColor: '#2980b9',
-                      borderRadius: '8px',
-                      boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)',
-                      minWidth: '150px',
-                      zIndex: 1,
-                      overflow: 'hidden',
+                      display: 'block',
+                      color: '#fdf2f2',
+                      padding: '12px 24px',
+                      textAlign: 'left',
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      '&:hover': {
+                        backgroundColor: 'rgba(212, 175, 55, 0.2)',
+                      },
                     }}
                   >
-                    {menu.dropdown.map((item, idx) => (
-                      <Button
-                        key={idx}
-                        component={Link}
-                        href={item.path}
-                        onClick={() => setMobileMenuOpen({})}
-                        sx={{
-                          display: 'block',
-                          color: 'white',
-                          padding: '10px 20px',
-                          textAlign: 'left',
-                          textTransform: 'none',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                          },
-                        }}
-                      >
-                        {item.label}
-                      </Button>
-                    ))}
-                  </Box>
-                )}
+                    {item.label}
+                  </Button>
+                ))}
               </Box>
-            ) : (
-              <Button
-                key={index}
-                component={Link}
-                href={menu.path}
-                sx={{
-                  color: 'white',
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  },
-                }}
-              >
-                {menu.label}
-              </Button>
-            )
-          )}
-          {!user ? (
-            <>
-              <Button
-                component={Link}
-                href="/auth/signin"
-                sx={{
-                  color: 'white',
-                  fontWeight: 600,
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-                }}
-              >
+            )}
+          </Box>
+        ) : (
+          <Button
+            key={index}
+            component={Link}
+            href={menu.path}
+            sx={{
+              color: '#fdf2f2',
+              fontWeight: 600,
+              fontSize: '1rem',
+              textTransform: 'none',
+              padding: '10px 20px',
+              borderRadius: '12px',
+              position: 'relative',
+              '&:after': {
+                content: '""',
+                position: 'absolute',
+                bottom: 10,
+                left: '50%',
+                width: 0,
+                height: '2.5px',
+                background: '#d4af37',
+                transition: 'all 0.35s ease',
+                transform: 'translateX(-50%)',
+              },
+              '&:hover:after': { width: '70%' },
+              '&:hover': { backgroundColor: 'rgba(212, 175, 55, 0.15)' },
+            }}
+          >
+            {menu.label}
+          </Button>
+        )
+      )}
+
+      {/* Sign In & Sign Up */}
+      {!user ? (
+        <>
+          <Button
+            component={Link}
+            href="/auth/signin"
+            sx={{
+              color: '#fdf2f2',
+              fontWeight: 600,
+              padding: '10px 20px',
+              borderRadius: '12px',
+              '&:hover': { backgroundColor: 'rgba(212, 175, 55, 0.15)' },
+            }}
+          >
+            Sign In
+          </Button>
+          <Button
+            component={Link}
+            href="/auth/signup"
+            sx={{
+              background: 'linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)',
+              color: '#600d17',
+              fontWeight: 700,
+              padding: '12px 32px',
+              borderRadius: '12px',
+              boxShadow: '0 6px 20px rgba(212, 175, 55, 0.4)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-3px)',
+                boxShadow: '0 12px 30px rgba(212, 175, 55, 0.5)',
+              },
+            }}
+          >
+            Sign Up
+          </Button>
+        </>
+      ) : (
+        <Button onClick={handleLogout} sx={{ color: '#fdf2f2', fontWeight: 600, padding: '10px 20px', borderRadius: '12px', '&:hover': { backgroundColor: 'rgba(212, 175, 55, 0.15)' } }}>
+          Logout
+        </Button>
+      )}
+    </Box>
                 Sign In
               </Button>
               <Button
