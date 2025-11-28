@@ -7,12 +7,9 @@ import Link from 'next/link';
 import SearchBar from "../components/SearchBar";
 import styles from "../../styles/Dash.module.css";
 
-import imageBlog from "../Assets/kitchen.jpeg";
-import imageNature from "../Assets/parenting.jpeg";
-import imageRecipe from "../Assets/bedroom.jpeg";
-import imageGarden from "../Assets/garden.JPG";
-import imageFall from "../Assets/fall.jpg";
-import imageTulip from "../Assets/tulip.JPEG";
+import imageBlog from "../Assets/family.png";
+import imageNature from "../Assets/lotto.jpg";
+import imageRecipe from "../Assets/make.jpg";
 
 const Slider = dynamic(() => import('react-slick'), { ssr: false });
 
@@ -268,7 +265,7 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                 height={600}
                 priority
               />
-              <h3 className={styles.homePage__sliderText}>Explore Inspiring Blogs</h3>
+              <h3 className={styles.homePage__sliderText}>Love Does not Divide, It Multiplies</h3>
             </div>
             <div>
               <Image
@@ -279,7 +276,7 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                 height={600}
                 priority
               />
-              <h3 className={styles.homePage__sliderText}>Discover Natures Beauty</h3>
+              <h3 className={styles.homePage__sliderText}>Every family is Unique</h3>
             </div>
             <div>
               <Image
@@ -290,40 +287,7 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                 height={600}
                 priority
               />
-              <h3 className={styles.homePage__sliderText}>Healthy Recipe Ideas</h3>
-            </div>
-            <div>
-              <Image
-                src={imageGarden}
-                alt="Garden"
-                className={styles.homePage__sliderImage}
-                width={1200}
-                height={600}
-                priority
-              />
-              <h3 className={styles.homePage__sliderText}>Butcher Garden Visit</h3>
-            </div>
-            <div>
-              <Image
-                src={imageTulip}
-                alt="Tulip"
-                className={styles.homePage__sliderImage}
-                width={1200}
-                height={600}
-                priority
-              />
-              <h3 className={styles.homePage__sliderText}>Tulip Festival BC</h3>
-            </div>
-            <div>
-              <Image
-                src={imageFall}
-                alt="Fall"
-                className={styles.homePage__sliderImage}
-                width={1200}
-                height={600}
-                priority
-              />
-              <h3 className={styles.homePage__sliderText}>Beautiful Fall Season</h3>
+              <h3 className={styles.homePage__sliderText}>I carry Hope in here. And half a granola bar</h3>
             </div>
           </Slider>
 
