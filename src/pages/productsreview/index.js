@@ -44,46 +44,20 @@ export default function ProductsReview({ posts, initialCategories, initialTags, 
       ? `${filteredPosts[0].title} - Product Reviews | The Stylish Mama`
       : 'Product Reviews | The Stylish Mama';
 
-  const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
-    name: 'Product Reviews | The Stylish Mama',
-    description: dynamicDescription,
-    url: `${baseUrl}/productsreview`,
-    mainEntity: {
-      '@type': 'ItemList',
-      itemListElement: filteredPosts.map((post, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        item: {
-          '@type': 'Review',
-          name: post.title || 'Untitled Review',
-          description: sanitizeText(post.content).substring(0, 160),
-          datePublished: post.createdAt || new Date().toISOString(),
-          dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
-          author: { '@type': 'Person', name: 'The Stylish Mama' },
-          publisher: {
-            '@type': 'Organization',
-            name: 'The Stylish Mama',
-            logo: { '@type': 'ImageObject', url: `${baseUrl}/logo.png` },
-          },
-          reviewRating: {
-            '@type': 'Rating',
-            ratingValue: '4.5',
-            bestRating: '5',
-            worstRating: '1',
-          },
-          itemReviewed: {
-            '@type': 'Product',
-            name: (post.title || '').replace(/Review:/i, '').trim() || 'Unnamed Product',
-            image: post.imageUrl || 'https://www.thestylishmama.com/default-product-image.jpg',
-            description: sanitizeText(post.content).substring(0, 160),
-          },
-          url: `${baseUrl}/productsreview/${post.slug}`,
-          keywords: post.tags?.join(', ') || 'product reviews, buying guide',
-        },
-      })),
-    },
+    const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Product Reviews | The Stylish Mama",
+    "description": "Honest and detailed product reviews for stylish moms trust.",
+    "url": `${baseUrl}/productsreview`,
+    "mainEntity": {
+      "@type": "ItemList",
+      "itemListElement": filteredPosts.map((post, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "url": `${baseUrl}/productsreview/${post.slug}`
+      }))
+    }
   };
 
   const handleSearch = useCallback((searchTerm) => {
