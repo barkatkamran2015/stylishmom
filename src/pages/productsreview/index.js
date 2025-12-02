@@ -1,3 +1,4 @@
+// pages/productsreview/index.js
 import { useState, useCallback } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -5,10 +6,7 @@ import Image from 'next/image';
 import Header from '../header';
 import styles from '../../styles/ProductsReview.module.css';
 
-const API_URL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://www.thestylishmama.com/api/posts'
-    : 'http://localhost:3000/api/posts';
+const API_URL = 'https://www.thestylishmama.com/api/posts';
 
 const sanitizeText = (htmlContent) => {
   if (!htmlContent) return '';
@@ -29,22 +27,18 @@ export default function ProductsReview({ posts, initialCategories, initialTags, 
   const [categories] = useState(initialCategories || []);
   const [tags] = useState(initialTags || []);
 
-  const baseUrl =
-    process.env.NODE_ENV === 'production'
-      ? 'https://www.thestylishmama.com'
-      : 'http://localhost:3000';
+  const baseUrl = 'https://www.thestylishmama.com';
 
   const dynamicDescription =
     filteredPosts.length > 0
       ? `Discover detailed product reviews like "${filteredPosts[0].title}" at The Stylish Mama.`
       : 'Explore product reviews and lifestyle tips at The Stylish Mama.';
-
   const dynamicTitle =
     filteredPosts.length > 0
       ? `${filteredPosts[0].title} - Product Reviews | The Stylish Mama`
       : 'Product Reviews | The Stylish Mama';
 
-    const structuredData = {
+  const structuredData = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": "Product Reviews | The Stylish Mama",
@@ -70,7 +64,6 @@ export default function ProductsReview({ posts, initialCategories, initialTags, 
           (post.content || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredPosts(filtered);
-      console.log('Filtered ProductsReview Slugs:', filtered.map(p => p.slug)); // Debug filtered slugs
     }
   }, [postsState]);
 
@@ -81,7 +74,6 @@ export default function ProductsReview({ posts, initialCategories, initialTags, 
         (!selectedTags.length || (post.tags || []).some((tag) => selectedTags.includes(tag)))
     );
     setFilteredPosts(filtered);
-    console.log('Filtered ProductsReview Slugs after Filter:', filtered.map(p => p.slug)); // Debug filtered slugs
   }, [postsState]);
 
   return (
@@ -140,46 +132,43 @@ export default function ProductsReview({ posts, initialCategories, initialTags, 
         {!error && filteredPosts.length === 0 && (
           <p className={styles.productsReviewPageNoPostsMessage}>No posts available</p>
         )}
+
         <div className={styles.productsReviewPageGrid}>
           {filteredPosts.map((post, index) => (
             <div key={post.id} className={styles.productsReviewPageCard} style={{ '--index': index }}>
               {post.imageUrl ? (
                 <Link href={`/productsreview/${post.slug}`}>
-                 
-                    <Image
-                      src={post.imageUrl}
-                      alt={`Thumbnail for ${post.title} - Product Review`}
-                      className={styles.productsReviewPageImage}
-                      width={300}
-                      height={200}
-                      onError={(e) => {
-                        console.error('Image failed to load:', post.imageUrl);
-                        e.target.src = 'https://www.thestylishmama.com/default-product-image.jpg';
-                      }}
-                      loading="lazy"
-                    />
-                 
+                  <Image
+                    src={post.imageUrl}
+                    alt={`Thumbnail for ${post.title} - Product Review`}
+                    className={styles.productsReviewPageImage}
+                    width={300}
+                    height={200}
+                    onError={(e) => {
+                      console.error('Image failed to load:', post.imageUrl);
+                      e.target.src = 'https://www.thestylishmama.com/default-product-image.jpg';
+                    }}
+                    loading="lazy"
+                  />
                 </Link>
               ) : (
                 <Link href={`/productsreview/${post.slug}`}>
-              
-                    <div className={styles.productsReviewPageImagePlaceholder}>
-                      No Image Available
-                    </div>
-                 
+                  <div className={styles.productsReviewPageImagePlaceholder}>
+                    No Image Available
+                  </div>
                 </Link>
               )}
               <Link href={`/productsreview/${post.slug}`}>
-                  <h2
-                    className={styles.productsReviewPageTitle}
-                    style={{
-                      color: post.titleStyle?.color || '#000',
-                      fontSize: post.titleStyle?.fontSize || '1.5rem',
-                      textAlign: post.titleStyle?.textAlign || 'left',
-                    }}
-                  >
-                    {post.title || 'Untitled'}
-                  </h2>
+                <h2
+                  className={styles.productsReviewPageTitle}
+                  style={{
+                    color: post.titleStyle?.color || '#000',
+                    fontSize: post.titleStyle?.fontSize || '1.5rem',
+                    textAlign: post.titleStyle?.textAlign || 'left',
+                  }}
+                >
+                  {post.title || 'Untitled'}
+                </h2>
               </Link>
               <p className={styles.productsReviewPageExcerpt}>
                 {sanitizeText(post.content).substring(0, 200) || 'No content available...'}
@@ -214,76 +203,55 @@ export default function ProductsReview({ posts, initialCategories, initialTags, 
   );
 }
 
-export async function getServerSideProps({ query }) {
-  const { limit = 10, offset = 0 } = query;
+// THIS IS THE ONLY CHANGE — getStaticProps instead of getServerSideProps
+export async function getStaticProps() {
+  const limit = 10;
+  const offset = 0;
+
   try {
     const response = await fetch(`${API_URL}?page=ProductsReview&limit=${limit}&offset=${offset}`);
-    const responseText = await response.text();
-    console.log('Raw API Response for ProductsReview:', responseText);
+    const data = await response.json();
+    const { posts = [], pagination = {} } = data;
 
-    if (!response.ok) {
-      console.error('Error fetching ProductsReview posts:', responseText);
-      throw new Error(`HTTP Error! Status: ${response.status} - ${responseText}`);
-    }
+    const uniqueCategories = [...new Set(posts.map(p => p.category).filter(Boolean))];
+    const uniqueTags = [...new Set(posts.flatMap(p => p.tags || []).filter(Boolean))];
 
-    let data;
-    try {
-      data = JSON.parse(responseText);
-      console.log('Parsed API Response for ProductsReview:', data);
-    } catch (parseErr) {
-      console.error('Error parsing API response:', parseErr.message);
-      throw new Error('Invalid API response format');
-    }
-
-    const { posts, pagination } = data;
-    if (!posts || !Array.isArray(posts)) {
-      throw new Error('Posts array is missing or invalid');
-    }
-
-    const uniqueCategories = [
-      ...new Set(posts.map((post) => post.category).filter((cat) => cat !== undefined)),
-    ];
-    const uniqueTags = [
-      ...new Set(posts.flatMap((post) => post.tags || []).filter((tag) => tag !== undefined)),
-    ];
+    const formattedPosts = posts.map(post => ({
+      ...post,
+      imageUrl: post.imageUrl?.startsWith('http')
+        ? post.imageUrl
+        : post.imageUrl ? `https://www.thestylishmama.com${post.imageUrl}` : null,
+      titleStyle: post.titleStyle
+        ? typeof post.titleStyle === 'string' ? JSON.parse(post.titleStyle) : post.titleStyle
+        : { color: '#000', fontSize: '1.5rem', textAlign: 'left' },
+    }));
 
     return {
       props: {
-        posts: posts.map((post) => ({
-          ...post,
-          id: post.id || null,
-          slug: post.slug || null,
-          title: post.title || 'Untitled',
-          content: post.content || '',
-          imageUrl: post.imageUrl?.startsWith('http')
-            ? post.imageUrl
-            : post.imageUrl
-            ? `https://www.thestylishmama.com${post.imageUrl}`
-            : null,
-          createdAt: post.createdAt || new Date().toISOString(),
-          updated_at: post.updated_at || post.createdAt || new Date().toISOString(),
-          titleStyle: post.titleStyle
-            ? typeof post.titleStyle === 'string'
-              ? JSON.parse(post.titleStyle)
-              : post.titleStyle
-            : { color: '#000', fontSize: '1.5rem', textAlign: 'left' },
-        })),
+        posts: formattedPosts,
         initialCategories: uniqueCategories,
         initialTags: uniqueTags,
+        pagination: {
+          ...pagination,
+          limit,
+          offset,
+          totalPages: pagination.totalPages || Math.ceil((pagination.total || 0) / limit),
+        },
         error: '',
-        pagination,
       },
+      revalidate: 60,
     };
   } catch (err) {
-    console.error('Error in getServerSideProps for ProductsReview:', err.message);
+    console.error('getStaticProps error:', err);
     return {
       props: {
         posts: [],
         initialCategories: [],
         initialTags: [],
-        error: `Failed to load posts: ${err.message}`,
+        error: 'Failed to load posts',
         pagination: { total: 0, limit: 10, offset: 0, totalPages: 0 },
       },
+      revalidate: 60,
     };
   }
 }
