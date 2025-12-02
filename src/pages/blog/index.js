@@ -1,3 +1,4 @@
+// pages/blog/index.js
 import { useState, useCallback } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
@@ -5,10 +6,7 @@ import Link from 'next/link';
 import Header from '../header';
 import styles from '../../styles/Blog.module.css';
 
-const API_URL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://www.thestylishmama.com/api/posts'
-    : 'http://localhost:3000/api/posts';
+const API_URL = 'https://www.thestylishmama.com/api/posts';
 
 const sanitizeText = (htmlContent) => {
   if (!htmlContent) return '';
@@ -29,12 +27,12 @@ const getExcerpt = (content, maxLength = 150) => {
 };
 
 export default function Blog({ initialPosts, initialCategories, initialTags, initialError, pagination }) {
-  const [posts, setPosts] = useState(initialPosts || []);
+  const [posts] = useState(initialPosts || []);
   const [filteredPosts, setFilteredPosts] = useState(initialPosts || []);
-  const [categories, setCategories] = useState(initialCategories || []);
-  const [tags, setTags] = useState(initialTags || []);
-  const [error, setError] = useState(initialError || '');
-  const [loading, setLoading] = useState(false);
+  const [categories] = useState(initialCategories || []);
+  const [tags] = useState(initialTags || []);
+  const [error] = useState(initialError || '');
+  const [loading] = useState(false);
 
   const handleSearch = useCallback((searchTerm) => {
     if (!searchTerm.trim()) {
@@ -46,7 +44,7 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
           (post.content || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredPosts(filtered);
-      console.log('Filtered Posts Slugs:', filtered.map(p => p.slug)); // Debug filtered slugs
+      console.log('Filtered Posts Slugs:', filtered.map(p => p.slug));
     }
   }, [posts]);
 
@@ -57,7 +55,7 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
         (!selectedTags.length || (post.tags || []).some((tag) => selectedTags.includes(tag)))
     );
     setFilteredPosts(filtered);
-    console.log('Filtered Posts Slugs after Filter:', filtered.map(p => p.slug)); // Debug filtered slugs
+    console.log('Filtered Posts Slugs after Filter:', filtered.map(p => p.slug));
   }, [posts]);
 
   const incrementViewCount = useCallback(async (postId) => {
@@ -71,10 +69,7 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
     }
   }, []);
 
-  const baseUrl =
-    process.env.NODE_ENV === 'production'
-      ? 'https://www.thestylishmama.com'
-      : 'http://localhost:3000';
+  const baseUrl = 'https://www.thestylishmama.com';
 
   const structuredData = {
     '@context': 'https://schema.org',
@@ -131,15 +126,12 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
   };
 
   const primaryPost = filteredPosts[0];
-
   const dynamicDescription = primaryPost
     ? `${sanitizeText(primaryPost.content).substring(0, 120)}... Read more on The Stylish Mama!`
     : 'Discover insightful blog posts on motherhood, lifestyle, and more at The Stylish Mama.';
-
   const dynamicTitle = primaryPost
     ? `${primaryPost.title || 'Untitled'} | The Stylish Mama`
     : 'Blog | The Stylish Mama';
-
   const keywords = filteredPosts
     .slice(0, 3)
     .map((post) => (post.title || '').toLowerCase().split(' ').slice(0, 3).join(','))
@@ -242,7 +234,6 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
                           <div className={styles.blogPageImagePlaceholder}>No Image Available</div>
                         )}
                       </Link>
-
                       <h2
                         className={styles.blogPageTitle}
                         style={{
@@ -252,11 +243,10 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
                         }}
                       >
                         <Link href={`/blog/${post.slug}`} className={styles.blogPageTitleLink}>
-                          {console.log('Rendering Slug for Link:', post.slug)} {/* Debug the slug */}
+                          {console.log('Rendering Slug for Link:', post.slug)}
                           {post.title || 'Untitled'}
                         </Link>
                       </h2>
-
                       <p className={styles.blogPageContent}>{getExcerpt(post.content, 150)}</p>
                     </article>
                   ))}
@@ -294,39 +284,22 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
   );
 }
 
-export async function getServerSideProps({ query }) {
-  const { limit = 10, offset = 0 } = query;
+// THIS IS THE ONLY CHANGE — getStaticProps instead of getServerSideProps
+export async function getStaticProps() {
+  const limit = 10;
+  const offset = 0;
+
   try {
     const response = await fetch(`${API_URL}?page=Blog&limit=${limit}&offset=${offset}`);
-    const responseText = await response.text();
-    console.log('Raw API Response for Blog (List):', responseText);
-
-    if (!response.ok) {
-      console.error('Error fetching posts (Server-Side):', responseText);
-      throw new Error(`HTTP Error! Status: ${response.status}`);
-    }
-
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (parseErr) {
-      console.error('Error parsing API response:', parseErr.message);
-      throw new Error('Invalid API response format');
-    }
-
-    const { posts, pagination } = data;
-
-    if (!Array.isArray(posts)) {
-      console.error('Posts is not an array:', posts);
-      throw new Error('Invalid posts data');
-    }
+    const data = await response.json();
+    const { posts = [], pagination = {} } = data;
 
     const blogPosts = posts.map((post) => {
-      console.log('Post Slug from API Response:', post.slug); // Debug the slug from API
+      console.log('Post Slug from API Response:', post.slug);
       return {
         ...post,
         id: post.id || null,
-        slug: post.slug || null, // Use the slug directly from the API response
+        slug: post.slug || null,
         titleStyle: post.titleStyle
           ? typeof post.titleStyle === 'string'
             ? JSON.parse(post.titleStyle)
@@ -363,9 +336,10 @@ export async function getServerSideProps({ query }) {
           totalPages: pagination?.totalPages || 0,
         },
       },
+      revalidate: 60,
     };
   } catch (err) {
-    console.error('Error in getServerSideProps:', err.message);
+    console.error('Error in getStaticProps:', err.message);
     return {
       props: {
         initialPosts: [],
@@ -374,6 +348,7 @@ export async function getServerSideProps({ query }) {
         initialError: `Failed to load posts: ${err.message}`,
         pagination: { total: 0, limit: 10, offset: 0, totalPages: 0 },
       },
+      revalidate: 60,
     };
   }
 }
