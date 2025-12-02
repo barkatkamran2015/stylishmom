@@ -28,7 +28,7 @@ export default function Footer() {
         <div className={styles.footerSection}>
           <h2>Follow Me</h2>
           <div className={styles.socialIcons}>
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.facebook.com/profile.php?id=61584252972913" target="_blank" rel="noopener noreferrer">
               <FontAwesomeIcon icon={faFacebookF} size="2x" />
             </a>
             <a
