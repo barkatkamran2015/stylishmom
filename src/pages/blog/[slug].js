@@ -1,11 +1,9 @@
+// pages/blog/[slug].js
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../../styles/Blog.module.css';
 
-const API_URL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://www.thestylishmama.com/api/posts'
-    : 'http://localhost:3000/api/posts';
+const API_URL = 'https://www.thestylishmama.com/api/posts';
 
 // ──────────────────────────────────────────────────────────────
 // FINAL SLUG NORMALIZER – removes ?, !, commas, parentheses, etc.
@@ -15,13 +13,13 @@ const normalizeSlug = (slug) => {
   return decodeURIComponent(slug)
     .trim()
     .toLowerCase()
-    .replace(/\s+/g, '-')           // spaces → dashes
-    .replace(/%20/g, '-')           // %20 → dash
-    .replace(/[_]+/g, '-')          // underscores → dash
-    .replace(/[?.,!()&'":;]/g, '')  // ← removes ? ! ( ) & , . " ' : ; ← THIS FIXES YOUR POST
-    .replace(/[^a-z0-9-]/g, '')     // remove any remaining weird chars
-    .replace(/-+/g, '-')            // collapse multiple dashes
-    .replace(/^-+|-+$/g, '');       // trim dashes from start/end
+    .replace(/\s+/g, '-')
+    .replace(/%20/g, '-')
+    .replace(/[_]+/g, '-')
+    .replace(/[?.,!()&'":;]/g, '')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
 };
 
 // ──────────────────────────────────────────────────────────────
@@ -35,13 +33,8 @@ const sanitizeText = (htmlContent) => {
 // ──────────────────────────────────────────────────────────────
 // Main Component
 // ──────────────────────────────────────────────────────────────
-export default function BlogPost({ post, error }) {
-  const baseUrl =
-    process.env.NODE_ENV === 'production'
-      ? 'https://www.thestylishmama.com'
-      : 'http://localhost:3000';
-
-  if (!post || error) {
+export default function BlogPost({ post }) {
+  if (!post) {
     return (
       <div className={styles.blogPage}>
         <Head>
@@ -49,11 +42,12 @@ export default function BlogPost({ post, error }) {
         </Head>
         <section className={styles.blogPageSingle}>
           <h1>404 - This page could not be found</h1>
-          {error && <p className={styles.blogPageErrorMessage}>{error}</p>}
         </section>
       </div>
     );
   }
+
+  const baseUrl = 'https://www.thestylishmama.com';
 
   const structuredData = {
     '@context': 'https://schema.org',
@@ -143,37 +137,46 @@ export default function BlogPost({ post, error }) {
 }
 
 // ──────────────────────────────────────────────────────────────
-// getServerSideProps – 100% working now
+// THIS MAKES EVERY BLOG POST INSTANT + AUTO-UPDATING
 // ──────────────────────────────────────────────────────────────
-export async function getServerSideProps({ params }) {
+export async function getStaticPaths() {
+  const res = await fetch(`${API_URL}?page=Blog&limit=1000&offset=0`);
+  const { posts = [] } = await res.json();
+
+  const paths = posts
+    .filter(post => post.slug)
+    .map((post) => ({
+      params: { slug: post.slug },
+    }));
+
+  return {
+    paths,
+    fallback: 'blocking', // new posts load instantly + build in background
+  };
+}
+
+export async function getStaticProps({ params }) {
   const { slug } = params;
 
   try {
     const res = await fetch(`${API_URL}?page=Blog&limit=1000&offset=0`);
-    if (!res.ok) {
-      console.error('API fetch failed:', res.status);
-      return { props: { post: null, error: 'Failed to fetch posts' } };
-    }
+    if (!res.ok) throw new Error('API error');
+    const { posts = [] } = await res.json();
 
-    const data = await res.json();
-    const posts = data.posts || [];
     const requestedSlug = normalizeSlug(slug);
 
-    // Find exact match
     let targetPost = posts.find(post => normalizeSlug(post.slug) === requestedSlug);
 
-    // Safety net for your sleepovers post (just in case)
+    // Safety net for edge cases
     if (!targetPost && (requestedSlug.includes('sleepovers') || requestedSlug.includes('independence'))) {
-      targetPost = posts.find(p => 
-        normalizeSlug(p.slug || '').includes('sleepovers') || 
+      targetPost = posts.find(p =>
+        normalizeSlug(p.slug || '').includes('sleepovers') ||
         normalizeSlug(p.slug || '').includes('independence')
       );
-      if (targetPost) console.log('Used fallback match for sleepovers post');
     }
 
     if (!targetPost) {
-      console.log('Post not found:', slug, '→ normalized:', requestedSlug);
-      return { props: { post: null, error: 'Post not found in list' } };
+      return { notFound: true };
     }
 
     const blogPost = {
@@ -197,10 +200,12 @@ export async function getServerSideProps({ params }) {
         : { color: '#000', fontSize: '2rem', textAlign: 'left' },
     };
 
-    return { props: { post: blogPost, error: null } };
-
+    return {
+      props: { post: blogPost },
+      revalidate: 60, // refresh every 60 seconds
+    };
   } catch (err) {
-    console.error('getServerSideProps error:', err);
-    return { props: { post: null, error: 'Something went wrong' } };
+    console.error('getStaticProps error:', err);
+    return { notFound: true };
   }
 }
