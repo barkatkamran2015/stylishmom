@@ -1,3 +1,4 @@
+// pages/index.js
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import dynamic from 'next/dynamic';
@@ -6,13 +7,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import SearchBar from "../components/SearchBar";
 import styles from "../../styles/Dash.module.css";
-
 import imageBlog from "../Assets/family.png";
 import imageNature from "../Assets/lotto.jpg";
 import imageRecipe from "../Assets/make.jpg";
 
 const Slider = dynamic(() => import('react-slick'), { ssr: false });
-
 // Ensure slick CSS loads in production
 if (typeof window !== 'undefined') {
   require('slick-carousel/slick/slick.css');
@@ -24,7 +23,6 @@ const API_URL = 'https://www.barkatkamran.com/api.php';
 export async function getStaticProps({ params }) {
   const limit = 10;
   const offset = 0;
-
   try {
     const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`);
     if (!response.ok) {
@@ -39,7 +37,6 @@ export async function getStaticProps({ params }) {
         revalidate: 60,
       };
     }
-
     const { posts, pagination } = await response.json();
     const parsedPosts = posts.map((post) => {
       const imageMatch = (post.content || post.post_content || post.body)?.match(/<img[^>]+src=["'](.*?)["']/i);
@@ -53,12 +50,12 @@ export async function getStaticProps({ params }) {
         thumbnailUrl,
         createdAt: post.createdAt || new Date().toISOString(),
         page: post.page,
+        slug: post.slug || post.id.toString(), // ← Ensure slug is always available
         titleStyle: post.titleStyle || { color: "#000", fontSize: "1.8rem", textAlign: "left" },
         userId: post.creator_uid,
         isRecentlyUpdated,
       };
     });
-
     return {
       props: {
         initialPosts: parsedPosts,
@@ -119,12 +116,12 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
             thumbnailUrl,
             createdAt: post.createdAt || new Date().toISOString(),
             page: post.page,
+            slug: post.slug || post.id.toString(),
             titleStyle: post.titleStyle || { color: "#000", fontSize: "1.8rem", textAlign: "left" },
             userId: post.creator_uid,
             isRecentlyUpdated,
           };
         });
-
         setPosts(parsedPosts);
         setFilteredPosts(parsedPosts);
         setPagination(newPagination);
@@ -135,11 +132,10 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
         setLoading(false);
       }
     };
-
-    if (router.isReady && (Number(offset) !== initialPagination.offset || Number(limit) !== initialPagination.limit)) {
+    if (router.isReady && (Number(offset) !== pagination.offset || Number(limit) !== pagination.limit)) {
       fetchPosts();
     }
-  }, [limit, offset, router.isReady, initialPagination.offset, initialPagination.limit]);
+  }, [limit, offset, router.isReady, pagination.offset, pagination.limit]);
 
   useEffect(() => {
     setIsClient(true);
@@ -156,9 +152,13 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
     setFilteredPosts(results);
   };
 
+  // FIXED: Direct to single post using real slug (no more 404)
   const navigateToPost = (postId, page) => {
-    const path = pagePaths[page] ? `${pagePaths[page]}#${page.toLowerCase()}-post-${postId}` : `/blog#blog-post-${postId}`;
-    router.push(path);
+    const basePath = pagePaths[page] || '/blog';
+    // Use the post's slug from the data (post.slug) if available, fallback to ID
+    const post = posts.find(p => p.id === postId);
+    const slug = post?.slug || postId.toString();
+    router.push(`${basePath}/${slug}`);
   };
 
   const incrementViewCount = async (postId, page) => {
@@ -248,7 +248,6 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
           <link rel="next" href={`https://www.thestylishmama.com/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`} />
         )}
       </Head>
-
       {loading ? (
         <div className={styles.loadingContainer}><div className={styles.heartLoader}></div></div>
       ) : error ? (
@@ -290,12 +289,10 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
               <h3 className={styles.homePage__sliderText}>I carry Hope in here. And half a granola bar</h3>
             </div>
           </Slider>
-
           <SearchBar
             onSearch={handleSearch}
             placeholder="Search for blogs, reviews, or recipes..."
           />
-
           <div className={styles.homePage__postsContainer}>
             {filteredPosts.length === 0 ? (
               <p>No posts available</p>
@@ -322,7 +319,6 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                         No Image Available
                       </div>
                     )}
-
                     <div className={styles.homePage__postDetails}>
                       <h2
                         className={styles.homePage__postTitle}
@@ -334,7 +330,6 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                       >
                         {post.title}
                       </h2>
-
                       {post.createdAt ? (
                         <p className={styles.homePage__postDate}>
                           Posted on:{" "}
@@ -347,13 +342,11 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                       ) : (
                         <p className={styles.homePage__postDate}>Date not available</p>
                       )}
-
                       <p className={styles.homePage__postExcerpt}>
                         {post.contentHtml
                           ? post.contentHtml.replace(/<[^>]+>/g, '').slice(0, 200) + '...'
                           : 'No content available'}
                       </p>
-
                       <button
                         className={styles.homePage__ctaButton}
                         onClick={() => navigateToPost(post.id, post.page)}
@@ -363,12 +356,12 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                     </div>
                   </div>
                 ))}
-
                 <div className={styles.pagination}>
                   {pagination.offset > 0 && (
                     <Link
                       href={`/?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
                       className={styles.paginationLink}
+                      scroll={false} // ← This prevents the refresh/jump
                     >
                       Previous
                     </Link>
@@ -377,6 +370,7 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                     <Link
                       href={`/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
                       className={styles.paginationLink}
+                      scroll={false} // ← This prevents the refresh/jump
                     >
                       Next
                     </Link>
