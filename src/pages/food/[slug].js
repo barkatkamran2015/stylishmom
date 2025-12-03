@@ -1,45 +1,37 @@
+// pages/food/[slug].js
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../../styles/Food.module.css';
 
-const API_URL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://www.thestylishmama.com/api/posts'
-    : 'http://localhost:3000/api/posts';
+const API_URL = 'https://www.thestylishmama.com/api/posts';
 
 const sanitizeText = (htmlContent) => {
   if (!htmlContent) return '';
-  let text = htmlContent.replace(/<[^>]+>/g, '');
-  text = text
+  return htmlContent
+    .replace(/<[^>]+>/g, '')
     .replace(/&/g, '&')
     .replace(/</g, '<')
     .replace(/>/g, '>')
     .replace(/"/g, '"')
     .replace(/'/g, "'")
-    .replace(/\//g, '/');
-  return text.trim();
+    .trim();
 };
 
-export default function FoodPost({ post, error }) {
+export default function FoodPost({ post }) {
   if (!post) {
     return (
       <div className={styles.foodPage}>
         <Head>
           <title>Post Not Found | The Stylish Mama</title>
-          <meta name="description" content="The food recipe you are looking for could not be found." />
         </Head>
         <section className={styles.foodPageContentWrapper}>
           <h1>404 - This page could not be found</h1>
-          {error && <p className={styles.foodPageErrorMessage}>{error}</p>}
         </section>
       </div>
     );
   }
 
-  const baseUrl =
-    process.env.NODE_ENV === 'production'
-      ? 'https://www.thestylishmama.com'
-      : 'http://localhost:3000';
+  const baseUrl = 'https://www.thestylishmama.com';
 
   const structuredData = {
     '@context': 'https://schema.org',
@@ -48,24 +40,15 @@ export default function FoodPost({ post, error }) {
     description: sanitizeText(post.content).substring(0, 160),
     datePublished: post.createdAt || new Date().toISOString(),
     dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
-    author: {
-      '@type': 'Person',
-      name: post.author || 'The Stylish Mama',
-    },
+    author: { '@type': 'Person', name: post.author || 'The Stylish Mama' },
     publisher: {
       '@type': 'Organization',
       name: 'The Stylish Mama',
-      logo: {
-        '@type': 'ImageObject',
-        url: `${baseUrl}/logo.png`,
-      },
+      logo: { '@type': 'ImageObject', url: `${baseUrl}/logo.png` },
     },
     image: post.imageUrl || '/default-food-image.jpg',
     url: `${baseUrl}/food/${post.slug}`,
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': `${baseUrl}/food/${post.slug}`,
-    },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${baseUrl}/food/${post.slug}` },
     recipeCategory: 'Food',
     keywords: post.tags?.join(', ') || 'food, recipe, savory',
   };
@@ -82,17 +65,11 @@ export default function FoodPost({ post, error }) {
         <meta property="og:description" content={sanitizeText(post.content).substring(0, 160)} />
         <meta property="og:url" content={`${baseUrl}/food/${post.slug}`} />
         <meta property="og:type" content="article" />
-        <meta
-          property="og:image"
-          content={post.imageUrl || '/default-food-image.jpg'}
-        />
+        <meta property="og:image" content={post.imageUrl || '/default-food-image.jpg'} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={post.title || 'Untitled'} />
         <meta name="twitter:description" content={sanitizeText(post.content).substring(0, 160)} />
-        <meta
-          name="twitter:image"
-          content={post.imageUrl || '/default-food-image.jpg'}
-        />
+        <meta name="twitter:image" content={post.imageUrl || '/default-food-image.jpg'} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -118,10 +95,10 @@ export default function FoodPost({ post, error }) {
             className={styles.foodPageImage}
             width={800}
             height={450}
-            onError={(e) => {
-              e.target.src = '/default-food-image.jpg';
-            }}
             loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src = '/default-food-image.jpg';
+            }}
           />
         ) : (
           <div className={styles.foodPageImagePlaceholder}>No Image Available</div>
@@ -133,73 +110,69 @@ export default function FoodPost({ post, error }) {
         />
 
         <p className={styles.foodPageMeta}>
-          Published on: {new Date(post.createdAt).toLocaleDateString()}
+          Published on: {new Date(post.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
         </p>
       </section>
     </div>
   );
 }
 
-export async function getServerSideProps({ params }) {
+// THIS MAKES EVERY FOOD RECIPE INSTANT
+export async function getStaticPaths() {
+  const res = await fetch(`${API_URL}?page=Recipe&limit=1000&offset=0`);
+  const { posts = [] } = await res.json();
+
+  const paths = posts
+    .filter(post => post.slug)
+    .map((post) => ({
+      params: { slug: post.slug },
+    }));
+
+  return {
+    paths,
+    fallback: 'blocking',
+  };
+}
+
+export async function getStaticProps({ params }) {
   const { slug } = params;
 
   try {
-    const normalizedSlug = encodeURIComponent(slug); // use encoded slug for API
+    const res = await fetch(`${API_URL}?page=Recipe&limit=1000&offset=0`);
+    if (!res.ok) throw new Error('API error');
 
-    // Fetch single post by slug
-    const response = await fetch(`${API_URL}?page=Recipe&slug=${normalizedSlug}`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch post. Status: ${response.status}`);
+    const { posts = [] } = await res.json();
+
+    const targetPost = posts.find((p) => p.slug === slug);
+
+    if (!targetPost) {
+      return { notFound: true };
     }
 
-    const data = await response.json();
-
-    const post = Array.isArray(data.posts) && data.posts.length > 0 ? data.posts[0] : null;
-
-    if (!post) {
-      return {
-        props: {
-          post: null,
-          error: 'Post not found',
-        },
-      };
-    }
-
-    // Format post like before
     const foodPost = {
-      ...post,
-      slug: post.slug || (post.title ? post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') : `post-${post.id}`),
-      titleStyle:
-        post.titleStyle && typeof post.titleStyle === 'string'
-          ? JSON.parse(post.titleStyle)
-          : post.titleStyle || { color: '#000', fontSize: '2rem', textAlign: 'left' },
-      imageUrl:
-        post.imageUrl?.startsWith('http')
-          ? post.imageUrl
-          : post.imageUrl
-          ? `https://www.thestylishmama.com${post.imageUrl}`
-          : null,
-      content: post.content || '',
-      title: post.title || 'Untitled',
-      author: post.author || 'The Stylish Mama',
-      createdAt: post.createdAt || new Date().toISOString(),
-      updated_at: post.updated_at || post.createdAt || new Date().toISOString(),
-      tags: post.tags || [],
+      ...targetPost,
+      titleStyle: targetPost.titleStyle
+        ? typeof targetPost.titleStyle === 'string'
+          ? JSON.parse(targetPost.titleStyle)
+          : targetPost.titleStyle
+        : { color: '#000', fontSize: '2rem', textAlign: 'left' },
+      imageUrl: targetPost.imageUrl?.startsWith('http')
+        ? targetPost.imageUrl
+        : targetPost.imageUrl
+        ? `https://www.thestylishmama.com${targetPost.imageUrl}`
+        : null,
     };
 
     return {
-      props: {
-        post: foodPost,
-        error: '',
-      },
+      props: { post: foodPost },
+      revalidate: 60,
     };
   } catch (err) {
-    return {
-      props: {
-        post: null,
-        error: `Failed to load post: ${err.message}`,
-      },
-    };
+    console.error('getStaticProps error:', err);
+    return { notFound: true };
   }
 }
-
