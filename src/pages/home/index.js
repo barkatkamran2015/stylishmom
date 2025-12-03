@@ -155,7 +155,7 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
   // FIXED: Direct to single post using real slug
   const navigateToPost = (post) => {
     const basePath = pagePaths[post.page] || '/blog';
-    const slug = post.slug || post.id;
+    const slug = post.slug || post.id.toString();
     router.push(`${basePath}/${slug}`);
   };
 
@@ -306,7 +306,7 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                       <Image
                         src={post.thumbnailUrl}
                         alt={post.title}
-                        className={styles.homePage__postImage}
+                        className="styles.homePage__postImage"
                         width={600}
                         height={337}
                         onError={(e) => (e.target.src = '/default-image.jpg')}
@@ -357,7 +357,10 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                 <div className={styles.pagination}>
                   {pagination.offset > 0 && (
                     <Link
-                      href={`/?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
+                      href={{
+                        pathname: '/',
+                        query: { limit: pagination.limit, offset: pagination.offset - pagination.limit },
+                      }}
                       className={styles.paginationLink}
                     >
                       Previous
@@ -365,7 +368,10 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                   )}
                   {pagination.offset + pagination.limit < pagination.total && (
                     <Link
-                      href={`/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
+                      href={{
+                        pathname: '/',
+                        query: { limit: pagination.limit, offset: pagination.offset + pagination.limit },
+                      }}
                       className={styles.paginationLink}
                     >
                       Next
