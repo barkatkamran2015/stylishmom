@@ -24,7 +24,6 @@ export default function DessertPost({ post }) {
       <div className={styles.dessertPage}>
         <Head>
           <title>Post Not Found | The Stylish Mama</title>
-          <meta name="description" content="The dessert recipe you are looking for could not be found." />
         </Head>
         <section className={styles.dessertPageContentWrapper}>
           <h1>404 - This page could not be found</h1>
@@ -107,8 +106,7 @@ export default function DessertPost({ post }) {
             width={800}
             height={450}
             onError={(e) => {
-              console.error('Image failed to load:', post.imageUrl);
-              e.target.src = '/default-dessert-image.jpg';
+              e.currentTarget.src = '/default-dessert-image.jpg';
             }}
             loading="lazy"
           />
