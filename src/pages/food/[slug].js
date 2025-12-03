@@ -144,28 +144,19 @@ export async function getServerSideProps({ params }) {
   const { slug } = params;
 
   try {
-    const normalizedSlug = decodeURIComponent(slug).toLowerCase();
+    const normalizedSlug = encodeURIComponent(slug); // use encoded slug for API
 
-    const listResponse = await fetch(`${API_URL}?page=Recipe&limit=1000&offset=0`);
-    if (!listResponse.ok) {
-      const errorText = await listResponse.text();
-      throw new Error(`Failed to fetch posts list: ${errorText}`);
+    // Fetch single post by slug
+    const response = await fetch(`${API_URL}?page=Recipe&slug=${normalizedSlug}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch post. Status: ${response.status}`);
     }
 
-    const listData = await listResponse.json();
-    const posts = Array.isArray(listData.posts) ? listData.posts : [];
+    const data = await response.json();
 
-    // Find post by slug OR fallback to generated slug from title
-    const targetPost = posts.find((post) => {
-      const postSlug = post.slug
-        ? decodeURIComponent(post.slug).toLowerCase()
-        : post.title
-        ? post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
-        : `post-${post.id}`;
-      return postSlug === normalizedSlug;
-    });
+    const post = Array.isArray(data.posts) && data.posts.length > 0 ? data.posts[0] : null;
 
-    if (!targetPost) {
+    if (!post) {
       return {
         props: {
           post: null,
@@ -174,29 +165,26 @@ export async function getServerSideProps({ params }) {
       };
     }
 
+    // Format post like before
     const foodPost = {
-      ...targetPost,
-      slug:
-        targetPost.slug ||
-        (targetPost.title
-          ? targetPost.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
-          : `post-${targetPost.id}`),
+      ...post,
+      slug: post.slug || (post.title ? post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') : `post-${post.id}`),
       titleStyle:
-        targetPost.titleStyle && typeof targetPost.titleStyle === 'string'
-          ? JSON.parse(targetPost.titleStyle)
-          : targetPost.titleStyle || { color: '#000', fontSize: '2rem', textAlign: 'left' },
+        post.titleStyle && typeof post.titleStyle === 'string'
+          ? JSON.parse(post.titleStyle)
+          : post.titleStyle || { color: '#000', fontSize: '2rem', textAlign: 'left' },
       imageUrl:
-        targetPost.imageUrl?.startsWith('http')
-          ? targetPost.imageUrl
-          : targetPost.imageUrl
-          ? `https://www.thestylishmama.com${targetPost.imageUrl}`
+        post.imageUrl?.startsWith('http')
+          ? post.imageUrl
+          : post.imageUrl
+          ? `https://www.thestylishmama.com${post.imageUrl}`
           : null,
-      content: targetPost.content || '',
-      title: targetPost.title || 'Untitled',
-      author: targetPost.author || 'The Stylish Mama',
-      createdAt: targetPost.createdAt || new Date().toISOString(),
-      updated_at: targetPost.updated_at || targetPost.createdAt || new Date().toISOString(),
-      tags: targetPost.tags || [],
+      content: post.content || '',
+      title: post.title || 'Untitled',
+      author: post.author || 'The Stylish Mama',
+      createdAt: post.createdAt || new Date().toISOString(),
+      updated_at: post.updated_at || post.createdAt || new Date().toISOString(),
+      tags: post.tags || [],
     };
 
     return {
@@ -214,3 +202,4 @@ export async function getServerSideProps({ params }) {
     };
   }
 }
+
