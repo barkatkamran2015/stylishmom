@@ -21,22 +21,48 @@ if (typeof window !== 'undefined') {
 
 const API_URL = 'https://www.barkatkamran.com/api.php';
 
-export async function getStaticProps() {
+export async function getStaticProps({ params }) {
   const limit = 10;
   const offset = 0;
 
   try {
     const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response body in getStaticProps:', errorText);
+      return {
+        props: {
+          initialPosts: [],
+          initialPagination: { total: 0, limit: 10, offset: 0, totalPages: 0 },
+          error: `Failed to fetch posts: ${response.status}`,
+        },
+        revalidate: 60,
+      };
+    }
+
     const { posts, pagination } = await response.json();
 
     const parsedPosts = posts.map((post) => {
       const imageMatch = (post.content || post.post_content || post.body)?.match(/<img[^>]+src=["'](.*?)["']/i);
       const thumbnailUrl = post.imageUrl || post.image_url || (imageMatch ? imageMatch[1] : '/default-image.jpg');
+
+      // Ensure slug exists
+      const slug = post.slug || (post.title ? post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') : `post-${post.id}`);
+
+      const createdAt = post.createdAt ? new Date(post.createdAt) : new Date();
+      const isRecentlyUpdated = (new Date() - createdAt) < 24 * 60 * 60 * 1000;
+
       return {
-        ...post,
-        thumbnailUrl,
+        id: post.id,
+        title: post.title || 'Untitled',
         contentHtml: post.content || post.post_content || post.body || '',
+        thumbnailUrl,
+        createdAt: post.createdAt || new Date().toISOString(),
+        page: post.page,
         titleStyle: post.titleStyle || { color: "#000", fontSize: "1.8rem", textAlign: "left" },
+        userId: post.creator_uid,
+        isRecentlyUpdated,
+        slug,
       };
     });
 
@@ -80,6 +106,55 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
   };
 
   useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch posts: ${response.status}`);
+        }
+        const { posts, pagination: newPagination } = await response.json();
+        const parsedPosts = posts.map((post) => {
+          const imageMatch = (post.content || post.post_content || post.body)?.match(/<img[^>]+src=["'](.*?)["']/i);
+          const thumbnailUrl = post.imageUrl || post.image_url || (imageMatch ? imageMatch[1] : '/default-image.jpg');
+
+          // Ensure slug exists
+          const slug = post.slug || (post.title ? post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') : `post-${post.id}`);
+
+          const createdAt = post.createdAt ? new Date(post.createdAt) : new Date();
+          const isRecentlyUpdated = (new Date() - createdAt) < 24 * 60 * 60 * 1000;
+
+          return {
+            id: post.id,
+            title: post.title || 'Untitled',
+            contentHtml: post.content || post.post_content || post.body || '',
+            thumbnailUrl,
+            createdAt: post.createdAt || new Date().toISOString(),
+            page: post.page,
+            titleStyle: post.titleStyle || { color: "#000", fontSize: "1.8rem", textAlign: "left" },
+            userId: post.creator_uid,
+            isRecentlyUpdated,
+            slug,
+          };
+        });
+
+        setPosts(parsedPosts);
+        setFilteredPosts(parsedPosts);
+        setPagination(newPagination);
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (router.isReady && (Number(offset) !== initialPagination.offset || Number(limit) !== initialPagination.limit)) {
+      fetchPosts();
+    }
+  }, [limit, offset, router.isReady, initialPagination.offset, initialPagination.limit]);
+
+  useEffect(() => {
     setIsClient(true);
     setFilteredPosts(initialPosts);
   }, [initialPosts]);
@@ -96,6 +171,10 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
 
   const navigateToPost = (post) => {
     const basePath = pagePaths[post.page] || "/blog";
+    if (!post.slug) {
+      console.warn('Missing slug for post:', post.id, post.title);
+      return;
+    }
     router.push(`${basePath}/${post.slug}`);
   };
 
@@ -159,7 +238,32 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
         />
         <link rel="canonical" href="https://www.thestylishmama.com/" />
         <link rel="icon" href="/favicon.ico" />
+        <meta property="og:title" content="Barkat Kamran | Lifestyle Blog, Reviews & Recipes" />
+        <meta
+          property="og:description"
+          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
+        />
+        <meta property="og:url" content="https://www.thestylishmama.com/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://www.thestylishmama.com/default-image.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="Barkat Kamran" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Barkat Kamran | Lifestyle Blog, Reviews & Recipes" />
+        <meta
+          name="twitter:description"
+          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
+        />
+        <meta name="twitter:image" content="https://www.thestylishmama.com/default-image.jpg" />
+        <meta name="twitter:site" content="@YourTwitterHandle" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+        {pagination.offset > 0 && pagination.offset - pagination.limit >= 0 && (
+          <link rel="prev" href={`https://www.thestylishmama.com/?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`} />
+        )}
+        {pagination.offset + pagination.limit < pagination.total && (
+          <link rel="next" href={`https://www.thestylishmama.com/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`} />
+        )}
       </Head>
 
       {loading ? (
