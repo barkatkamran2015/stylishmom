@@ -119,7 +119,6 @@ export default function FoodPost({ post, error }) {
             width={800}
             height={450}
             onError={(e) => {
-              console.error('Image failed to load:', post.imageUrl);
               e.target.src = '/default-food-image.jpg';
             }}
             loading="lazy"
@@ -143,69 +142,55 @@ export default function FoodPost({ post, error }) {
 
 export async function getServerSideProps({ params }) {
   const { slug } = params;
-  console.log('Requested Slug in food/[slug].js:', slug);
 
   try {
     const normalizedSlug = decodeURIComponent(slug).toLowerCase();
-    console.log('Normalized Slug:', normalizedSlug);
 
     const listResponse = await fetch(`${API_URL}?page=Recipe&limit=1000&offset=0`);
-    const listResponseText = await listResponse.text();
-    console.log('Raw API Response for Food List in [slug].js:', listResponseText);
-
     if (!listResponse.ok) {
-      console.error('Error fetching post list (Server-Side):', listResponseText);
-      throw new Error(`HTTP Error! Status: ${listResponse.status}`);
+      const errorText = await listResponse.text();
+      throw new Error(`Failed to fetch posts list: ${errorText}`);
     }
 
-    let listData;
-    try {
-      listData = JSON.parse(listResponseText);
-      console.log('Parsed API Response for Food List:', listData);
-    } catch (parseErr) {
-      console.error('Error parsing API list response:', parseErr.message);
-      throw new Error('Invalid API response format for list');
-    }
+    const listData = await listResponse.json();
+    const posts = Array.isArray(listData.posts) ? listData.posts : [];
 
-    const { posts } = listData;
-    if (!posts || !Array.isArray(posts)) {
-      console.error('Posts array is invalid:', posts);
-      throw new Error('Posts array is missing or invalid');
-    }
-
-    console.log('Posts array from API:', posts);
+    // Find post by slug OR fallback to generated slug from title
     const targetPost = posts.find((post) => {
-      const postSlug = post.slug ? decodeURIComponent(post.slug).toLowerCase() : '';
-      console.log('Comparing slug:', postSlug, 'with requested slug:', normalizedSlug);
+      const postSlug = post.slug
+        ? decodeURIComponent(post.slug).toLowerCase()
+        : post.title
+        ? post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
+        : `post-${post.id}`;
       return postSlug === normalizedSlug;
     });
 
     if (!targetPost) {
-      console.error('Post not found in list for slug:', normalizedSlug);
       return {
         props: {
           post: null,
-          error: 'Post not found in list',
+          error: 'Post not found',
         },
       };
     }
 
-    console.log('Found post in list:', targetPost);
-
     const foodPost = {
       ...targetPost,
-      id: targetPost.id || null,
-      slug: targetPost.slug || null,
-      titleStyle: targetPost.titleStyle
-        ? typeof targetPost.titleStyle === 'string'
+      slug:
+        targetPost.slug ||
+        (targetPost.title
+          ? targetPost.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
+          : `post-${targetPost.id}`),
+      titleStyle:
+        targetPost.titleStyle && typeof targetPost.titleStyle === 'string'
           ? JSON.parse(targetPost.titleStyle)
-          : targetPost.titleStyle
-        : { color: '#000', fontSize: '2rem', textAlign: 'left' },
-      imageUrl: targetPost.imageUrl?.startsWith('http')
-        ? targetPost.imageUrl
-        : targetPost.imageUrl
-        ? `https://www.thestylishmama.com${targetPost.imageUrl}`
-        : null,
+          : targetPost.titleStyle || { color: '#000', fontSize: '2rem', textAlign: 'left' },
+      imageUrl:
+        targetPost.imageUrl?.startsWith('http')
+          ? targetPost.imageUrl
+          : targetPost.imageUrl
+          ? `https://www.thestylishmama.com${targetPost.imageUrl}`
+          : null,
       content: targetPost.content || '',
       title: targetPost.title || 'Untitled',
       author: targetPost.author || 'The Stylish Mama',
@@ -214,8 +199,6 @@ export async function getServerSideProps({ params }) {
       tags: targetPost.tags || [],
     };
 
-    console.log('Formatted food post:', foodPost);
-
     return {
       props: {
         post: foodPost,
@@ -223,7 +206,6 @@ export async function getServerSideProps({ params }) {
       },
     };
   } catch (err) {
-    console.error('Error in getServerSideProps:', err.message);
     return {
       props: {
         post: null,
