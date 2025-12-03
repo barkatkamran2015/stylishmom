@@ -74,7 +74,6 @@ export default function Dessert({ posts, initialCategories, initialTags, error, 
           (post.content || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredPosts(filtered);
-      console.log('Filtered Dessert Slugs:', filtered.map(p => p.slug));
     }
   }, [postsState]);
 
@@ -85,7 +84,6 @@ export default function Dessert({ posts, initialCategories, initialTags, error, 
         (!selectedTags.length || (post.tags || []).some((tag) => selectedTags.includes(tag)))
     );
     setFilteredPosts(filtered);
-    console.log('Filtered Dessert Slugs after Filter:', filtered.map(p => p.slug));
   }, [postsState]);
 
   return (
@@ -157,8 +155,7 @@ export default function Dessert({ posts, initialCategories, initialTags, error, 
                     width={300}
                     height={200}
                     onError={(e) => {
-                      console.error('Image failed to load:', post.imageUrl);
-                      e.target.src = '/default-dessert-image.jpg';
+                      e.currentTarget.src = '/default-dessert-image.jpg';
                     }}
                     loading="lazy"
                   />
@@ -168,13 +165,12 @@ export default function Dessert({ posts, initialCategories, initialTags, error, 
                   <div className={styles.dessertPageImagePlaceholder}>No Image Available</div>
                 </Link>
               )}
-              <Link href={`/dessert/${post.slug}`} className={styles.dessertPageTitle}>
-                <h2>{post.title || 'Untitled'}</h2>
+              <Link href={`/dessert/${post.slug}`}>
+                <h2 className={styles.dessertPageTitle}>{post.title || 'Untitled'}</h2>
               </Link>
               <p className={styles.dessertPageExcerpt}>
                 {sanitizeText(post.content).substring(0, 200) || 'No content available...'}
               </p>
-              <Link href={`/dessert/${post.slug}`} />
             </div>
           ))}
         </div>
