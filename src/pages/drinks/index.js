@@ -241,13 +241,7 @@ export default function Drinks({ posts, initialCategories, initialTags, error, p
               <p className={styles.drinksPageExcerpt}>
                 {sanitizeText(post.content).substring(0, 200) || 'No content available...'}
               </p>
-              <button
-                className={styles.shareButton}
-                onClick={() => handleShare(post)}
-                aria-label={`Share drink recipe: ${post.title}`}
-              >
-                <span className={styles.shareIcon}>🔗</span> Share
-              </button>
+              
             </article>
           ))}
         </div>
