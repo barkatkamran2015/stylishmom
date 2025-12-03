@@ -1,13 +1,16 @@
 /* src/styles/Food.module.css */
+
+/* Container for the food page */
 .foodPage {
   max-width: 1250px;
   margin: 0 auto;
   padding: 25px 30px;
   box-sizing: border-box;
   overflow-x: hidden;
-  background-color: #fff; /* Plain white background for the entire container */
+  background-color: #fff;
 }
 
+/* Page heading for list view */
 .foodPageHeading {
   font-family: 'Quicksand', sans-serif;
   font-size: 2.5rem;
@@ -17,19 +20,21 @@
   margin-bottom: 30px;
 }
 
+/* Wrapper for content */
 .foodPageContentWrapper {
   width: 100%;
   box-sizing: border-box;
   padding: 0 15px;
 }
 
-/* Override for single post view to match Blog/Dessert */
+/* Single post view override */
 .foodPageContentWrapper:has(> .foodPageTitle) {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px 0;
 }
 
+/* Error and empty messages */
 .foodPageErrorMessage,
 .foodPageNoPostsMessage {
   text-align: center;
@@ -42,6 +47,7 @@
   border-radius: 4px;
 }
 
+/* Grid for list of posts */
 .foodPageGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -49,10 +55,12 @@
   padding: 0 10px;
 }
 
+/* Card styling */
 .foodPageCard {
   background-color: transparent;
   padding: 15px;
   box-sizing: border-box;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .foodPageCard:hover {
@@ -60,6 +68,7 @@
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
+/* Titles */
 .foodPageTitle {
   font-family: 'Quicksand', sans-serif;
   font-weight: 600;
@@ -69,21 +78,22 @@
   transition: color 0.3s ease;
 }
 
-/* Adjust title for list view */
+/* List view titles */
 .foodPageGrid .foodPageTitle {
   font-size: 1.5rem;
 }
 
-/* Larger title for single post view */
+/* Single post title */
 .foodPageContentWrapper > .foodPageTitle {
   font-size: 2.5rem;
   text-align: center;
 }
 
 .foodPageTitle:hover {
-  color: #6b7280; /* Food-themed olive gray */
+  color: #6b7280;
 }
 
+/* Excerpt for list view */
 .foodPageExcerpt {
   font-family: 'Inter', sans-serif;
   font-size: 0.95rem;
@@ -92,6 +102,7 @@
   margin-bottom: 15px;
 }
 
+/* Post content */
 .foodPageContent {
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
@@ -105,8 +116,11 @@
   height: auto;
   border-radius: 4px;
   margin: 10px 0;
+  display: block;
+  object-fit: contain;
 }
 
+/* Post meta info */
 .foodPageMeta {
   font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
@@ -116,25 +130,28 @@
   text-align: center;
 }
 
+/* Post images */
 .foodPageImage {
   width: 100%;
   border-radius: 8px;
   margin-bottom: 15px;
+  object-fit: contain;
 }
 
-/* Adjust image for list view */
+/* List view image size */
 .foodPageGrid .foodPageImage {
   height: 200px;
   object-fit: cover;
 }
 
-/* Adjust image for single post view */
+/* Single post image size */
 .foodPageContentWrapper > .foodPageImage {
   max-width: 100%;
   height: auto;
   aspect-ratio: 16 / 9;
 }
 
+/* Placeholder for missing images */
 .foodPageImagePlaceholder {
   width: 100%;
   background-color: #e5e5e5;
@@ -148,17 +165,18 @@
   margin-bottom: 15px;
 }
 
-/* Adjust placeholder for list view */
+/* List view placeholder */
 .foodPageGrid .foodPageImagePlaceholder {
   height: 200px;
 }
 
-/* Adjust placeholder for single post view */
+/* Single post placeholder */
 .foodPageContentWrapper > .foodPageImagePlaceholder {
   height: 450px;
   font-size: 1rem;
 }
 
+/* Pagination */
 .pagination {
   display: flex;
   justify-content: center;
@@ -172,7 +190,7 @@
 
 .paginationLink {
   padding: 8px 16px;
-  background-color: #6b7280; /* Food-themed olive gray */
+  background-color: #6b7280;
   color: white;
   border-radius: 5px;
   text-decoration: none;
@@ -183,6 +201,7 @@
   background-color: #4b5563;
 }
 
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .foodPage {
     padding: 15px;
