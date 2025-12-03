@@ -1,11 +1,9 @@
+// pages/drinks/[slug].js
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../../styles/Drinks.module.css';
 
-const API_URL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://stylishmom.vercel.app/api/posts'
-    : 'http://localhost:3000/api/posts';
+const API_URL = 'https://www.thestylishmama.com/api/posts';
 
 const sanitizeText = (htmlContent) => {
   if (!htmlContent) return '';
@@ -20,26 +18,22 @@ const sanitizeText = (htmlContent) => {
   return text.trim();
 };
 
-export default function DrinkPost({ post, error }) {
-  const baseUrl =
-    process.env.NODE_ENV === 'production'
-      ? 'https://stylishmom.vercel.app'
-      : 'http://localhost:3000';
-
-  if (error || !post) {
+export default function DrinkPost({ post }) {
+  if (!post) {
     return (
       <div className={styles.drinksPage}>
         <Head>
           <title>Error - Drink Recipe | The Stylish Mama</title>
-          <meta name="description" content="Failed to load the drink recipe." />
         </Head>
         <section className={styles.drinksPageContentWrapper}>
           <h1 className={styles.drinksPageHeading}>Error</h1>
-          <p className={styles.drinksPageErrorMessage}>{error || 'Post not found.'}</p>
+          <p className={styles.drinksPageErrorMessage}>Post not found.</p>
         </section>
       </div>
     );
   }
+
+  const baseUrl = 'https://www.thestylishmama.com';
 
   const dynamicDescription = sanitizeText(post.content).substring(0, 160) || 'A refreshing drink recipe from The Stylish Mama.';
   const dynamicTitle = `${post.title} - Drink Recipe | The Stylish Mama`;
@@ -121,7 +115,7 @@ export default function DrinkPost({ post, error }) {
             height={450}
             onError={(e) => {
               console.error('Image failed to load:', post.imageUrl);
-              e.target.src = '/default-drinks-image.jpg';
+              e.currentTarget.src = '/default-drinks-image.jpg';
             }}
             loading="lazy"
           />
@@ -145,63 +139,58 @@ export default function DrinkPost({ post, error }) {
   );
 }
 
-export async function getServerSideProps({ params }) {
+// THIS MAKES EVERY DRINK RECIPE INSTANT
+export async function getStaticPaths() {
+  const res = await fetch(`${API_URL}?page=Drinks&limit=1000&offset=0`);
+  const { posts = [] } = await res.json();
+
+  const paths = posts
+    .filter(post => post.slug)
+    .map((post) => ({
+      params: { slug: post.slug },
+    }));
+
+  return {
+    paths,
+    fallback: 'blocking',
+  };
+}
+
+export async function getStaticProps({ params }) {
   const { slug } = params;
+
   try {
-    const response = await fetch(`${API_URL}?page=Drinks&slug=${slug}`);
-    const responseText = await response.text();
-    console.log('Raw API Response for Drink Post:', responseText);
+    const res = await fetch(`${API_URL}?page=Drinks&limit=1000&offset=0`);
+    if (!res.ok) throw new Error('API error');
 
-    if (!response.ok) {
-      console.error('Error fetching drink post:', responseText);
-      throw new Error(`HTTP Error! Status: ${response.status} - ${responseText}`);
+    const { posts = [] } = await res.json();
+
+    const targetPost = posts.find((p) => p.slug === slug);
+
+    if (!targetPost) {
+      return { notFound: true };
     }
 
-    let data;
-    try {
-      data = JSON.parse(responseText);
-      console.log('Parsed Drink Post:', data);
-    } catch (parseErr) {
-      console.error('Error parsing API response:', parseErr.message);
-      throw new Error('Invalid API response format');
-    }
-
-    const { post } = data;
-    if (!post) {
-      throw new Error('Post not found');
-    }
+    const drinkPost = {
+      ...targetPost,
+      titleStyle: targetPost.titleStyle
+        ? typeof targetPost.titleStyle === 'string'
+          ? JSON.parse(targetPost.titleStyle)
+          : targetPost.titleStyle
+        : { color: '#000', fontSize: '2.5rem', textAlign: 'center' },
+      imageUrl: targetPost.imageUrl?.startsWith('http')
+        ? targetPost.imageUrl
+        : targetPost.imageUrl
+        ? `https://www.thestylishmama.com${targetPost.imageUrl}`
+        : null,
+    };
 
     return {
-      props: {
-        post: {
-          ...post,
-          id: post.id || null,
-          slug: post.slug || null,
-          title: post.title || 'Untitled',
-          content: post.content || '',
-          imageUrl: post.imageUrl?.startsWith('http')
-            ? post.imageUrl
-            : post.imageUrl
-            ? `https://stylishmom.vercel.app${post.imageUrl}`
-            : null,
-          createdAt: post.createdAt || new Date().toISOString(),
-          updated_at: post.updated_at || post.createdAt || new Date().toISOString(),
-          titleStyle: post.titleStyle
-            ? typeof post.titleStyle === 'string'
-              ? JSON.parse(post.titleStyle)
-              : post.titleStyle
-            : { color: '#000', fontSize: '2.5rem', textAlign: 'center' },
-        },
-        error: '',
-      },
+      props: { post: drinkPost },
+      revalidate: 60,
     };
   } catch (err) {
-    console.error('Error in getServerSideProps for Drink Post:', err.message);
-    return {
-      props: {
-        post: null,
-        error: `Failed to load drink post: ${err.message}`,
-      },
-    };
+    console.error('getStaticProps error:', err);
+    return { notFound: true };
   }
 }
