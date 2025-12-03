@@ -1,14 +1,12 @@
+// pages/drinks/index.js
 import { useState, useCallback } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
-import Header from '../header'; // Use the same Header component as other sections
+import Header from '../header';
 import styles from '../../styles/Drinks.module.css';
 
-const API_URL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://stylishmom.vercel.app/api/posts'
-    : 'http://localhost:3000/api/posts';
+const API_URL = 'https://www.thestylishmama.com/api/posts';
 
 const sanitizeText = (htmlContent) => {
   if (!htmlContent) return '';
@@ -23,86 +21,18 @@ const sanitizeText = (htmlContent) => {
   return text.trim();
 };
 
-export default function Drinks({ initialPosts, initialCategories, initialTags, initialError, pagination }) {
-  const [posts] = useState(initialPosts || []);
-  const [filteredPosts, setFilteredPosts] = useState(initialPosts || []);
+export default function Drinks({ posts, initialCategories, initialTags, error, pagination }) {
+  const [postsState] = useState(posts || []);
+  const [filteredPosts, setFilteredPosts] = useState(posts || []);
   const [categories] = useState(initialCategories || []);
   const [tags] = useState(initialTags || []);
-  const [error] = useState(initialError || '');
-  const [loading] = useState(false);
 
-  const handleSearch = useCallback((searchTerm) => {
-    if (!searchTerm.trim()) {
-      setFilteredPosts(posts);
-    } else {
-      const filtered = posts.filter(
-        (post) =>
-          (post.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (post.content || '').toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredPosts(filtered);
-      console.log('Filtered Drinks Slugs:', filtered.map(p => p.slug)); // Debug filtered slugs
-    }
-  }, [posts]);
-
-  const handleFilterApply = useCallback((selectedCategories, selectedTags) => {
-    const filtered = posts.filter(
-      (post) =>
-        (!selectedCategories.length || selectedCategories.includes(post.category)) &&
-        (!selectedTags.length || (post.tags || []).some((tag) => selectedTags.includes(tag)))
-    );
-    setFilteredPosts(filtered);
-    console.log('Filtered Drinks Slugs after Filter:', filtered.map(p => p.slug)); // Debug filtered slugs
-  }, [posts]);
-
-  const handleShare = useCallback((post) => {
-    const baseUrl =
-      process.env.NODE_ENV === 'production'
-        ? 'https://stylishmom.vercel.app'
-        : 'http://localhost:3000';
-    const postUrl = `${baseUrl}/drinks/${post.slug}`;
-
-    if (navigator.share) {
-      navigator.share({
-        title: post.title,
-        text: 'Check out this refreshing drink recipe from The Stylish Mama!',
-        url: postUrl,
-      })
-        .then(() => console.log('Post shared successfully'))
-        .catch((error) => {
-          console.error('Error sharing:', error);
-          alert('Failed to share. Link copied to clipboard instead.');
-          navigator.clipboard.writeText(postUrl);
-        });
-    } else {
-      navigator.clipboard
-        .writeText(postUrl)
-        .then(() => alert('Link copied to clipboard!'))
-        .catch(() => alert('Failed to copy link. Please copy manually: ' + postUrl));
-    }
-  }, []);
-
-  const incrementViewCount = useCallback(async (postId) => {
-    try {
-      await fetch(`${API_URL}?method=INCREMENT_VIEW_COUNT&postId=${postId}&page=Drinks`, {
-        method: 'POST',
-      });
-      console.log(`View count incremented for post ${postId}`);
-    } catch (err) {
-      console.error('Error incrementing view count:', err);
-    }
-  }, []);
-
-  const baseUrl =
-    process.env.NODE_ENV === 'production'
-      ? 'https://stylishmom.vercel.app'
-      : 'http://localhost:3000';
+  const baseUrl = 'https://www.thestylishmama.com';
 
   const dynamicDescription =
     filteredPosts.length > 0
       ? `Discover refreshing drink recipes like "${filteredPosts[0].title}" and more on The Stylish Mama.`
       : 'Explore refreshing drink recipes perfect for any occasion at The Stylish Mama.';
-
   const dynamicTitle =
     filteredPosts.length > 0
       ? `${filteredPosts[0].title} - Refreshing Drink Recipes | The Stylish Mama`
@@ -154,6 +84,63 @@ export default function Drinks({ initialPosts, initialCategories, initialTags, i
     },
   };
 
+  const handleSearch = useCallback((searchTerm) => {
+    if (!searchTerm.trim()) {
+      setFilteredPosts(postsState);
+    } else {
+      const filtered = postsState.filter(
+        (post) =>
+          (post.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (post.content || '').toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredPosts(filtered);
+      console.log('Filtered Drinks Slugs:', filtered.map(p => p.slug));
+    }
+  }, [postsState]);
+
+  const handleFilterApply = useCallback((selectedCategories, selectedTags) => {
+    const filtered = postsState.filter(
+      (post) =>
+        (!selectedCategories.length || selectedCategories.includes(post.category)) &&
+        (!selectedTags.length || (post.tags || []).some((tag) => selectedTags.includes(tag)))
+    );
+    setFilteredPosts(filtered);
+    console.log('Filtered Drinks Slugs after Filter:', filtered.map(p => p.slug));
+  }, [postsState]);
+
+  const handleShare = useCallback((post) => {
+    const postUrl = `${baseUrl}/drinks/${post.slug}`;
+    if (navigator.share) {
+      navigator.share({
+        title: post.title,
+        text: 'Check out this refreshing drink recipe from The Stylish Mama!',
+        url: postUrl,
+      })
+        .then(() => console.log('Post shared successfully'))
+        .catch((error) => {
+          console.error('Error sharing:', error);
+          alert('Failed to share. Link copied to clipboard instead.');
+          navigator.clipboard.writeText(postUrl);
+        });
+    } else {
+      navigator.clipboard
+        .writeText(postUrl)
+        .then(() => alert('Link copied to clipboard!'))
+        .catch(() => alert('Failed to copy link. Please copy manually: ' + postUrl));
+    }
+  }, [baseUrl]);
+
+  const incrementViewCount = useCallback(async (postId) => {
+    try {
+      await fetch(`${API_URL}?method=INCREMENT_VIEW_COUNT&postId=${postId}&page=Drinks`, {
+        method: 'POST',
+      });
+      console.log(`View count incremented for post ${postId}`);
+    } catch (err) {
+      console.error('Error incrementing view count:', err);
+    }
+  }, []);
+
   return (
     <div className={styles.drinksPage}>
       <Head>
@@ -195,177 +182,153 @@ export default function Drinks({ initialPosts, initialCategories, initialTags, i
         )}
       </Head>
 
-      {loading ? (
-        <div className={styles.loadingContainer}>
-          <div className={styles.drinkLoader}></div>
-        </div>
-      ) : (
-        <>
-          <div className={styles.drinksPageSearchContainer}>
-            <Header
-              onSearch={handleSearch}
-              onFilterApply={handleFilterApply}
-              categories={categories}
-              tags={tags}
-            />
-          </div>
+      <div className={styles.drinksPageSearchContainer}>
+        <Header
+          onSearch={handleSearch}
+          onFilterApply={handleFilterApply}
+          categories={categories}
+          tags={tags}
+        />
+      </div>
 
-          <section className={styles.drinksPageContentWrapper}>
-            <h1 className={styles.drinksPageHeading}>Refreshing Drink Recipes</h1>
-            {error && <p className={styles.drinksPageErrorMessage}>{error}</p>}
-            {!error && filteredPosts.length === 0 && (
-              <p className={styles.drinksPageNoPostsMessage}>No posts available</p>
-            )}
-            <div className={styles.drinksPageGrid}>
-              {filteredPosts.map((post, index) => (
-                <article
-                  key={post.id}
-                  className={styles.drinksPageCard}
-                  style={{ '--index': index }}
-                  onMouseEnter={() => incrementViewCount(post.id)}
-                >
-                  {post.imageUrl ? (
-                    <Link href={`/drinks/${post.slug}`}>
-                      <Image
-                        src={post.imageUrl}
-                        alt={`Thumbnail for ${post.title || 'Untitled'} - Drink Recipe`}
-                        className={styles.drinksPageImage}
-                        width={300}
-                        height={200}
-                        onError={(e) => {
-                          console.error('Image failed to load:', post.imageUrl);
-                          e.target.src = '/default-drinks-image.jpg';
-                        }}
-                        loading="lazy"
-                      />
-                    </Link>
-                  ) : (
-                    <Link href={`/drinks/${post.slug}`}>
-                      <div className={styles.drinksPageImagePlaceholder}>No Image Available</div>
-                    </Link>
-                  )}
-                  <Link href={`/drinks/${post.slug}`}>
-                    <h2
-                      className={styles.drinksPageTitle}
-                      style={{
-                        color: post.titleStyle?.color || '#000',
-                        fontSize: post.titleStyle?.fontSize || '1.5rem',
-                        textAlign: post.titleStyle?.textAlign || 'left',
-                      }}
-                    >
-                      {post.title || 'Untitled'}
-                    </h2>
-                  </Link>
-                  <p className={styles.drinksPageExcerpt}>
-                    {sanitizeText(post.content).substring(0, 200) || 'No content available...'}
-                  </p>
-                  <button
-                    className={styles.shareButton}
-                    onClick={() => handleShare(post)}
-                    aria-label={`Share drink recipe: ${post.title}`}
-                  >
-                    <span className={styles.shareIcon}>🔗</span> Share
-                  </button>
-                </article>
-              ))}
-            </div>
+      <section className={styles.drinksPageContentWrapper}>
+        <h1 className={styles.drinksPageHeading}>Refreshing Drink Recipes</h1>
+        {error && <p className={styles.drinksPageErrorMessage}>{error}</p>}
+        {!error && filteredPosts.length === 0 && (
+          <p className={styles.drinksPageNoPostsMessage}>No posts available</p>
+        )}
 
-            <nav className={styles.pagination} aria-label="Pagination">
-              {pagination.offset > 0 && (
-                <Link
-                  href={`/drinks?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
-                  className={styles.paginationLink}
-                  aria-label="Previous page"
-                >
-                  Previous
+        <div className={styles.drinksPageGrid}>
+          {filteredPosts.map((post, index) => (
+            <article
+              key={post.id}
+              className={styles.drinksPageCard}
+              style={{ '--index': index }}
+              onMouseEnter={() => incrementViewCount(post.id)}
+            >
+              {post.imageUrl ? (
+                <Link href={`/drinks/${post.slug}`}>
+                  <Image
+                    src={post.imageUrl}
+                    alt={`Thumbnail for ${post.title || 'Untitled'} - Drink Recipe`}
+                    className={styles.drinksPageImage}
+                    width={300}
+                    height={200}
+                    onError={(e) => {
+                      console.error('Image failed to load:', post.imageUrl);
+                      e.target.src = '/default-drinks-image.jpg';
+                    }}
+                    loading="lazy"
+                  />
+                </Link>
+              ) : (
+                <Link href={`/drinks/${post.slug}`}>
+                  <div className={styles.drinksPageImagePlaceholder}>No Image Available</div>
                 </Link>
               )}
-              {pagination.offset + pagination.limit < pagination.total && (
-                <Link
-                  href={`/drinks?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
-                  className={styles.paginationLink}
-                  aria-label="Next page"
+              <Link href={`/drinks/${post.slug}`}>
+                <h2
+                  className={styles.drinksPageTitle}
+                  style={{
+                    color: post.titleStyle?.color || '#000',
+                    fontSize: post.titleStyle?.fontSize || '1.5rem',
+                    textAlign: post.titleStyle?.textAlign || 'left',
+                  }}
                 >
-                  Next
-                </Link>
-              )}
-              <p>
-                Page {pagination.offset / pagination.limit + 1} of {pagination.totalPages}
+                  {post.title || 'Untitled'}
+                </h2>
+              </Link>
+              <p className={styles.drinksPageExcerpt}>
+                {sanitizeText(post.content).substring(0, 200) || 'No content available...'}
               </p>
-            </nav>
-          </section>
-        </>
-      )}
+              <button
+                className={styles.shareButton}
+                onClick={() => handleShare(post)}
+                aria-label={`Share drink recipe: ${post.title}`}
+              >
+                <span className={styles.shareIcon}>🔗</span> Share
+              </button>
+            </article>
+          ))}
+        </div>
+
+        <nav className={styles.pagination} aria-label="Pagination">
+          {pagination.offset > 0 && (
+            <Link
+              href={`/drinks?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
+              className={styles.paginationLink}
+              scroll={false}
+            >
+              Previous
+            </Link>
+          )}
+          {pagination.offset + pagination.limit < pagination.total && (
+            <Link
+              href={`/drinks?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
+              className={styles.paginationLink}
+              scroll={false}
+            >
+              Next
+            </Link>
+          )}
+          <p>
+            Page {pagination.offset / pagination.limit + 1} of {pagination.totalPages}
+          </p>
+        </nav>
+      </section>
     </div>
   );
 }
 
-export async function getServerSideProps({ query }) {
-  const { limit = 10, offset = 0 } = query;
+// THIS MAKES THE DRINKS LISTING PAGE INSTANT
+export async function getStaticProps() {
+  const limit = 10;
+  const offset = 0;
+
   try {
     const response = await fetch(`${API_URL}?page=Drinks&limit=${limit}&offset=${offset}`);
-    const responseText = await response.text();
-    console.log('Raw API Response for Drinks (List):', responseText);
+    const data = await response.json();
+    const { posts = [], pagination = {} } = data;
 
-    if (!response.ok) {
-      console.error('Error fetching posts (Server-Side):', responseText);
-      throw new Error(`HTTP Error! Status: ${response.status} - ${responseText}`);
-    }
+    const uniqueCategories = [...new Set(posts.map(p => p.category).filter(Boolean))];
+    const uniqueTags = [...new Set(posts.flatMap(p => p.tags || []).filter(Boolean))];
 
-    const { posts, pagination } = JSON.parse(responseText);
-    console.log('Parsed Drinks Posts (Server-Side):', posts);
-
-    const drinksPosts = posts.map((post) => ({
+    const formattedPosts = posts.map(post => ({
       ...post,
-      id: post.id || null,
-      slug: post.slug || null,
-      title: post.title || 'Untitled',
-      content: post.content || '',
       imageUrl: post.imageUrl?.startsWith('http')
         ? post.imageUrl
-        : post.imageUrl
-        ? `https://stylishmom.vercel.app${post.imageUrl}`
-        : null,
-      createdAt: post.createdAt || new Date().toISOString(),
-      updated_at: post.updated_at || post.createdAt || new Date().toISOString(),
+        : post.imageUrl ? `https://www.thestylishmama.com${post.imageUrl}` : null,
       titleStyle: post.titleStyle
-        ? typeof post.titleStyle === 'string'
-          ? JSON.parse(post.titleStyle)
-          : post.titleStyle
+        ? typeof post.titleStyle === 'string' ? JSON.parse(post.titleStyle) : post.titleStyle
         : { color: '#000', fontSize: '1.5rem', textAlign: 'left' },
     }));
 
-    const uniqueCategories = [
-      ...new Set(drinksPosts.map((post) => post.category).filter((cat) => cat !== undefined)),
-    ];
-    const uniqueTags = [
-      ...new Set(drinksPosts.flatMap((post) => post.tags || []).filter((tag) => tag !== undefined)),
-    ];
-
     return {
       props: {
-        initialPosts: drinksPosts,
+        posts: formattedPosts,
         initialCategories: uniqueCategories,
         initialTags: uniqueTags,
-        initialError: drinksPosts.length === 0 ? 'No posts found for the Drinks page.' : '',
         pagination: {
-          total: pagination.total || 0,
-          limit: pagination.limit || 10,
-          offset: pagination.offset || 0,
-          totalPages: pagination.totalPages || 0,
+          ...pagination,
+          limit,
+          offset,
+          totalPages: pagination.totalPages || Math.ceil((pagination.total || 0) / limit),
         },
+        error: '',
       },
+      revalidate: 60,
     };
   } catch (err) {
-    console.error('Error in getServerSideProps for Drinks:', err.message);
+    console.error('getStaticProps error:', err);
     return {
       props: {
-        initialPosts: [],
+        posts: [],
         initialCategories: [],
         initialTags: [],
-        initialError: `Failed to load posts: ${err.message}`,
+        error: 'Failed to load posts',
         pagination: { total: 0, limit: 10, offset: 0, totalPages: 0 },
       },
+      revalidate: 60,
     };
   }
 }
