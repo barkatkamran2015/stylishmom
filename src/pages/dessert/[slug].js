@@ -1,11 +1,9 @@
+// pages/dessert/[slug].js
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../../styles/Dessert.module.css';
 
-const API_URL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://www.thestylishmama.com/api/posts'
-    : 'http://localhost:3000/api/posts';
+const API_URL = 'https://www.thestylishmama.com/api/posts';
 
 const sanitizeText = (htmlContent) => {
   if (!htmlContent) return '';
@@ -20,7 +18,7 @@ const sanitizeText = (htmlContent) => {
   return text.trim();
 };
 
-export default function DessertPost({ post, error }) {
+export default function DessertPost({ post }) {
   if (!post) {
     return (
       <div className={styles.dessertPage}>
@@ -30,16 +28,12 @@ export default function DessertPost({ post, error }) {
         </Head>
         <section className={styles.dessertPageContentWrapper}>
           <h1>404 - This page could not be found</h1>
-          {error && <p className={styles.dessertPageErrorMessage}>{error}</p>}
         </section>
       </div>
     );
   }
 
-  const baseUrl =
-    process.env.NODE_ENV === 'production'
-      ? 'https://www.thestylishmama.com'
-      : 'http://localhost:3000';
+  const baseUrl = 'https://www.thestylishmama.com';
 
   const structuredData = {
     '@context': 'https://schema.org',
@@ -82,17 +76,11 @@ export default function DessertPost({ post, error }) {
         <meta property="og:description" content={sanitizeText(post.content).substring(0, 160)} />
         <meta property="og:url" content={`${baseUrl}/dessert/${post.slug}`} />
         <meta property="og:type" content="article" />
-        <meta
-          property="og:image"
-          content={post.imageUrl || '/default-dessert-image.jpg'}
-        />
+        <meta property="og:image" content={post.imageUrl || '/default-dessert-image.jpg'} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={post.title || 'Untitled'} />
         <meta name="twitter:description" content={sanitizeText(post.content).substring(0, 160)} />
-        <meta
-          name="twitter:image"
-          content={post.imageUrl || '/default-dessert-image.jpg'}
-        />
+        <meta name="twitter:image" content={post.imageUrl || '/default-dessert-image.jpg'} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -141,61 +129,40 @@ export default function DessertPost({ post, error }) {
   );
 }
 
-export async function getServerSideProps({ params }) {
+// THIS MAKES EVERY DESSERT RECIPE INSTANT
+export async function getStaticPaths() {
+  const res = await fetch(`${API_URL}?page=Dessert&limit=1000&offset=0`);
+  const { posts = [] } = await res.json();
+
+  const paths = posts
+    .filter(post => post.slug)
+    .map((post) => ({
+      params: { slug: post.slug },
+    }));
+
+  return {
+    paths,
+    fallback: 'blocking',
+  };
+}
+
+export async function getStaticProps({ params }) {
   const { slug } = params;
-  console.log('Requested Slug in dessert/[slug].js:', slug);
 
   try {
-    const normalizedSlug = decodeURIComponent(slug).toLowerCase();
-    console.log('Normalized Slug:', normalizedSlug);
+    const res = await fetch(`${API_URL}?page=Dessert&limit=1000&offset=0`);
+    if (!res.ok) throw new Error('API error');
 
-    const listResponse = await fetch(`${API_URL}?page=Dessert&limit=1000&offset=0`);
-    const listResponseText = await listResponse.text();
-    console.log('Raw API Response for Dessert List in [slug].js:', listResponseText);
+    const { posts = [] } = await res.json();
 
-    if (!listResponse.ok) {
-      console.error('Error fetching post list (Server-Side):', listResponseText);
-      throw new Error(`HTTP Error! Status: ${listResponse.status}`);
-    }
-
-    let listData;
-    try {
-      listData = JSON.parse(listResponseText);
-      console.log('Parsed API Response for Dessert List:', listData);
-    } catch (parseErr) {
-      console.error('Error parsing API list response:', parseErr.message);
-      throw new Error('Invalid API response format for list');
-    }
-
-    const { posts } = listData;
-    if (!posts || !Array.isArray(posts)) {
-      console.error('Posts array is invalid:', posts);
-      throw new Error('Posts array is missing or invalid');
-    }
-
-    console.log('Posts array from API:', posts);
-    const targetPost = posts.find((post) => {
-      const postSlug = post.slug ? decodeURIComponent(post.slug).toLowerCase() : '';
-      console.log('Comparing slug:', postSlug, 'with requested slug:', normalizedSlug);
-      return postSlug === normalizedSlug;
-    });
+    const targetPost = posts.find((p) => p.slug === slug);
 
     if (!targetPost) {
-      console.error('Post not found in list for slug:', normalizedSlug);
-      return {
-        props: {
-          post: null,
-          error: 'Post not found in list',
-        },
-      };
+      return { notFound: true };
     }
-
-    console.log('Found post in list:', targetPost);
 
     const dessertPost = {
       ...targetPost,
-      id: targetPost.id || null,
-      slug: targetPost.slug || null,
       titleStyle: targetPost.titleStyle
         ? typeof targetPost.titleStyle === 'string'
           ? JSON.parse(targetPost.titleStyle)
@@ -206,29 +173,14 @@ export async function getServerSideProps({ params }) {
         : targetPost.imageUrl
         ? `https://www.thestylishmama.com${targetPost.imageUrl}`
         : null,
-      content: targetPost.content || '',
-      title: targetPost.title || 'Untitled',
-      author: targetPost.author || 'The Stylish Mama',
-      createdAt: targetPost.createdAt || new Date().toISOString(),
-      updated_at: targetPost.updated_at || targetPost.createdAt || new Date().toISOString(),
-      tags: targetPost.tags || [],
     };
 
-    console.log('Formatted dessert post:', dessertPost);
-
     return {
-      props: {
-        post: dessertPost,
-        error: '',
-      },
+      props: { post: dessertPost },
+      revalidate: 60,
     };
   } catch (err) {
-    console.error('Error in getServerSideProps:', err.message);
-    return {
-      props: {
-        post: null,
-        error: `Failed to load post: ${err.message}`,
-      },
-    };
+    console.error('getStaticProps error:', err);
+    return { notFound: true };
   }
 }
