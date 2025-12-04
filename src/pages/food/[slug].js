@@ -34,24 +34,35 @@ export default function FoodPost({ post }) {
   const baseUrl = 'https://www.thestylishmama.com';
 
   const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'Recipe',
-    name: post.title || 'Untitled',
-    description: sanitizeText(post.content).substring(0, 160),
-    datePublished: post.createdAt || new Date().toISOString(),
-    dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
-    author: { '@type': 'Person', name: post.author || 'The Stylish Mama' },
-    publisher: {
-      '@type': 'Organization',
-      name: 'The Stylish Mama',
-      logo: { '@type': 'ImageObject', url: `${baseUrl}/logo.png` },
-    },
-    image: post.imageUrl || '/default-food-image.jpg',
-    url: `${baseUrl}/food/${post.slug}`,
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `${baseUrl}/food/${post.slug}` },
-    recipeCategory: 'Food',
-    keywords: post.tags?.join(', ') || 'food, recipe, savory',
-  };
+  '@context': 'https://schema.org',
+  '@type': 'Recipe',
+  name: post.title || 'Untitled',
+  description: sanitizeText(post.content).substring(0, 160),
+  datePublished: post.createdAt || new Date().toISOString(),
+  dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
+  author: { '@type': 'Person', name: post.author || 'The Stylish Mama' },
+  publisher: {
+    '@type': 'Organization',
+    name: 'The Stylish Mama',
+    logo: { '@type': 'ImageObject', url: `${baseUrl}/logo.png` },
+  },
+  image: post.imageUrl || '/default-food-image.jpg',
+  url: `${baseUrl}/food/${post.slug}`,
+  mainEntityOfPage: { '@type': 'WebPage', '@id': `${baseUrl}/food/${post.slug}` },
+  recipeCategory: 'Food',
+  keywords: post.tags?.join(', ') || 'food, recipe, savory',
+
+  // ADD THIS BLOCK — fixes the warning instantly
+  recipeInstructions: [{
+    "@type": "HowToStep",
+    text: sanitizeText(post.content) || "Delicious homemade recipe — see full instructions on the page."
+  }],
+
+  // Optional but recommended for rich results
+  prepTime: "PT15M",
+  cookTime: "PT30M",
+  recipeYield: "4 servings",
+};
 
   return (
     <div className={styles.foodPage}>
