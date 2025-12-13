@@ -248,57 +248,35 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
         <p className={styles.errorMessage}>{error}</p>
       ) : (
         <>
-          {/* CHRISTMAS LIGHTS WRAPPER */}
-          <div style={{ position: 'relative', padding: '60px 0' }}>
-            {/* Top lights */}
-            <div className={styles.christmasLights}>
-              <ul>
-                {Array.from({ length: 60 }, (_, i) => (
-                  <li key={i} style={{ '--delay': i }} />
-                ))}
-                {Array.from({ length: 60 }, (_, i) => (
-                  <li key={i + 60} style={{ '--delay': i + 60 }} />
-                ))}
-              </ul>
-            </div>
+          {/* Festive Christmas Lights Above Slider */}
+<div className={styles.christmasLightsContainer}>
+  <div className={styles.christmasLights}>
+    <ul>
+      {Array.from({ length: 40 }, (_, i) => (
+        <li key={i} style={{ '--delay': i }} />
+      ))}
+      {Array.from({ length: 40 }, (_, i) => (
+        <li key={i + 40} style={{ '--delay': i + 40 }} />
+      ))}
+    </ul>
+  </div>
 
-            {/* Your slider */}
-            <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
-              <div>
-                <Image
-                  src={imageBlog}
-                  alt="Blog"
-                  className={styles.homePage__sliderImage}
-                  width={1200}
-                  height={600}
-                  priority
-                />
-                <h3 className={styles.homePage__sliderText}>Love Does not Divide, It Multiplies</h3>
-              </div>
-              <div>
-                <Image
-                  src={imageNature}
-                  alt="Natures Beauty"
-                  className={styles.homePage__sliderImage}
-                  width={1200}
-                  height={600}
-                  priority
-                />
-                <h3 className={styles.homePage__sliderText}>Every family is Unique</h3>
-              </div>
-              <div>
-                <Image
-                  src={imageRecipe}
-                  alt="Recipe"
-                  className={styles.homePage__sliderImage}
-                  width={1200}
-                  height={600}
-                  priority
-                />
-                <h3 className={styles.homePage__sliderText}>I carry Hope in here. And half a granola bar</h3>
-              </div>
-            </Slider>
-
+  <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
+    {/* Your 3 slides here — unchanged */}
+    <div>
+      <Image src={imageBlog} alt="Blog" className={styles.homePage__sliderImage} width={1200} height={600} priority />
+      <h3 className={styles.homePage__sliderText}>Love Does not Divide, It Multiplies</h3>
+    </div>
+    <div>
+      <Image src={imageNature} alt="Natures Beauty" className={styles.homePage__sliderImage} width={1200} height={600} priority />
+      <h3 className={styles.homePage__sliderText}>Every family is Unique</h3>
+    </div>
+    <div>
+      <Image src={imageRecipe} alt="Recipe" className={styles.homePage__sliderImage} width={1200} height={600} priority />
+      <h3 className={styles.homePage__sliderText}>I carry Hope in here. And half a granola bar</h3>
+    </div>
+  </Slider>
+</div>
             {/* Bottom lights (optional — remove if you don't want them) */}
             <div className={styles.christmasLightsBottom}>
               <ul>
