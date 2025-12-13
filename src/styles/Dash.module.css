@@ -216,104 +216,134 @@
   top: 0;
 }
 
-/* FINAL GOOGLE-STYLE CHRISTMAS LIGHTS — Real Wire + Varying Directions */
+/* GOOGLE-STYLE CHRISTMAS LIGHTS — Natural Branch Feel */
 .sliderWithLights {
   position: relative;
-  margin-top: 80px; /* Space for hanging lights */
+  margin-top: 70px; /* More space for hanging variation */
 }
 
+/* Container */
 .christmasLights {
   position: absolute;
-  top: -70px;
+  top: -60px;
   left: 0;
   width: 100%;
-  height: 120px;
+  height: 100px;
   pointer-events: none;
   z-index: 10;
 }
 
+/* Bulb row */
 .christmasLights ul {
   list-style: none;
   margin: 0;
-  padding: 0 50px;
+  padding: 0 40px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   position: relative;
 }
 
-/* Dark black/green wire with slight sag */
+/* === NATURAL SAGGING WIRE (wave curve) === */
 .christmasLights ul::before {
   content: "";
   position: absolute;
-  top: 30px;
+  top: 15px;
   left: 0;
   right: 0;
-  height: 6px;
-  background: #0f2a0f; /* Dark green wire */
-  border-radius: 3px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  height: 5px;
+  background: linear-gradient(to right, #1c1c1c, #333, #1c1c1c);
+  border-radius: 100px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
   z-index: 1;
-  /* Gentle sag */
-  clip-path: path('M0,30 Q200,50 400,30 T800,30 T1200,30');
+  /* Wave sag effect */
+  background: repeating-linear-gradient(
+    90deg,
+    #1c1c1c 0px,
+    #1c1c1c 20px,
+    #333 20px,
+    #333 40px
+  );
+  clip-path: path('M0,15 Q250,35 500,15 T1000,15'); /* Gentle sag curve — adjust for screen width */
 }
 
-/* Bulb container */
+/* === BULB === */
 .christmasLights li {
   position: relative;
-  width: 28px;
-  height: 40px;
-  margin-top: var(--hang, 30px); /* Varying height */
+  width: 18px;
+  height: 28px;
+  margin-top: var(--hang, 25px); /* Random hanging depth */
+  border-radius: 50% 50% 45% 45%;
+  animation: glow 2.8s infinite ease-in-out, sway 8s infinite ease-in-out;
+  animation-delay: calc(var(--delay) * 0.18s), calc(var(--delay) * 0.5s);
+  transform-origin: top center;
   z-index: 2;
 }
 
-/* Hanging cord */
+/* Vary hanging height for natural look */
+.christmasLights li:nth-child(odd) { --hang: 30px; }
+.christmasLights li:nth-child(even) { --hang: 20px; }
+.christmasLights li:nth-child(4n+1) { --hang: 35px; }
+.christmasLights li:nth-child(4n+3) { --hang: 22px; }
+
+/* === SOCKET === */
 .christmasLights li::before {
   content: "";
   position: absolute;
-  top: -var(--hang, 30px);
+  top: -8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 4px;
-  height: var(--hang, 30px);
-  background: #0f2a0f; /* Matches wire */
-  z-index: 1;
+  width: 12px;
+  height: 8px;
+  background: #222;
+  border-radius: 3px;
+  z-index: 3;
 }
 
-/* Bulb (pointy shape) */
+/* === CONNECTOR STEM (hanging cord) === */
 .christmasLights li::after {
   content: "";
   position: absolute;
-  bottom: 0;
+  top: -25px;
   left: 50%;
-  transform: translateX(-50%) rotate(var(--rotate, 0deg));
-  width: 28px;
-  height: 40px;
-  background: radial-gradient(circle at 40% 20%, #fff 10%, transparent 60%);
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-  filter: brightness(1.2);
-  animation: glow 3s infinite alternate;
-  animation-delay: calc(var(--delay) * 0.2s);
+  transform: translateX(-50%);
+  width: 3px;
+  height: var(--hang, 25px);
+  background: linear-gradient(to bottom, #333, #1c1c1c);
+  z-index: 2;
 }
 
-/* Vary hanging height and direction */
-.christmasLights li:nth-child(odd) { --hang: 35px; --rotate: 0deg; } /* Down */
-.christmasLights li:nth-child(even) { --hang: 25px; --rotate: 180deg; } /* Up */
-.christmasLights li:nth-child(4n+1) { --hang: 40px; --rotate: 10deg; }
-.christmasLights li:nth-child(4n+3) { --hang: 30px; --rotate: -15deg; }
+/* === COLORS & GLOW === */
+.christmasLights li:nth-child(4n+1) {
+  background: #ff4d4d;
+  box-shadow: 0 0 15px rgba(255,77,77,0.9);
+}
+.christmasLights li:nth-child(4n+2) {
+  background: #4dff4d;
+  box-shadow: 0 0 15px rgba(77,255,77,0.9);
+}
+.christmasLights li:nth-child(4n+3) {
+  background: #4d4dff;
+  box-shadow: 0 0 15px rgba(77,77,255,0.9);
+}
+.christmasLights li:nth-child(4n) {
+  background: #ffd84d;
+  box-shadow: 0 0 15px rgba(255,216,77,0.9);
+}
 
-/* Colors */
-.christmasLights li:nth-child(4n+1)::after { background-color: #ff3333; box-shadow: 0 0 25px #ff3333; }
-.christmasLights li:nth-child(4n+2)::after { background-color: #33ff33; box-shadow: 0 0 25px #33ff33; }
-.christmasLights li:nth-child(4n+3)::after { background-color: #3333ff; box-shadow: 0 0 25px #3333ff; }
-.christmasLights li:nth-child(4n)::after { background-color: #ffff33; box-shadow: 0 0 25px #ffff33; }
-
-/* Glow animation */
+/* === GLOW ANIMATION === */
 @keyframes glow {
-  0% { opacity: 0.7; filter: brightness(0.9); }
-  100% { opacity: 1; filter: brightness(1.3); }
+  0% { opacity: 0.6; filter: brightness(0.9); }
+  50% { opacity: 1; filter: brightness(1.4); }
+  100% { opacity: 0.7; filter: brightness(1); }
 }
 
+/* === SUBTLE SWAY (like wind on branch) === */
+@keyframes sway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(3deg); }
+  75% { transform: rotate(-3deg); }
+}
 
 
 @keyframes beat {
