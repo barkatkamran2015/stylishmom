@@ -1,391 +1,327 @@
-// pages/index.js
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import dynamic from 'next/dynamic';
-import Head from 'next/head';
-import Image from 'next/image';
-import Link from 'next/link';
-import SearchBar from "../components/SearchBar";
-import styles from "../../styles/Dash.module.css";
-import imageBlog from "../Assets/family.png";
-import imageNature from "../Assets/lotto.jpg";
-import imageRecipe from "../Assets/make.jpg";
-
-const Slider = dynamic(() => import('react-slick'), { ssr: false });
-// Ensure slick CSS loads in production
-if (typeof window !== 'undefined') {
-  require('slick-carousel/slick/slick.css');
-  require('slick-carousel/slick/slick-theme.css');
+/* src/styles/Dash.module.css */
+/* General Home Page Styling */
+.homePage {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f5f5; /* Light background for better contrast */
 }
 
-const API_URL = 'https://www.barkatkamran.com/api.php';
+/* Featured Slider */
+.homePage__featuredSlider {
+  margin-bottom: 30px;
+  position: relative;
+}
 
-export async function getStaticProps({ params }) {
-  const limit = 10;
-  const offset = 0;
-  try {
-    const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`);
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error response body in getStaticProps:', errorText);
-      return {
-        props: {
-          initialPosts: [],
-          initialPagination: { total: 0, limit: 10, offset: 0, totalPages: 0 },
-          error: `Failed to fetch posts: ${response.status}`,
-        },
-        revalidate: 60,
-      };
-    }
-    const { posts, pagination } = await response.json();
-    const parsedPosts = posts.map((post) => {
-      const imageMatch = (post.content || post.post_content || post.body)?.match(/<img[^>]+src=["'](.*?)["']/i);
-      const thumbnailUrl = post.imageUrl || post.image_url || (imageMatch ? imageMatch[1] : '/default-image.jpg');
-      const createdAt = post.createdAt ? new Date(post.createdAt) : new Date();
-      const isRecentlyUpdated = (new Date() - createdAt) < 24 * 60 * 60 * 1000;
-      return {
-        id: post.id,
-        title: post.title || 'Untitled',
-        contentHtml: post.content || post.post_content || post.body || '',
-        thumbnailUrl,
-        createdAt: post.createdAt || new Date().toISOString(),
-        page: post.page,
-        titleStyle: post.titleStyle || { color: "#000", fontSize: "1.8rem", textAlign: "left" },
-        userId: post.creator_uid,
-        isRecentlyUpdated,
-      };
-    });
-    return {
-      props: {
-        initialPosts: parsedPosts,
-        initialPagination: pagination,
-        error: null,
-      },
-      revalidate: 60,
-    };
-  } catch (error) {
-    console.error('Error in getStaticProps:', error);
-    return {
-      props: {
-        initialPosts: [],
-        initialPagination: { total: 0, limit: 10, offset: 0, totalPages: 0 },
-        error: error.message,
-      },
-      revalidate: 60,
-    };
+.homePage__sliderImage {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.homePage__sliderText {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle text shadow for readability */
+}
+
+/* Posts Layout */
+.homePage__postsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.homePage__postItem {
+  position: relative; /* For positioning the "Updated" badge */
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.homePage__postItem:hover {
+  transform: translateY(-5px); /* Lift effect on hover */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* "Updated" Badge for Edited Posts */
+.homePage__postItem--updated::after {
+  content: "Updated";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #4CAF50;
+  color: white;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Post Image */
+.homePage__postImage {
+  width: 300px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Fallback for Posts Without Images */
+.homePage__postImage--placeholder {
+  width: 300px;
+  height: 200px;
+  background-color: #e0e0e0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 1rem;
+  font-style: italic;
+}
+
+/* Post Details */
+.homePage__postDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* Post Title */
+.homePage__postTitle {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+  word-wrap: break-word;
+  text-align: left;
+  line-height: 1.4;
+  transition: color 0.3s ease-in-out;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  font-size: 1rem;
+}
+
+.paginationLink {
+  padding: 0.5rem 1rem;
+  background-color: #0070f3;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.paginationLink:hover {
+  background-color: #005bb5;
+}
+
+.homePage__postTitle:hover {
+  color: #0b9299; /* Match the CTA button color for consistency */
+}
+
+/* Post Date */
+.homePage__postDate {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 10px;
+  font-style: italic;
+}
+
+/* Post Excerpt */
+.homePage__postExcerpt {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 15px;
+  line-height: 1.6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Call-to-Action Button */
+.homePage__ctaButton {
+  background-color: #0b9299;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  align-self: flex-start;
+}
+
+.homePage__ctaButton:hover {
+  background-color: #08787f; /* Darker shade for hover */
+  transform: scale(1.05); /* Slight scale effect on hover */
+}
+
+/* Heart Loader Styling */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.heartLoader {
+  position: relative;
+  width: 60px; /* Slightly larger for better visibility */
+  height: 60px;
+  transform: rotate(-45deg);
+  animation: beat 1s infinite;
+}
+
+.heartLoader::before,
+.heartLoader::after {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: #ff6f61; /* Softer red color */
+  border-radius: 50%;
+}
+
+.heartLoader::before {
+  top: -30px;
+  left: 0;
+}
+
+.heartLoader::after {
+  left: 30px;
+  top: 0;
+}
+
+@keyframes beat {
+  0%, 100% {
+    transform: scale(1) rotate(-45deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(-45deg);
   }
 }
 
-export default function Home({ initialPosts, initialPagination, error: initialError }) {
-  const [posts, setPosts] = useState(initialPosts || []);
-  const [filteredPosts, setFilteredPosts] = useState(initialPosts || []);
-  const [pagination, setPagination] = useState(initialPagination || { total: 0, limit: 10, offset: 0, totalPages: 0 });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(initialError);
-  const [isClient, setIsClient] = useState(false);
-  const router = useRouter();
-  const { limit = 10, offset = 0 } = router.query;
+/* Error Message Styling */
+.errorMessage {
+  text-align: center;
+  color: #d83f87;
+  font-size: 1.2rem;
+  padding: 20px;
+  background-color: #ffe6e6;
+  border-radius: 8px;
+  margin: 20px 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
 
-  const pagePaths = {
-    Recipe: "/food",
-    Drinks: "/drinks",
-    Dessert: "/dessert",
-    Blog: "/blog",
-    ProductsReview: "/productsreview",
-  };
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .homePage__sliderImage {
+    max-height: 350px;
+  }
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch posts: ${response.status}`);
-        }
-        const { posts, pagination: newPagination } = await response.json();
-        const parsedPosts = posts.map((post) => {
-          const imageMatch = (post.content || post.post_content || post.body)?.match(/<img[^>]+src=["'](.*?)["']/i);
-          const thumbnailUrl = post.imageUrl || post.image_url || (imageMatch ? imageMatch[1] : '/default-image.jpg');
-          const createdAt = post.createdAt ? new Date(post.createdAt) : new Date();
-          const isRecentlyUpdated = (new Date() - createdAt) < 24 * 60 * 60 * 1000;
-          return {
-            id: post.id,
-            title: post.title || 'Untitled',
-            contentHtml: post.content || post.post_content || post.body || '',
-            thumbnailUrl,
-            createdAt: post.createdAt || new Date().toISOString(),
-            page: post.page,
-            titleStyle: post.titleStyle || { color: "#000", fontSize: "1.8rem", textAlign: "left" },
-            userId: post.creator_uid,
-            isRecentlyUpdated,
-          };
-        });
-        setPosts(parsedPosts);
-        setFilteredPosts(parsedPosts);
-        setPagination(newPagination);
-        setError(null);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (router.isReady && (Number(offset) !== pagination.offset || Number(limit) !== pagination.limit)) {
-      fetchPosts();
-    }
-  }, [limit, offset, router.isReady, pagination.offset, pagination.limit]);
+  .homePage__postImage,
+  .homePage__postImage--placeholder {
+    width: 250px;
+    height: 180px;
+  }
+}
 
-  useEffect(() => {
-    setIsClient(true);
-    setFilteredPosts(initialPosts);
-  }, [initialPosts]);
+@media (max-width: 768px) {
+  .homePage__sliderImage {
+    max-height: 300px;
+  }
 
-  const handleSearch = (query) => {
-    const lowerCaseQuery = query.toLowerCase();
-    const results = posts.filter(
-      (post) =>
-        post.title.toLowerCase().includes(lowerCaseQuery) ||
-        (post.contentHtml && post.contentHtml.toLowerCase().includes(lowerCaseQuery))
-    );
-    setFilteredPosts(results);
-  };
+  .homePage__postItem {
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+  }
 
-  const navigateToPost = (postId, page) => {
-    const path = pagePaths[page] ? `${pagePaths[page]}#${page.toLowerCase()}-post-${postId}` : `/blog#blog-post-${postId}`;
-    router.push(path);
-  };
+  .homePage__postImage,
+  .homePage__postImage--placeholder {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+  }
 
-  const incrementViewCount = async (postId, page) => {
-    try {
-      await fetch(`${API_URL}?method=INCREMENT_VIEW_COUNT&postId=${postId}&page=${page}`, {
-        method: 'POST',
-      });
-    } catch (err) {
-      console.error('Error incrementing view count:', err);
-    }
-  };
+  .homePage__postDetails {
+    text-align: center;
+    padding: 10px;
+  }
 
-  const sliderSettings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 3000,
-    arrows: true,
-  };
+  .homePage__postTitle {
+    font-size: 1.5rem;
+    text-align: center;
+  }
 
-  const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    name: 'Barkat Kamran | Lifestyle Blog, Reviews & Recipes',
-    description: 'Discover Barkat Kamran\'s lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!',
-    url: 'https://www.thestylishmama.com/',
-    mainEntity: {
-      '@type': 'ItemList',
-      itemListElement: filteredPosts.map((post, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        item: {
-          '@type': 'BlogPosting',
-          headline: post.title,
-          description: post.contentHtml.replace(/<[^>]+>/g, '').substring(0, 160),
-          datePublished: post.createdAt || new Date().toISOString(),
-          dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
-          author: { '@type': 'Person', name: 'Admin' },
-          image: post.thumbnailUrl || '/default-image.jpg',
-          url: `https://www.thestylishmama.com${pagePaths[post.page] || '/blog'}#${post.page.toLowerCase()}-post-${post.id}`,
-        },
-      })),
-    },
-  };
+  .homePage__postExcerpt {
+    font-size: 0.95rem;
+    text-align: left;
+  }
 
-  if (!isClient) return <p>Loading...</p>;
+  .homePage__ctaButton {
+    align-self: center;
+    padding: 8px 16px;
+  }
 
-  return (
-    <div className={styles.homePage}>
-      <Head>
-        <title>Barkat Kamran | Lifestyle Blog, Reviews & Recipes</title>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta
-          name="description"
-          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
-        />
-        <link rel="canonical" href="https://www.thestylishmama.com/" />
-        <link rel="icon" href="/favicon.ico" />
-        <meta property="og:title" content="Barkat Kamran | Lifestyle Blog, Reviews & Recipes" />
-        <meta
-          property="og:description"
-          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
-        />
-        <meta property="og:url" content="https://www.thestylishmama.com/" />
-        <meta property="og:type" content="website" />
-        <meta property="og:image" content="https://www.thestylishmama.com/default-image.jpg" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:site_name" content="Barkat Kamran" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Barkat Kamran | Lifestyle Blog, Reviews & Recipes" />
-        <meta
-          name="twitter:description"
-          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
-        />
-        <meta name="twitter:image" content="https://www.thestylishmama.com/default-image.jpg" />
-        <meta name="twitter:site" content="@YourTwitterHandle" />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-        {pagination.offset > 0 && pagination.offset - pagination.limit >= 0 && (
-          <link rel="prev" href={`https://www.thestylishmama.com/?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`} />
-        )}
-        {pagination.offset + pagination.limit < pagination.total && (
-          <link rel="next" href={`https://www.thestylishmama.com/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`} />
-        )}
-      </Head>
-      {loading ? (
-        <div className={styles.loadingContainer}><div className={styles.heartLoader}></div></div>
-      ) : error ? (
-        <p className={styles.errorMessage}>{error}</p>
-      ) : (
-        <>
-          {/* PERFECT GOOGLE-STYLE CHRISTMAS LIGHTS */}
-          <div className={styles.sliderWithLights}>
-            <div className={styles.christmasLights}>
-              <ul>
-                {Array.from({ length: 40 }, (_, i) => (
-                  <li key={i} style={{ '--delay': i }} />
-                ))}
-              </ul>
-            </div>
+  .homePage__postItem--updated::after {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+  }
+}
 
-            <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
-              <div>
-                <Image
-                  src={imageBlog}
-                  alt="Blog"
-                  className={styles.homePage__sliderImage}
-                  width={1200}
-                  height={600}
-                  priority
-                />
-                <h3 className={styles.homePage__sliderText}>Love Does not Divide, It Multiplies</h3>
-              </div>
-              <div>
-                <Image
-                  src={imageNature}
-                  alt="Natures Beauty"
-                  className={styles.homePage__sliderImage}
-                  width={1200}
-                  height={600}
-                  priority
-                />
-                <h3 className={styles.homePage__sliderText}>Every family is Unique</h3>
-              </div>
-              <div>
-                <Image
-                  src={imageRecipe}
-                  alt="Recipe"
-                  className={styles.homePage__sliderImage}
-                  width={1200}
-                  height={600}
-                  priority
-                />
-                <h3 className={styles.homePage__sliderText}>I carry Hope in here. And half a granola bar</h3>
-              </div>
-            </Slider>
-          </div>
+@media (max-width: 480px) {
+  .homePage__sliderImage {
+    max-height: 200px;
+  }
 
-          <SearchBar
-            onSearch={handleSearch}
-            placeholder="Search for blogs, reviews, or recipes..."
-          />
-          <div className={styles.homePage__postsContainer}>
-            {filteredPosts.length === 0 ? (
-              <p>No posts available</p>
-            ) : (
-              <>
-                {filteredPosts.map((post) => (
-                  <div
-                    key={post.id}
-                    className={styles.homePage__postItem}
-                    onMouseEnter={() => incrementViewCount(post.id, post.page)}
-                  >
-                    {post.thumbnailUrl && post.thumbnailUrl !== '/default-image.jpg' ? (
-                      <Image
-                        src={post.thumbnailUrl}
-                        alt={post.title}
-                        className={styles.homePage__postImage}
-                        width={600}
-                        height={337}
-                        onError={(e) => (e.target.src = '/default-image.jpg')}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className={styles['homePage__postImage--placeholder']}>
-                        No Image Available
-                      </div>
-                    )}
-                    <div className={styles.homePage__postDetails}>
-                      <h2
-                        className={styles.homePage__postTitle}
-                        style={{
-                          color: post.titleStyle?.color || "#333",
-                          fontSize: post.titleStyle?.fontSize || "1.8rem",
-                          textAlign: post.titleStyle?.textAlign || "left",
-                        }}
-                      >
-                        {post.title}
-                      </h2>
-                      {post.createdAt ? (
-                        <p className={styles.homePage__postDate}>
-                          Posted on:{" "}
-                          {new Date(post.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </p>
-                      ) : (
-                        <p className={styles.homePage__postDate}>Date not available</p>
-                      )}
-                      <p className={styles.homePage__postExcerpt}>
-                        {post.contentHtml
-                          ? post.contentHtml.replace(/<[^>]+>/g, '').slice(0, 200) + '...'
-                          : 'No content available'}
-                      </p>
-                      <button
-                        className={styles.homePage__ctaButton}
-                        onClick={() => navigateToPost(post.id, post.page)}
-                      >
-                        Read More
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                <div className={styles.pagination}>
-                  {pagination.offset > 0 && (
-                    <Link
-                      href={`/?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
-                      className={styles.paginationLink}
-                    >
-                      Previous
-                    </Link>
-                  )}
-                  {pagination.offset + pagination.limit < pagination.total && (
-                    <Link
-                      href={`/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
-                      className={styles.paginationLink}
-                    >
-                      Next
-                    </Link>
-                  )}
-                  <p>Page {pagination.offset / pagination.limit + 1} of {pagination.totalPages}</p>
-                </div>
-              </>
-            )}
-          </div>
-        </>
-      )}
-    </div>
-  );
+  .homePage__sliderText {
+    font-size: 1.2rem;
+  }
+
+  .homePage__postTitle {
+    font-size: 1.3rem;
+  }
+
+  .homePage__postExcerpt {
+    font-size: 0.9rem;
+  }
+
+  .homePage__ctaButton {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+  }
+
+  .homePage__postDate {
+    font-size: 0.8rem;
+  }
+
+  .errorMessage {
+    font-size: 1rem;
+    padding: 15px;
+  }
 }
