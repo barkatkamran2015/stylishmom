@@ -250,17 +250,19 @@
 .christmasLights ul::before {
   content: "";
   position: absolute;
-  top: 26px;
+  top: 22px;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(
-    to right,
-    #2f2f2f,
-    #444,
-    #2f2f2f
-  );
-  border-radius: 50%;
+  height: 4px;
+  background:
+    linear-gradient(
+      to right,
+      #1f1f1f,
+      #444,
+      #1f1f1f
+    );
+  border-radius: 100px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4);
 }
 
 /* Individual bulb */
@@ -286,6 +288,18 @@
   background: #222;
   border-radius: 2px;
 }
+
+.christmasLights li::after {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 14px;
+  background: #2b2b2b;
+}
+
 
 /* Colors */
 .christmasLights li:nth-child(4n+1) {
