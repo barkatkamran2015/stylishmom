@@ -216,6 +216,69 @@
   top: 0;
 }
 
+/* Google-Style Christmas Lights — Branch with spaced bulbs, no scrolling */
+.sliderWithLights {
+  position: relative;
+  margin-top: 40px; /* Small space for lights */
+}
+
+.christmasLights {
+  position: absolute;
+  top: -35px;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  pointer-events: none;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.christmasLights ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  gap: 60px; /* Wide spacing so bulbs don't touch */
+  position: relative;
+}
+
+.christmasLights ul::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: #333; /* Dark branch/wire */
+  z-index: 1;
+  border-radius: 2px;
+}
+
+.christmasLights li {
+  width: 30px;
+  height: 40px;
+  background: radial-gradient(circle at 40% 30%, #fff, transparent 60%);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  position: relative;
+  z-index: 2;
+  animation: twinkle 3s infinite alternate;
+  animation-delay: calc(var(--delay) * 0.15s);
+}
+
+.christmasLights li:nth-child(4n+1) { box-shadow: 0 0 25px 8px #ff0000; background-color: #ff4444; }
+.christmasLights li:nth-child(4n+2) { box-shadow: 0 0 25px 8px #00ff00; background-color: #44ff44; }
+.christmasLights li:nth-child(4n+3) { box-shadow: 0 0 25px 8px #0000ff; background-color: #4444ff; }
+.christmasLights li:nth-child(4n) { box-shadow: 0 0 25px 8px #ffff00; background-color: #ffff44; }
+
+@keyframes twinkle {
+  0% { opacity: 0.7; transform: scale(0.9) translateY(0); }
+  100% { opacity: 1; transform: scale(1.1) translateY(-3px); }
+}
+
+
+
+
 @keyframes beat {
   0%, 100% {
     transform: scale(1) rotate(-45deg);
