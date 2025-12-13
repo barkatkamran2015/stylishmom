@@ -1,3 +1,4 @@
+// pages/index.js
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import dynamic from 'next/dynamic';
@@ -6,13 +7,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import SearchBar from "../components/SearchBar";
 import styles from "../../styles/Dash.module.css";
-
 import imageBlog from "../Assets/family.png";
 import imageNature from "../Assets/lotto.jpg";
 import imageRecipe from "../Assets/make.jpg";
 
 const Slider = dynamic(() => import('react-slick'), { ssr: false });
-
 // Ensure slick CSS loads in production
 if (typeof window !== 'undefined') {
   require('slick-carousel/slick/slick.css');
@@ -24,7 +23,6 @@ const API_URL = 'https://www.barkatkamran.com/api.php';
 export async function getStaticProps({ params }) {
   const limit = 10;
   const offset = 0;
-
   try {
     const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`);
     if (!response.ok) {
@@ -39,7 +37,6 @@ export async function getStaticProps({ params }) {
         revalidate: 60,
       };
     }
-
     const { posts, pagination } = await response.json();
     const parsedPosts = posts.map((post) => {
       const imageMatch = (post.content || post.post_content || post.body)?.match(/<img[^>]+src=["'](.*?)["']/i);
@@ -58,7 +55,6 @@ export async function getStaticProps({ params }) {
         isRecentlyUpdated,
       };
     });
-
     return {
       props: {
         initialPosts: parsedPosts,
@@ -124,7 +120,6 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
             isRecentlyUpdated,
           };
         });
-
         setPosts(parsedPosts);
         setFilteredPosts(parsedPosts);
         setPagination(newPagination);
@@ -135,11 +130,10 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
         setLoading(false);
       }
     };
-
-    if (router.isReady && (Number(offset) !== initialPagination.offset || Number(limit) !== initialPagination.limit)) {
+    if (router.isReady && (Number(offset) !== pagination.offset || Number(limit) !== pagination.limit)) {
       fetchPosts();
     }
-  }, [limit, offset, router.isReady, initialPagination.offset, initialPagination.limit]);
+  }, [limit, offset, router.isReady, pagination.offset, pagination.limit]);
 
   useEffect(() => {
     setIsClient(true);
@@ -248,54 +242,80 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
           <link rel="next" href={`https://www.thestylishmama.com/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`} />
         )}
       </Head>
-
       {loading ? (
         <div className={styles.loadingContainer}><div className={styles.heartLoader}></div></div>
       ) : error ? (
         <p className={styles.errorMessage}>{error}</p>
       ) : (
         <>
-          <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
-            <div>
-              <Image
-                src={imageBlog}
-                alt="Blog"
-                className={styles.homePage__sliderImage}
-                width={1200}
-                height={600}
-                priority
-              />
-              <h3 className={styles.homePage__sliderText}>Love Does not Divide, It Multiplies</h3>
+          {/* CHRISTMAS LIGHTS WRAPPER */}
+          <div style={{ position: 'relative', padding: '60px 0' }}>
+            {/* Top lights */}
+            <div className={styles.christmasLights}>
+              <ul>
+                {Array.from({ length: 60 }, (_, i) => (
+                  <li key={i} style={{ '--delay': i }} />
+                ))}
+                {Array.from({ length: 60 }, (_, i) => (
+                  <li key={i + 60} style={{ '--delay': i + 60 }} />
+                ))}
+              </ul>
             </div>
-            <div>
-              <Image
-                src={imageNature}
-                alt="Natures Beauty"
-                className={styles.homePage__sliderImage}
-                width={1200}
-                height={600}
-                priority
-              />
-              <h3 className={styles.homePage__sliderText}>Every family is Unique</h3>
+
+            {/* Your slider */}
+            <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
+              <div>
+                <Image
+                  src={imageBlog}
+                  alt="Blog"
+                  className={styles.homePage__sliderImage}
+                  width={1200}
+                  height={600}
+                  priority
+                />
+                <h3 className={styles.homePage__sliderText}>Love Does not Divide, It Multiplies</h3>
+              </div>
+              <div>
+                <Image
+                  src={imageNature}
+                  alt="Natures Beauty"
+                  className={styles.homePage__sliderImage}
+                  width={1200}
+                  height={600}
+                  priority
+                />
+                <h3 className={styles.homePage__sliderText}>Every family is Unique</h3>
+              </div>
+              <div>
+                <Image
+                  src={imageRecipe}
+                  alt="Recipe"
+                  className={styles.homePage__sliderImage}
+                  width={1200}
+                  height={600}
+                  priority
+                />
+                <h3 className={styles.homePage__sliderText}>I carry Hope in here. And half a granola bar</h3>
+              </div>
+            </Slider>
+
+            {/* Bottom lights (optional — remove if you don't want them) */}
+            <div className={styles.christmasLightsBottom}>
+              <ul>
+                {Array.from({ length: 60 }, (_, i) => (
+                  <li key={i} style={{ '--delay': i }} />
+                ))}
+                {Array.from({ length: 60 }, (_, i) => (
+                  <li key={i + 60} style={{ '--delay': i + 60 }} />
+                ))}
+              </ul>
             </div>
-            <div>
-              <Image
-                src={imageRecipe}
-                alt="Recipe"
-                className={styles.homePage__sliderImage}
-                width={1200}
-                height={600}
-                priority
-              />
-              <h3 className={styles.homePage__sliderText}>I carry Hope in here. And half a granola bar</h3>
-            </div>
-          </Slider>
+          </div>
 
           <SearchBar
             onSearch={handleSearch}
             placeholder="Search for blogs, reviews, or recipes..."
           />
-
           <div className={styles.homePage__postsContainer}>
             {filteredPosts.length === 0 ? (
               <p>No posts available</p>
@@ -322,7 +342,6 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                         No Image Available
                       </div>
                     )}
-
                     <div className={styles.homePage__postDetails}>
                       <h2
                         className={styles.homePage__postTitle}
@@ -334,7 +353,6 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                       >
                         {post.title}
                       </h2>
-
                       {post.createdAt ? (
                         <p className={styles.homePage__postDate}>
                           Posted on:{" "}
@@ -347,13 +365,11 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                       ) : (
                         <p className={styles.homePage__postDate}>Date not available</p>
                       )}
-
                       <p className={styles.homePage__postExcerpt}>
                         {post.contentHtml
                           ? post.contentHtml.replace(/<[^>]+>/g, '').slice(0, 200) + '...'
                           : 'No content available'}
                       </p>
-
                       <button
                         className={styles.homePage__ctaButton}
                         onClick={() => navigateToPost(post.id, post.page)}
@@ -363,7 +379,6 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                     </div>
                   </div>
                 ))}
-
                 <div className={styles.pagination}>
                   {pagination.offset > 0 && (
                     <Link
