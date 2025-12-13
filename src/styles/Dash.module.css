@@ -216,6 +216,58 @@
   top: 0;
 }
 
+/* Christmas Lights Around Slider */
+.christmasLights {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.christmasLights ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: space-around;
+  animation: scrollLights 40s linear infinite;
+}
+
+.christmasLights li {
+  width: 20px;
+  height: 40px;
+  background: radial-gradient(circle at 30% 30%, #fff, transparent 60%);
+  border-radius: 50%;
+  position: relative;
+  animation: twinkle 2s infinite alternate;
+  animation-delay: calc(var(--delay) * 0.1s);
+}
+
+.christmasLights li:nth-child(odd) { box-shadow: 0 0 20px 5px #ff0000; background-color: #ff0000; }
+.christmasLights li:nth-child(odd):nth-child(4n+2) { box-shadow: 0 0 20px 5px #00ff00; background-color: #00ff00; }
+.christmasLights li:nth-child(odd):nth-child(4n+3) { box-shadow: 0 0 20px 5px #0000ff; background-color: #0000ff; }
+.christmasLights li:nth-child(odd):nth-child(4n) { box-shadow: 0 0 20px 5px #ffff00; background-color: #ffff00; }
+
+@keyframes twinkle {
+  0% { opacity: 0.6; transform: scale(0.9); box-shadow: 0 0 10px 2px currentColor; }
+  100% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 30px 10px currentColor; }
+}
+
+@keyframes scrollLights {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.christmasLightsBottom {
+  top: auto;
+  bottom: 0;
+  transform: rotate(180deg);
+}
+
 @keyframes beat {
   0%, 100% {
     transform: scale(1) rotate(-45deg);
