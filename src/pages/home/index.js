@@ -248,16 +248,12 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
         <p className={styles.errorMessage}>{error}</p>
       ) : (
         <>
-          {/* CHRISTMAS LIGHTS + SLIDER - CLEAN VERSION */}
+          {/* PERFECT GOOGLE-STYLE CHRISTMAS LIGHTS */}
           <div className={styles.sliderWithLights}>
-            {/* Lights above */}
             <div className={styles.christmasLights}>
               <ul>
-                {Array.from({ length: 50 }, (_, i) => (
+                {Array.from({ length: 40 }, (_, i) => (
                   <li key={i} style={{ '--delay': i }} />
-                ))}
-                {Array.from({ length: 50 }, (_, i) => (
-                  <li key={i + 50} style={{ '--delay': i + 50 }} />
                 ))}
               </ul>
             </div>
