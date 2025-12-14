@@ -346,6 +346,77 @@
 }
 
 
+
+/* ============================= */
+/* 🎄 MERRY CHRISTMAS OVERLAY 🎄 */
+/* ============================= */
+
+.merryChristmas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 7; /* above snow, below lights */
+  display: flex;
+  align-items: center;
+  font-size: clamp(2.2rem, 5vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  pointer-events: none;
+  text-shadow:
+    0 4px 10px rgba(0,0,0,0.35);
+}
+
+/* spacing between words */
+.merryChristmas .space {
+  width: 0.8rem;
+}
+
+/* letters */
+.merryChristmas span {
+  animation: festiveGlow 3s infinite ease-in-out;
+}
+
+/* colors cycle */
+.merryChristmas span:nth-child(4n+1) { color: #ff4d4d; }
+.merryChristmas span:nth-child(4n+2) { color: #4dff4d; }
+.merryChristmas span:nth-child(4n+3) { color: #4d4dff; }
+.merryChristmas span:nth-child(4n)   { color: #ffd84d; }
+
+/* stagger animation */
+.merryChristmas span {
+  animation-delay: calc(var(--i, 1) * 0.15s);
+}
+
+/* glow animation */
+@keyframes festiveGlow {
+  0% {
+    opacity: 0.7;
+    filter: brightness(0.9);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.3);
+  }
+  100% {
+    opacity: 0.85;
+    filter: brightness(1);
+  }
+}
+
+/* 📱 Mobile tuning */
+@media (max-width: 768px) {
+  .merryChristmas {
+    letter-spacing: 0.05em;
+  }
+}
+
+
+
+
+
+
 @keyframes beat {
   0%, 100% {
     transform: scale(1) rotate(-45deg);
