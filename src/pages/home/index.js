@@ -248,52 +248,72 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
         <p className={styles.errorMessage}>{error}</p>
       ) : (
         <>
-          {/* PERFECT GOOGLE-STYLE CHRISTMAS LIGHTS */}
-          <div className={styles.sliderWithLights}>
-            <div className={styles.christmasLights}>
-              <ul>
-                {Array.from({ length: 40 }, (_, i) => (
-                  <li key={i} style={{ '--delay': i }} />
-                ))}
-              </ul>
-            </div>
 
-            <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
-              <div>
-                <Image
-                  src={imageBlog}
-                  alt="Blog"
-                  className={styles.homePage__sliderImage}
-                  width={1200}
-                  height={600}
-                  priority
-                />
-                <h3 className={styles.homePage__sliderText}>Love Does not Divide, It Multiplies</h3>
-              </div>
-              <div>
-                <Image
-                  src={imageNature}
-                  alt="Natures Beauty"
-                  className={styles.homePage__sliderImage}
-                  width={1200}
-                  height={600}
-                  priority
-                />
-                <h3 className={styles.homePage__sliderText}>Every family is Unique</h3>
-              </div>
-              <div>
-                <Image
-                  src={imageRecipe}
-                  alt="Recipe"
-                  className={styles.homePage__sliderImage}
-                  width={1200}
-                  height={600}
-                  priority
-                />
-                <h3 className={styles.homePage__sliderText}>I carry Hope in here. And half a granola bar</h3>
-              </div>
-            </Slider>
-          </div>
+          {/* PERFECT GOOGLE-STYLE CHRISTMAS LIGHTS */}
+<div className={styles.sliderWithLights}>
+
+  {/* MERRY CHRISTMAS TEXT */}
+  <div className={styles.merryChristmas}>
+    <span>M</span><span>e</span><span>r</span><span>r</span><span>y</span>
+    <span className={styles.space}></span>
+    <span>C</span><span>h</span><span>r</span><span>i</span>
+    <span>s</span><span>t</span><span>m</span><span>a</span><span>s</span>
+  </div>
+
+  {/* CHRISTMAS LIGHTS */}
+  <div className={styles.christmasLights}>
+    <ul>
+      {Array.from({ length: 40 }, (_, i) => (
+        <li key={i} style={{ '--delay': i }} />
+      ))}
+    </ul>
+  </div>
+
+  <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
+    <div>
+      <Image
+        src={imageBlog}
+        alt="Blog"
+        className={styles.homePage__sliderImage}
+        width={1200}
+        height={600}
+        priority
+      />
+      <h3 className={styles.homePage__sliderText}>
+        Love Does not Divide, It Multiplies
+      </h3>
+    </div>
+
+    <div>
+      <Image
+        src={imageNature}
+        alt="Natures Beauty"
+        className={styles.homePage__sliderImage}
+        width={1200}
+        height={600}
+        priority
+      />
+      <h3 className={styles.homePage__sliderText}>
+        Every family is Unique
+      </h3>
+    </div>
+
+    <div>
+      <Image
+        src={imageRecipe}
+        alt="Recipe"
+        className={styles.homePage__sliderImage}
+        width={1200}
+        height={600}
+        priority
+      />
+      <h3 className={styles.homePage__sliderText}>
+        I carry Hope in here. And half a granola bar
+      </h3>
+    </div>
+  </Slider>
+</div>
+
 
           <SearchBar
             onSearch={handleSearch}
