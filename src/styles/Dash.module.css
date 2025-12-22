@@ -800,6 +800,10 @@
   .cardTitle {
     font-size: 2.4rem;
   }
+  .cardImageSide {
+    min-height: 300px; /* or 40vh, or whatever fits your design */
+    width: 100%;
+  }
 }
 
 @media (max-width: 640px) {
@@ -811,13 +815,6 @@
   }
   .cardExcerpt {
     font-size: 1.1rem;
-  }
-}
-
-@media (max-width: 900px) {
-  .cardImageSide {
-    min-height: 300px; /* or 40vh, or whatever fits your design */
-    width: 100%;
   }
 }
 
