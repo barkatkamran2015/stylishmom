@@ -215,9 +215,6 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
 
   if (!isClient) return <p>Loading...</p>;
 
-  const featuredPost = filteredPosts[0];
-  const latestPosts = filteredPosts.slice(1);
-
   return (
     <div className={styles.homePage}>
       <Head>
@@ -264,16 +261,13 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
         <p className={styles.errorMessage}>{error}</p>
       ) : (
         <>
-          {/* PERFECT GOOGLE-STYLE CHRISTMAS LIGHTS - UNTOUCHED */}
           <div className={styles.sliderWithLights}>
-            {/* MERRY CHRISTMAS TEXT */}
             <div className={styles.merryChristmas}>
               <span>M</span><span>e</span><span>r</span><span>r</span><span>y</span>
               <span className={styles.space}></span>
               <span>C</span><span>h</span><span>r</span><span>i</span>
               <span>s</span><span>t</span><span>m</span><span>a</span><span>s</span>
             </div>
-            {/* CHRISTMAS LIGHTS */}
             <div className={styles.christmasLights}>
               <ul>
                 {Array.from({ length: 40 }, (_, i) => (
@@ -329,85 +323,70 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
             placeholder="Search for blogs, reviews, or recipes..."
           />
 
-          {/* NEW POSTS LAYOUT STARTS HERE */}
-          <div className={styles.newPostsLayout}>
-            {featuredPost && (
-              <div className={styles.featuredHero}>
-                <div className={styles.featuredImageWrapper}>
-                  <Image
-                    src={featuredPost.thumbnailUrl}
-                    alt={featuredPost.title}
-                    fill
-                    className={styles.featuredImage}
-                    priority
-                    onError={(e) => (e.target.src = '/default-image.jpg')}
-                  />
-                </div>
-                <div className={styles.featuredContent}>
-                  <h1 className={styles.featuredTitle}>{featuredPost.title}</h1>
-                  <p className={styles.featuredDate}>
-                    Posted on: {new Date(featuredPost.createdAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </p>
-                  <p className={styles.featuredExcerpt}>
-                    {featuredPost.contentHtml.replace(/<[^>]+>/g, '').slice(0, 300)}...
-                  </p>
-                  <button
-                    className={styles.featuredButton}
-                    onClick={() => navigateToPost(featuredPost)}
-                  >
-                    Read More
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className={styles.latestPostsSection}>
-              <h2 className={styles.latestPostsHeading}>Latest Posts</h2>
-              <div className={styles.latestPostsGrid}>
-                {latestPosts.map((post) => (
-                  <div
-                    key={post.id}
-                    className={styles.latestPostCard}
-                    onMouseEnter={() => incrementViewCount(post.id, post.page)}
-                  >
-                    {post.thumbnailUrl && post.thumbnailUrl !== '/default-image.jpg' ? (
-                      <div className={styles.latestCardImageWrapper}>
-                        <Image
-                          src={post.thumbnailUrl}
-                          alt={post.title}
-                          fill
-                          className={styles.latestCardImage}
-                          onError={(e) => (e.target.src = '/default-image.jpg')}
-                          loading="lazy"
-                        />
+          <div className={styles.colorfulCardsContainer}>
+            {filteredPosts.map((post, index) => (
+              <div
+                key={post.id}
+                className={`${styles.colorfulCard} ${index % 3 === 0 ? styles.cardGreen : index % 3 === 1 ? styles.cardPurple : styles.cardOrange}`}
+                onMouseEnter={() => incrementViewCount(post.id, post.page)}
+              >
+                <div className={styles.cardContentWrapper}>
+                  {index % 2 === 0 ? (
+                    <>
+                      <div className={styles.cardTextSide}>
+                        <h2 className={styles.cardTitle}>{post.title}</h2>
+                        <p className={styles.cardDate}>
+                          {new Date(post.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                        </p>
+                        <p className={styles.cardExcerpt}>
+                          {post.contentHtml.replace(/<[^>]+>/g, '').slice(0, 250)}...
+                        </p>
+                        <button className={styles.cardButton} onClick={() => navigateToPost(post)}>
+                          Read More
+                        </button>
                       </div>
-                    ) : (
-                      <div className={styles.latestCardPlaceholder}>No Image</div>
-                    )}
-                    <div className={styles.latestCardText}>
-                      <h3 className={styles.latestCardTitle}>{post.title}</h3>
-                      <p className={styles.latestCardDate}>
-                        {new Date(post.createdAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </p>
-                      <button
-                        className={styles.latestCardButton}
-                        onClick={() => navigateToPost(post)}
-                      >
-                        Read More
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                      <div className={styles.cardImageSide}>
+                        {post.thumbnailUrl && post.thumbnailUrl !== '/default-image.jpg' ? (
+                          <Image
+                            src={post.thumbnailUrl}
+                            alt={post.title}
+                            fill
+                            className={styles.cardImage}
+                            onError={(e) => (e.target.src = '/default-image.jpg')}
+                          />
+                        ) : null}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className={styles.cardImageSide}>
+                        {post.thumbnailUrl && post.thumbnailUrl !== '/default-image.jpg' ? (
+                          <Image
+                            src={post.thumbnailUrl}
+                            alt={post.title}
+                            fill
+                            className={styles.cardImage}
+                            onError={(e) => (e.target.src = '/default-image.jpg')}
+                          />
+                        ) : null}
+                      </div>
+                      <div className={styles.cardTextSide}>
+                        <h2 className={styles.cardTitle}>{post.title}</h2>
+                        <p className={styles.cardDate}>
+                          {new Date(post.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                        </p>
+                        <p className={styles.cardExcerpt}>
+                          {post.contentHtml.replace(/<[^>]+>/g, '').slice(0, 250)}...
+                        </p>
+                        <button className={styles.cardButton} onClick={() => navigateToPost(post)}>
+                          Read More
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
 
           <div className={styles.pagination}>
