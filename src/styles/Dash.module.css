@@ -814,6 +814,12 @@
   }
 }
 
+@media (max-width: 900px) {
+  .cardImageSide {
+    min-height: 300px; /* or 40vh, or whatever fits your design */
+    width: 100%;
+  }
+}
 
 .viewMoreContainer {
   max-width: 1000px;
