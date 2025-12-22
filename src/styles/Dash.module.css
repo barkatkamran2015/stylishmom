@@ -7,13 +7,11 @@
   font-family: 'Arial', sans-serif;
   background-color: #f5f5f5; /* Light background for better contrast */
 }
-
 /* Featured Slider */
 .homePage__featuredSlider {
   margin-bottom: 30px;
   position: relative;
 }
-
 .homePage__sliderImage {
   width: 100%;
   height: auto;
@@ -22,7 +20,6 @@
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
-
 .homePage__sliderText {
   text-align: center;
   margin-top: 10px;
@@ -31,14 +28,12 @@
   color: #333;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle text shadow for readability */
 }
-
 /* Posts Layout */
 .homePage__postsContainer {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
-
 .homePage__postItem {
   position: relative; /* For positioning the "Updated" badge */
   display: flex;
@@ -51,12 +46,10 @@
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
   cursor: pointer;
 }
-
 .homePage__postItem:hover {
   transform: translateY(-5px); /* Lift effect on hover */
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
-
 /* "Updated" Badge for Edited Posts */
 .homePage__postItem--updated::after {
   content: "Updated";
@@ -70,7 +63,6 @@
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
-
 /* Post Image */
 .homePage__postImage {
   width: 300px;
@@ -80,7 +72,6 @@
   flex-shrink: 0;
   transition: opacity 0.3s ease-in-out;
 }
-
 /* Fallback for Posts Without Images */
 .homePage__postImage--placeholder {
   width: 300px;
@@ -94,7 +85,6 @@
   font-size: 1rem;
   font-style: italic;
 }
-
 /* Post Details */
 .homePage__postDetails {
   flex: 1;
@@ -103,7 +93,6 @@
   justify-content: center;
   min-width: 0;
 }
-
 /* Post Title */
 .homePage__postTitle {
   font-size: 1.8rem;
@@ -115,7 +104,6 @@
   line-height: 1.4;
   transition: color 0.3s ease-in-out;
 }
-
 .pagination {
   display: flex;
   justify-content: center;
@@ -124,7 +112,6 @@
   margin-top: 2rem;
   font-size: 1rem;
 }
-
 .paginationLink {
   padding: 0.5rem 1rem;
   background-color: #0070f3;
@@ -133,15 +120,12 @@
   border-radius: 5px;
   transition: background-color 0.3s;
 }
-
 .paginationLink:hover {
   background-color: #005bb5;
 }
-
 .homePage__postTitle:hover {
   color: #0b9299; /* Match the CTA button color for consistency */
 }
-
 /* Post Date */
 .homePage__postDate {
   font-size: 0.9rem;
@@ -149,7 +133,6 @@
   margin-bottom: 10px;
   font-style: italic;
 }
-
 /* Post Excerpt */
 .homePage__postExcerpt {
   font-size: 1rem;
@@ -159,7 +142,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 /* Call-to-Action Button */
 .homePage__ctaButton {
   background-color: #0b9299;
@@ -173,12 +155,10 @@
   transition: background-color 0.3s ease, transform 0.2s ease;
   align-self: flex-start;
 }
-
 .homePage__ctaButton:hover {
   background-color: #08787f; /* Darker shade for hover */
   transform: scale(1.05); /* Slight scale effect on hover */
 }
-
 /* Heart Loader Styling */
 .loadingContainer {
   display: flex;
@@ -187,7 +167,6 @@
   height: 100vh;
   background-color: #f5f5f5;
 }
-
 .heartLoader {
   position: relative;
   width: 60px; /* Slightly larger for better visibility */
@@ -195,7 +174,6 @@
   transform: rotate(-45deg);
   animation: beat 1s infinite;
 }
-
 .heartLoader::before,
 .heartLoader::after {
   content: '';
@@ -205,23 +183,19 @@
   background: #ff6f61; /* Softer red color */
   border-radius: 50%;
 }
-
 .heartLoader::before {
   top: -30px;
   left: 0;
 }
-
 .heartLoader::after {
   left: 30px;
   top: 0;
 }
-
 /* GOOGLE-STYLE CHRISTMAS LIGHTS — Natural Branch Feel */
 .sliderWithLights {
   position: relative;
   margin-top: 70px; /* More space for hanging variation */
 }
-
 /* Container */
 .christmasLights {
   position: absolute;
@@ -232,7 +206,6 @@
   pointer-events: none;
   z-index: 10;
 }
-
 /* Bulb row */
 .christmasLights ul {
   list-style: none;
@@ -243,7 +216,6 @@
   align-items: flex-start;
   position: relative;
 }
-
 /* === NATURAL SAGGING WIRE (wave curve) === */
 .christmasLights ul::before {
   content: "";
@@ -266,7 +238,6 @@
   );
   clip-path: path('M0,15 Q250,35 500,15 T1000,15'); /* Gentle sag curve — adjust for screen width */
 }
-
 /* === BULB === */
 .christmasLights li {
   position: relative;
@@ -279,13 +250,11 @@
   transform-origin: top center;
   z-index: 2;
 }
-
 /* Vary hanging height for natural look */
 .christmasLights li:nth-child(odd) { --hang: 30px; }
 .christmasLights li:nth-child(even) { --hang: 20px; }
 .christmasLights li:nth-child(4n+1) { --hang: 35px; }
 .christmasLights li:nth-child(4n+3) { --hang: 22px; }
-
 /* === SOCKET === */
 .christmasLights li::before {
   content: "";
@@ -299,7 +268,6 @@
   border-radius: 3px;
   z-index: 3;
 }
-
 /* === CONNECTOR STEM (hanging cord) === */
 .christmasLights li::after {
   content: "";
@@ -312,7 +280,6 @@
   background: linear-gradient(to bottom, #333, #1c1c1c);
   z-index: 2;
 }
-
 /* === COLORS & GLOW === */
 .christmasLights li:nth-child(4n+1) {
   background: #ff4d4d;
@@ -330,27 +297,21 @@
   background: #ffd84d;
   box-shadow: 0 0 15px rgba(255,216,77,0.9);
 }
-
 /* === GLOW ANIMATION === */
 @keyframes glow {
   0% { opacity: 0.6; filter: brightness(0.9); }
   50% { opacity: 1; filter: brightness(1.4); }
   100% { opacity: 0.7; filter: brightness(1); }
 }
-
 /* === SUBTLE SWAY (like wind on branch) === */
 @keyframes sway {
   0%, 100% { transform: rotate(0deg); }
   25% { transform: rotate(3deg); }
   75% { transform: rotate(-3deg); }
 }
-
-
-
 /* ============================= */
 /* 🎄 MERRY CHRISTMAS OVERLAY 🎄 */
 /* ============================= */
-
 .merryChristmas {
   position: absolute;
   top: 30%;
@@ -367,28 +328,23 @@
   text-shadow:
     0 4px 10px rgba(0,0,0,0.35);
 }
-
 /* spacing between words */
 .merryChristmas .space {
   width: 0.8rem;
 }
-
 /* letters */
 .merryChristmas span {
   animation: festiveGlow 3s infinite ease-in-out;
 }
-
 /* colors cycle */
 .merryChristmas span:nth-child(4n+1) { color: #ff4d4d; }
 .merryChristmas span:nth-child(4n+2) { color: #4dff4d; }
 .merryChristmas span:nth-child(4n+3) { color: #4d4dff; }
-.merryChristmas span:nth-child(4n)   { color: #ffd84d; }
-
+.merryChristmas span:nth-child(4n) { color: #ffd84d; }
 /* stagger animation */
 .merryChristmas span {
   animation-delay: calc(var(--i, 1) * 0.15s);
 }
-
 /* glow animation */
 @keyframes festiveGlow {
   0% {
@@ -404,19 +360,12 @@
     filter: brightness(1);
   }
 }
-
 /* 📱 Mobile tuning */
 @media (max-width: 768px) {
   .merryChristmas {
     letter-spacing: 0.05em;
   }
 }
-
-
-
-
-
-
 @keyframes beat {
   0%, 100% {
     transform: scale(1) rotate(-45deg);
@@ -425,7 +374,6 @@
     transform: scale(1.2) rotate(-45deg);
   }
 }
-
 /* Error Message Styling */
 .errorMessage {
   text-align: center;
@@ -437,92 +385,305 @@
   margin: 20px 0;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-
 /* Responsive Design */
 @media (max-width: 1024px) {
   .homePage__sliderImage {
     max-height: 350px;
   }
-
   .homePage__postImage,
   .homePage__postImage--placeholder {
     width: 250px;
     height: 180px;
   }
 }
-
 @media (max-width: 768px) {
   .homePage__sliderImage {
     max-height: 300px;
   }
-
   .homePage__postItem {
     flex-direction: column;
     align-items: center;
     padding: 15px;
   }
-
   .homePage__postImage,
   .homePage__postImage--placeholder {
     width: 100%;
     height: auto;
     max-height: 200px;
   }
-
   .homePage__postDetails {
     text-align: center;
     padding: 10px;
   }
-
   .homePage__postTitle {
     font-size: 1.5rem;
     text-align: center;
   }
-
   .homePage__postExcerpt {
     font-size: 0.95rem;
     text-align: left;
   }
-
   .homePage__ctaButton {
     align-self: center;
     padding: 8px 16px;
   }
-
   .homePage__postItem--updated::after {
     font-size: 0.7rem;
     padding: 3px 6px;
   }
 }
-
 @media (max-width: 480px) {
   .homePage__sliderImage {
     max-height: 200px;
   }
-
   .homePage__sliderText {
     font-size: 1.2rem;
   }
-
   .homePage__postTitle {
     font-size: 1.3rem;
   }
-
   .homePage__postExcerpt {
     font-size: 0.9rem;
   }
-
   .homePage__ctaButton {
     font-size: 0.9rem;
     padding: 6px 12px;
   }
-
   .homePage__postDate {
     font-size: 0.8rem;
   }
-
   .errorMessage {
     font-size: 1rem;
     padding: 15px;
+  }
+}
+
+/* ============================================ */
+/* NEW POSTS LAYOUT - RIVERSIDE-INSPIRED STYLES */
+/* ============================================ */
+
+.newPostsLayout {
+  max-width: 1200px;
+  margin: 60px auto 40px;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 50px;
+}
+
+/* Featured Hero Post */
+.featuredHero {
+  grid-row: 1 / 3;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+
+.featuredImageWrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.featuredImage {
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.featuredHero:hover .featuredImage {
+  transform: scale(1.05);
+}
+
+.featuredContent {
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: white;
+}
+
+.featuredTitle {
+  font-size: 2.8rem;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.featuredDate {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.featuredExcerpt {
+  font-size: 1.2rem;
+  line-height: 1.7;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+.featuredButton {
+  align-self: flex-start;
+  padding: 14px 36px;
+  background-color: #0b9299;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.featuredButton:hover {
+  background-color: #08787f;
+  transform: scale(1.05);
+}
+
+/* Latest Posts Section */
+.latestPostsSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.latestPostsHeading {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  color: #333;
+  font-weight: bold;
+}
+
+.latestPostsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.latestPostCard {
+  display: flex;
+  gap: 20px;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.latestPostCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.latestCardImageWrapper {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.latestCardImage {
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.latestPostCard:hover .latestCardImage {
+  transform: scale(1.1);
+}
+
+.latestCardText {
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+}
+
+.latestCardTitle {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  color: #333;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.latestCardDate {
+  font-size: 0.95rem;
+  color: #888;
+  margin-bottom: 16px;
+  font-style: italic;
+}
+
+.latestCardButton {
+  align-self: flex-start;
+  padding: 10px 24px;
+  background-color: #0b9299;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.latestCardButton:hover {
+  background-color: #08787f;
+  transform: scale(1.05);
+}
+
+.latestCardPlaceholder {
+  width: 140px;
+  height: 140px;
+  background: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-style: italic;
+  flex-shrink: 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 968px) {
+  .newPostsLayout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .featuredHero {
+    grid-template-columns: 1fr;
+  }
+  .featuredImageWrapper {
+    height: 400px;
+  }
+  .featuredContent {
+    padding: 40px;
+  }
+  .featuredTitle {
+    font-size: 2.4rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .featuredContent {
+    padding: 30px;
+  }
+  .featuredTitle {
+    font-size: 2rem;
+  }
+  .latestPostCard {
+    flex-direction: column;
+  }
+  .latestCardImageWrapper {
+    width: 100%;
+    height: 200px;
+  }
+  .latestCardText {
+    padding: 20px;
+  }
+  .latestCardTitle {
+    font-size: 1.2rem;
   }
 }
