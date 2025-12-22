@@ -113,6 +113,13 @@ export default function Home({ initialPosts, error: initialError }) {
   };
 
   const navigateToPost = (post) => {
+    const pagePaths = {
+      Recipe: "/food",
+      Drinks: "/drinks",
+      Dessert: "/dessert",
+      Blog: "/blog",
+      ProductsReview: "/productsreview",
+    };
     const categoryPath = pagePaths[post.page] || '/blog';
     const slug = generateSlug(post.title);
     if (slug) {
