@@ -32,7 +32,7 @@ const generateSlug = (title) => {
 };
 
 export async function getStaticProps({ params }) {
-  const limit = 100; // Load enough posts upfront for "View More"
+  const limit = 100; // Load plenty for "View More"
   const offset = 0;
   try {
     const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`);
@@ -49,7 +49,6 @@ export async function getStaticProps({ params }) {
     const parsedPosts = posts.map((post) => {
       const imageMatch = (post.content || post.post_content || post.body)?.match(/<img[^>]+src=["'](.*?)["']/i);
       const thumbnailUrl = post.imageUrl || post.image_url || (imageMatch ? imageMatch[1] : '/default-image.jpg');
-      const createdAt = post.createdAt ? new Date(post.createdAt) : new Date();
       return {
         id: post.id,
         title: post.title || 'Untitled',
@@ -80,6 +79,7 @@ export async function getStaticProps({ params }) {
 }
 
 export default function Home({ initialPosts, error: initialError }) {
+  const router = useRouter();
   const [allPosts, setAllPosts] = useState(initialPosts || []);
   const [displayedPosts, setDisplayedPosts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -101,13 +101,13 @@ export default function Home({ initialPosts, error: initialError }) {
         post.title.toLowerCase().includes(lowerCaseQuery) ||
         (post.contentHtml && post.contentHtml.toLowerCase().includes(lowerCaseQuery))
     );
-    setDisplayedPosts(results.slice(0, INITIAL_LOAD)); // Reset to initial on search
+    setDisplayedPosts(results.slice(0, INITIAL_LOAD));
   };
 
   const loadMorePosts = () => {
     setLoading(true);
-    setTimeout(() => { // Small delay for smooth feel
-      setDisplayedPosts(prev => allPosts.slice(0, prev.length + LOAD_MORE));
+    setTimeout(() => {
+      setDisplayedPosts((prev) => allPosts.slice(0, prev.length + LOAD_MORE));
       setLoading(false);
     }, 300);
   };
@@ -149,7 +149,6 @@ export default function Home({ initialPosts, error: initialError }) {
   };
 
   const structuredData = {
-    // your original structuredData unchanged
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: 'Barkat Kamran | Lifestyle Blog, Reviews & Recipes',
@@ -179,15 +178,20 @@ export default function Home({ initialPosts, error: initialError }) {
   return (
     <div className={styles.homePage}>
       <Head>
-        {/* your full original Head block unchanged */}
         <title>Barkat Kamran | Lifestyle Blog, Reviews & Recipes</title>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!" />
+        <meta
+          name="description"
+          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
+        />
         <link rel="canonical" href="https://www.thestylishmama.com/" />
         <link rel="icon" href="/favicon.ico" />
         <meta property="og:title" content="Barkat Kamran | Lifestyle Blog, Reviews & Recipes" />
-        <meta property="og:description" content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!" />
+        <meta
+          property="og:description"
+          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
+        />
         <meta property="og:url" content="https://www.thestylishmama.com/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://www.thestylishmama.com/default-image.jpg" />
@@ -196,7 +200,10 @@ export default function Home({ initialPosts, error: initialError }) {
         <meta property="og:site_name" content="Barkat Kamran" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Barkat Kamran | Lifestyle Blog, Reviews & Recipes" />
-        <meta name="twitter:description" content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!" />
+        <meta
+          name="twitter:description"
+          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
+        />
         <meta name="twitter:image" content="https://www.thestylishmama.com/default-image.jpg" />
         <meta name="twitter:site" content="@YourTwitterHandle" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
@@ -209,7 +216,6 @@ export default function Home({ initialPosts, error: initialError }) {
       ) : (
         <>
           <div className={styles.sliderWithLights}>
-            {/* your full Christmas slider unchanged */}
             <div className={styles.merryChristmas}>
               <span>M</span><span>e</span><span>r</span><span>r</span><span>y</span>
               <span className={styles.space}></span>
