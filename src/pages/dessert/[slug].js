@@ -53,7 +53,6 @@ export default function DessertPost({ post }) {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       </Head>
 
-      {/* Hero Section with Overlay Title */}
       <section className={styles.heroSection}>
         {post.imageUrl ? (
           <Image
@@ -76,7 +75,6 @@ export default function DessertPost({ post }) {
         </div>
       </section>
 
-      {/* Main Content */}
       <section className={styles.contentSection}>
         <div
           className={styles.postContent}
@@ -87,35 +85,46 @@ export default function DessertPost({ post }) {
   );
 }
 
+// Pre-render all known paths at build time
 export async function getStaticPaths() {
-  const res = await fetch(`${API_URL}?page=Dessert&limit=1000&offset=0`);
-  const { posts = [] } = await res.json();
-  const paths = posts
-    .filter(post => post.slug)
-    .map((post) => ({
-      params: { slug: post.slug },
-    }));
-  return { paths, fallback: 'blocking' };
-}
-
-export async function getStaticProps({ params }) {
-  const { slug } = params;
   try {
     const res = await fetch(`${API_URL}?page=Dessert&limit=1000&offset=0`);
-    if (!res.ok) throw new Error('API error');
     const { posts = [] } = await res.json();
-    const targetPost = posts.find((p) => p.slug === slug);
+    const paths = posts
+      .filter(post => post.slug)
+      .map((post) => ({
+        params: { slug: post.slug.toString() },
+      }));
+    return { paths, fallback: 'blocking' };
+  } catch {
+    return { paths: [], fallback: 'blocking' };
+  }
+}
+
+// Fetch ONLY the single post by slug — fast and efficient
+export async function getStaticProps({ params }) {
+  const { slug } = params;
+
+  try {
+    // Direct single post fetch — replace with your actual single-post endpoint if available
+    // If your API supports ?slug=..., use that. Otherwise, fallback to list and find.
+    const res = await fetch(`${API_URL}?page=Dessert&slug=${slug}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.post) {
+        return { props: { post: data.post }, revalidate: 60 };
+      }
+    }
+
+    // Fallback: fetch list and find (safe if no single endpoint)
+    const listRes = await fetch(`${API_URL}?page=Dessert&limit=1000&offset=0`);
+    if (!listRes.ok) throw new Error();
+    const { posts = [] } = await listRes.json();
+    const targetPost = posts.find(p => p.slug === slug);
+
     if (!targetPost) return { notFound: true };
 
-    const dessertPost = {
-      ...targetPost,
-      imageUrl: targetPost.imageUrl?.startsWith('http')
-        ? targetPost.imageUrl
-        : targetPost.imageUrl
-        ? `https://www.thestylishmama.com${targetPost.imageUrl}`
-        : null,
-    };
-    return { props: { post: dessertPost }, revalidate: 60 };
+    return { props: { post: targetPost }, revalidate: 60 };
   } catch (err) {
     return { notFound: true };
   }
