@@ -21,14 +21,18 @@ const API_URL = 'https://www.barkatkamran.com/api.php';
 
 const generateSlug = (title) => {
   if (!title) return '';
-  return title
+  // Remove everything in parentheses at the end (including the parentheses)
+  // e.g., "Cheese Mushroom Egg Cups (Easy Air Fryer Breakfast)" → "Cheese Mushroom Egg Cups"
+  let cleanedTitle = title.replace(/\s*\([^)]*\)$/, '').trim();
+
+  return cleanedTitle
     .toLowerCase()
     .trim()
-    .replace(/'/g, '')
-    .replace(/[^\w\s-()!]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/'/g, '')                    // Remove straight apostrophes
+    .replace(/[^\w\s-]/g, '')             // Remove all special chars except letters, numbers, spaces, hyphens
+    .replace(/\s+/g, '-')                 // Spaces → single hyphen
+    .replace(/-+/g, '-')                  // Multiple hyphens → single
+    .replace(/^-+|-+$/g, '');             // Trim hyphens from start/end
 };
 
 export async function getStaticProps({ params }) {
