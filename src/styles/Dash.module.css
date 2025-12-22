@@ -695,7 +695,7 @@
 
 
 
-/* COLORFUL STACKED CARD LAYOUT */
+/* COLORFUL STACKED CARD LAYOUT - MORE VIBRANT COLORS & 6-COLOR CYCLE */
 .colorfulCardsContainer {
   max-width: 1000px;
   margin: 60px auto;
@@ -712,17 +712,13 @@
   color: white;
 }
 
-.cardGreen {
-  background: linear-gradient(135deg, #a8e6cf, #88d4a2);
-}
-
-.cardPurple {
-  background: linear-gradient(135deg, #d7aefb, #b794f4);
-}
-
-.cardOrange {
-  background: linear-gradient(135deg, #ffddb3, #ffb07c);
-}
+/* 6 richer color cycles for variety and better contrast */
+.cardColor1 { background: linear-gradient(135deg, #43cea2, #185a9d); }   /* Teal-Blue */
+.cardColor2 { background: linear-gradient(135deg, #8e2de2, #4a00e0); }   /* Purple */
+.cardColor3 { background: linear-gradient(135deg, #ff512f, #dd2476); }   /* Orange-Pink */
+.cardColor4 { background: linear-gradient(135deg, #11998e, #38ef7d); }   /* Green */
+.cardColor5 { background: linear-gradient(135deg, #fc4a1a, #f7b733); }   /* Orange-Yellow */
+.cardColor6 { background: linear-gradient(135deg, #6a11cb, #2575fc); }   /* Indigo-Blue */
 
 .cardContentWrapper {
   display: grid;
@@ -741,12 +737,14 @@
   font-size: 2.8rem;
   margin-bottom: 20px;
   line-height: 1.2;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* Added shadow for extra readability */
 }
 
 .cardDate {
   font-size: 1.1rem;
   margin-bottom: 24px;
-  opacity: 0.9;
+  opacity: 0.95;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
 }
 
 .cardExcerpt {
@@ -754,12 +752,13 @@
   line-height: 1.8;
   margin-bottom: 40px;
   opacity: 0.95;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
 }
 
 .cardButton {
   align-self: flex-start;
   padding: 14px 40px;
-  background: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.3);
   color: white;
   border: 2px solid white;
   border-radius: 50px;
@@ -767,11 +766,13 @@
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
 .cardButton:hover {
   background: white;
   color: #333;
+  text-shadow: none;
 }
 
 .cardImageSide {
