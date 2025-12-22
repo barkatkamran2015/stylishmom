@@ -18,7 +18,6 @@ if (typeof window !== 'undefined') {
 }
 const API_URL = 'https://www.barkatkamran.com/api.php';
 
-// New: Helper to generate slug from title (matches your site's URLs exactly)
 const generateSlug = (title) => {
   if (!title) return '';
   return title
@@ -86,6 +85,7 @@ export async function getStaticProps({ params }) {
     };
   }
 }
+
 export default function Home({ initialPosts, initialPagination, error: initialError }) {
   const [posts, setPosts] = useState(initialPosts || []);
   const [filteredPosts, setFilteredPosts] = useState(initialPosts || []);
@@ -102,6 +102,7 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
     Blog: "/blog",
     ProductsReview: "/productsreview",
   };
+
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true);
@@ -139,14 +140,15 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
       }
     };
     if (router.isReady) {
-      fetchPosts(); // Simplified: always fetch on query change for reliable pagination
+      fetchPosts();
     }
-  }, [router.isReady, limit, offset]); // Fixed dependencies
+  }, [router.isReady, limit, offset]);
 
   useEffect(() => {
     setIsClient(true);
     setFilteredPosts(initialPosts);
   }, [initialPosts]);
+
   const handleSearch = (query) => {
     const lowerCaseQuery = query.toLowerCase();
     const results = posts.filter(
@@ -156,7 +158,7 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
     );
     setFilteredPosts(results);
   };
-  // Fixed: Direct to single post using generated slug
+
   const navigateToPost = (post) => {
     const categoryPath = pagePaths[post.page] || '/blog';
     const slug = generateSlug(post.title);
@@ -164,6 +166,7 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
       router.push(`/${categoryPath}/${slug}`);
     }
   };
+
   const incrementViewCount = async (postId, page) => {
     try {
       await fetch(`${API_URL}?method=INCREMENT_VIEW_COUNT&postId=${postId}&page=${page}`, {
@@ -173,6 +176,7 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
       console.error('Error incrementing view count:', err);
     }
   };
+
   const sliderSettings = {
     dots: true,
     infinite: true,
@@ -183,6 +187,7 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
     autoplaySpeed: 3000,
     arrows: true,
   };
+
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
@@ -207,7 +212,12 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
       })),
     },
   };
+
   if (!isClient) return <p>Loading...</p>;
+
+  const featuredPost = filteredPosts[0];
+  const latestPosts = filteredPosts.slice(1);
+
   return (
     <div className={styles.homePage}>
       <Head>
@@ -247,131 +257,148 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
           <link rel="next" href={`https://www.thestylishmama.com/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`} />
         )}
       </Head>
+
       {loading ? (
         <div className={styles.loadingContainer}><div className={styles.heartLoader}></div></div>
       ) : error ? (
         <p className={styles.errorMessage}>{error}</p>
       ) : (
         <>
-          {/* PERFECT GOOGLE-STYLE CHRISTMAS LIGHTS */}
-<div className={styles.sliderWithLights}>
-  {/* MERRY CHRISTMAS TEXT */}
-  <div className={styles.merryChristmas}>
-    <span>M</span><span>e</span><span>r</span><span>r</span><span>y</span>
-    <span className={styles.space}></span>
-    <span>C</span><span>h</span><span>r</span><span>i</span>
-    <span>s</span><span>t</span><span>m</span><span>a</span><span>s</span>
-  </div>
-  {/* CHRISTMAS LIGHTS */}
-  <div className={styles.christmasLights}>
-    <ul>
-      {Array.from({ length: 40 }, (_, i) => (
-        <li key={i} style={{ '--delay': i }} />
-      ))}
-    </ul>
-  </div>
-  <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
-    <div>
-      <Image
-        src={imageBlog}
-        alt="Blog"
-        className={styles.homePage__sliderImage}
-        width={1200}
-        height={600}
-        priority
-      />
-      <h3 className={styles.homePage__sliderText}>
-        Love Does not Divide, It Multiplies
-      </h3>
-    </div>
-    <div>
-      <Image
-        src={imageNature}
-        alt="Natures Beauty"
-        className={styles.homePage__sliderImage}
-        width={1200}
-        height={600}
-        priority
-      />
-      <h3 className={styles.homePage__sliderText}>
-        Every family is Unique
-      </h3>
-    </div>
-    <div>
-      <Image
-        src={imageRecipe}
-        alt="Recipe"
-        className={styles.homePage__sliderImage}
-        width={1200}
-        height={600}
-        priority
-      />
-      <h3 className={styles.homePage__sliderText}>
-        I carry Hope in here. And half a granola bar
-      </h3>
-    </div>
-  </Slider>
-</div>
+          {/* PERFECT GOOGLE-STYLE CHRISTMAS LIGHTS - UNTOUCHED */}
+          <div className={styles.sliderWithLights}>
+            {/* MERRY CHRISTMAS TEXT */}
+            <div className={styles.merryChristmas}>
+              <span>M</span><span>e</span><span>r</span><span>r</span><span>y</span>
+              <span className={styles.space}></span>
+              <span>C</span><span>h</span><span>r</span><span>i</span>
+              <span>s</span><span>t</span><span>m</span><span>a</span><span>s</span>
+            </div>
+            {/* CHRISTMAS LIGHTS */}
+            <div className={styles.christmasLights}>
+              <ul>
+                {Array.from({ length: 40 }, (_, i) => (
+                  <li key={i} style={{ '--delay': i }} />
+                ))}
+              </ul>
+            </div>
+            <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
+              <div>
+                <Image
+                  src={imageBlog}
+                  alt="Blog"
+                  className={styles.homePage__sliderImage}
+                  width={1200}
+                  height={600}
+                  priority
+                />
+                <h3 className={styles.homePage__sliderText}>
+                  Love Does not Divide, It Multiplies
+                </h3>
+              </div>
+              <div>
+                <Image
+                  src={imageNature}
+                  alt="Natures Beauty"
+                  className={styles.homePage__sliderImage}
+                  width={1200}
+                  height={600}
+                  priority
+                />
+                <h3 className={styles.homePage__sliderText}>
+                  Every family is Unique
+                </h3>
+              </div>
+              <div>
+                <Image
+                  src={imageRecipe}
+                  alt="Recipe"
+                  className={styles.homePage__sliderImage}
+                  width={1200}
+                  height={600}
+                  priority
+                />
+                <h3 className={styles.homePage__sliderText}>
+                  I carry Hope in here. And half a granola bar
+                </h3>
+              </div>
+            </Slider>
+          </div>
+
           <SearchBar
             onSearch={handleSearch}
             placeholder="Search for blogs, reviews, or recipes..."
           />
-          <div className={styles.homePage__postsContainer}>
-            {filteredPosts.length === 0 ? (
-              <p>No posts available</p>
-            ) : (
-              <>
-                {filteredPosts.map((post) => (
+
+          {/* NEW POSTS LAYOUT STARTS HERE */}
+          <div className={styles.newPostsLayout}>
+            {featuredPost && (
+              <div className={styles.featuredHero}>
+                <div className={styles.featuredImageWrapper}>
+                  <Image
+                    src={featuredPost.thumbnailUrl}
+                    alt={featuredPost.title}
+                    fill
+                    className={styles.featuredImage}
+                    priority
+                    onError={(e) => (e.target.src = '/default-image.jpg')}
+                  />
+                </div>
+                <div className={styles.featuredContent}>
+                  <h1 className={styles.featuredTitle}>{featuredPost.title}</h1>
+                  <p className={styles.featuredDate}>
+                    Posted on: {new Date(featuredPost.createdAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                  <p className={styles.featuredExcerpt}>
+                    {featuredPost.contentHtml.replace(/<[^>]+>/g, '').slice(0, 300)}...
+                  </p>
+                  <button
+                    className={styles.featuredButton}
+                    onClick={() => navigateToPost(featuredPost)}
+                  >
+                    Read More
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className={styles.latestPostsSection}>
+              <h2 className={styles.latestPostsHeading}>Latest Posts</h2>
+              <div className={styles.latestPostsGrid}>
+                {latestPosts.map((post) => (
                   <div
                     key={post.id}
-                    className={styles.homePage__postItem}
+                    className={styles.latestPostCard}
                     onMouseEnter={() => incrementViewCount(post.id, post.page)}
                   >
                     {post.thumbnailUrl && post.thumbnailUrl !== '/default-image.jpg' ? (
-                      <Image
-                        src={post.thumbnailUrl}
-                        alt={post.title}
-                        className={styles.homePage__postImage}
-                        width={600}
-                        height={337}
-                        onError={(e) => (e.target.src = '/default-image.jpg')}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className={styles['homePage__postImage--placeholder']}>
-                        No Image Available
+                      <div className={styles.latestCardImageWrapper}>
+                        <Image
+                          src={post.thumbnailUrl}
+                          alt={post.title}
+                          fill
+                          className={styles.latestCardImage}
+                          onError={(e) => (e.target.src = '/default-image.jpg')}
+                          loading="lazy"
+                        />
                       </div>
+                    ) : (
+                      <div className={styles.latestCardPlaceholder}>No Image</div>
                     )}
-                    <div className={styles.homePage__postDetails}>
-                      <h2
-                        className={styles.homePage__postTitle}
-                        style={{
-                          color: post.titleStyle?.color || "#333",
-                          fontSize: post.titleStyle?.fontSize || "1.8rem",
-                          textAlign: post.titleStyle?.textAlign || "left",
-                        }}
-                      >
-                        {post.title}
-                      </h2>
-                      {post.createdAt ? (
-                        <p className={styles.homePage__postDate}>
-                          Posted on:{" "}
-                          {new Date(post.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </p>
-                      ) : (
-                        <p className={styles.homePage__postDate}>Date not available</p>
-                      )}
-                      <p className={styles.homePage__postExcerpt}>
-                        {post.contentHtml
-                          ? post.contentHtml.replace(/<[^>]+>/g, '').slice(0, 200) + '...'
-                          : 'No content available'}
+                    <div className={styles.latestCardText}>
+                      <h3 className={styles.latestCardTitle}>{post.title}</h3>
+                      <p className={styles.latestCardDate}>
+                        {new Date(post.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
                       </p>
                       <button
-                        className={styles.homePage__ctaButton}
+                        className={styles.latestCardButton}
                         onClick={() => navigateToPost(post)}
                       >
                         Read More
@@ -379,27 +406,28 @@ export default function Home({ initialPosts, initialPagination, error: initialEr
                     </div>
                   </div>
                 ))}
-                <div className={styles.pagination}>
-                  {pagination.offset > 0 && (
-                    <Link
-                      href={`/?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
-                      className={styles.paginationLink}
-                    >
-                      Previous
-                    </Link>
-                  )}
-                  {pagination.offset + pagination.limit < pagination.total && (
-                    <Link
-                      href={`/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
-                      className={styles.paginationLink}
-                    >
-                      Next
-                    </Link>
-                  )}
-                  <p>Page {pagination.offset / pagination.limit + 1} of {pagination.totalPages}</p>
-                </div>
-              </>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.pagination}>
+            {pagination.offset > 0 && (
+              <Link
+                href={`/?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
+                className={styles.paginationLink}
+              >
+                Previous
+              </Link>
             )}
+            {pagination.offset + pagination.limit < pagination.total && (
+              <Link
+                href={`/?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
+                className={styles.paginationLink}
+              >
+                Next
+              </Link>
+            )}
+            <p>Page {pagination.offset / pagination.limit + 1} of {pagination.totalPages}</p>
           </div>
         </>
       )}
