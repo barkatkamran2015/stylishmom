@@ -459,7 +459,7 @@
 }
 
 /* ============================================ */
-/* NEW POSTS LAYOUT - RIVERSIDE-INSPIRED STYLES */
+/* NEW POSTS LAYOUT - RIVERSIDE-INSPIRED STYLES (FIXED HERO HEIGHT) */
 /* ============================================ */
 
 .newPostsLayout {
@@ -468,23 +468,25 @@
   padding: 0 20px;
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 50px;
+  gap: 40px; /* Reduced gap for tighter layout */
 }
 
-/* Featured Hero Post */
+/* Featured Hero Post - Fixed height */
 .featuredHero {
-  grid-row: 1 / 3;
   display: grid;
   grid-template-columns: 1fr 1fr;
   background: white;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  height: fit-content; /* Key fix: no unnecessary stretching */
+  align-items: stretch;
 }
 
 .featuredImageWrapper {
   position: relative;
   overflow: hidden;
+  min-height: 500px; /* Consistent image height */
 }
 
 .featuredImage {
@@ -497,7 +499,7 @@
 }
 
 .featuredContent {
-  padding: 50px;
+  padding: 40px; /* Reduced from 50px */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -505,34 +507,38 @@
 }
 
 .featuredTitle {
-  font-size: 2.8rem;
+  font-size: 2.4rem; /* Slightly smaller for balance */
   line-height: 1.2;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   color: #333;
 }
 
 .featuredDate {
   font-size: 1rem;
   color: #666;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   font-style: italic;
 }
 
 .featuredExcerpt {
-  font-size: 1.2rem;
-  line-height: 1.7;
+  font-size: 1.15rem;
+  line-height: 1.6;
   color: #555;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
+  display: -webkit-box;
+  -webkit-line-clamp: 6; /* Limit to ~6 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .featuredButton {
   align-self: flex-start;
-  padding: 14px 36px;
+  padding: 12px 32px; /* Slightly smaller button */
   background-color: #0b9299;
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
@@ -550,8 +556,8 @@
 }
 
 .latestPostsHeading {
-  font-size: 2rem;
-  margin-bottom: 30px;
+  font-size: 1.8rem; /* Slightly smaller */
+  margin-bottom: 24px;
   color: #333;
   font-weight: bold;
 }
@@ -559,9 +565,10 @@
 .latestPostsGrid {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px; /* Tighter spacing */
 }
 
+/* Rest of the latest card styles remain the same */
 .latestPostCard {
   display: flex;
   gap: 20px;
@@ -595,7 +602,7 @@
 }
 
 .latestCardText {
-  padding: 20px 0;
+  padding: 18px 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -603,23 +610,23 @@
 }
 
 .latestCardTitle {
-  font-size: 1.3rem;
-  margin-bottom: 10px;
+  font-size: 1.25rem;
+  margin-bottom: 8px;
   color: #333;
   line-height: 1.4;
   font-weight: 600;
 }
 
 .latestCardDate {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: #888;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   font-style: italic;
 }
 
 .latestCardButton {
   align-self: flex-start;
-  padding: 10px 24px;
+  padding: 8px 20px;
   background-color: #0b9299;
   color: white;
   border: none;
@@ -646,44 +653,41 @@
   flex-shrink: 0;
 }
 
-/* Responsive Adjustments */
+/* Responsive Fixes */
 @media (max-width: 968px) {
   .newPostsLayout {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 30px;
   }
   .featuredHero {
     grid-template-columns: 1fr;
   }
   .featuredImageWrapper {
-    height: 400px;
+    min-height: 350px;
   }
   .featuredContent {
-    padding: 40px;
+    padding: 35px;
   }
   .featuredTitle {
-    font-size: 2.4rem;
+    font-size: 2.2rem;
   }
 }
 
 @media (max-width: 640px) {
   .featuredContent {
-    padding: 30px;
+    padding: 25px;
   }
   .featuredTitle {
-    font-size: 2rem;
+    font-size: 1.9rem;
   }
   .latestPostCard {
     flex-direction: column;
   }
   .latestCardImageWrapper {
     width: 100%;
-    height: 200px;
+    height: 180px;
   }
   .latestCardText {
-    padding: 20px;
-  }
-  .latestCardTitle {
-    font-size: 1.2rem;
+    padding: 18px;
   }
 }
