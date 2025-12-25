@@ -220,29 +220,21 @@ export default function Home({ initialPosts, error: initialError }) {
          <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
   <div className={styles.slideWrapper}>
     <Image src={imageBlog} alt="Meals That Bring Everyone Together" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-    <div className={styles.slideTextOverlay}>
-      <h3 className={styles.homePage__sliderText}>Meals That Bring Everyone Together</h3>
-    </div>
+    <h3 className={styles.homePage__sliderText}>Meals That Bring Everyone Together</h3>
   </div>
   <div className={styles.slideWrapper}>
     <Image src={imageNature} alt="Quick, Delicious, Stress-Free Cooking" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-    <div className={styles.slideTextOverlay}>
-      <h3 className={styles.homePage__sliderText}>Quick, Delicious, Stress-Free Cooking</h3>
-    </div>
+    <h3 className={styles.homePage__sliderText}>Quick, Delicious, Stress-Free Cooking</h3>
   </div>
   <div className={styles.slideWrapper}>
     <Image src={imageRecipe} alt="Comfort Food Made Simple" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-    <div className={styles.slideTextOverlay}>
-      <h3 className={styles.homePage__sliderText}>Comfort Food Made Simple</h3>
-    </div>
+    <h3 className={styles.homePage__sliderText}>Comfort Food Made Simple</h3>
   </div>
   <div className={styles.slideWrapper}>
     <Image src={imageBurger} alt="Delicious Recipes for Busy Parents!" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-    <div className={styles.slideTextOverlay}>
-      <h3 className={styles.homePage__sliderText}>Delicious Recipes For Busy Parents</h3>
-    </div>
+    <h3 className={styles.homePage__sliderText}>Delicious Recipes for Busy Parents!</h3>
   </div>
-</Slider>
+       </Slider>
 
           <SearchBar onSearch={handleSearch} placeholder="Search for blogs, reviews, or recipes..." />
 
