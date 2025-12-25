@@ -220,7 +220,7 @@ export default function Home({ initialPosts, error: initialError }) {
           <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
             <div>
               <Image src={imageBlog} alt="Blog" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-              <h3 className={styles.homePage__sliderText}>Meals that Bring Everyone Together</h3>
+              <h3 className={styles.homePage__sliderText}>Meals That Bring Everyone Together</h3>
             </div>
             <div>
               <Image src={imageNature} alt="Natures Beauty" className={styles.homePage__sliderImage} width={1200} height={600} priority />
@@ -228,11 +228,11 @@ export default function Home({ initialPosts, error: initialError }) {
             </div>
             <div>
               <Image src={imageRecipe} alt="Recipe" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-              <h3 className={styles.homePage__sliderText}>Comfort food made Simple</h3>
+              <h3 className={styles.homePage__sliderText}>Comfort Food Made Simple</h3>
             </div>
             <div>
               <Image src={imageBurger} alt="Burger" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-              <h3 className={styles.homePage__sliderText}>Delicious Recipes for busy Parents!</h3>
+              <h3 className={styles.homePage__sliderText}>Delicious Recipes for Busy Parents!</h3>
             </div>
           </Slider>
 
