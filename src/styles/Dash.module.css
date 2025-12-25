@@ -77,8 +77,10 @@
 
 @media (max-width: 768px) {
   .homePage__sliderImage {
-    object-fit: contain;
-  }
+  height: 50vh;
+  object-fit: contain;
+  background-color: #000;
+}
 
   .homePage__sliderText {
     font-size: 2.4rem;
@@ -92,8 +94,10 @@
 
 @media (max-width: 480px) {
   .homePage__sliderImage {
-    object-fit: contain;
-  }
+  height: 50vh;
+  object-fit: contain;
+  background-color: #000;
+}
 
   .homePage__sliderText {
     font-size: 2rem;
