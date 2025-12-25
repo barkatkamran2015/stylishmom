@@ -17,13 +17,6 @@
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
-/* Slide wrapper */
-.slideWrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
 /* Image - full background */
 .homePage__sliderImage {
   width: 100%;
@@ -35,29 +28,26 @@
 }
 
 /* Text overlay - centered ON the image */
+.slideWrapper {
+  position: relative;
+}
+
 .slideTextOverlay {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: none; /* ✅ removes black background */
-  z-index: 10;
   pointer-events: none;
-  text-align: center;
 }
 
-/* Slider text - NO background, image only */
 .homePage__sliderText {
-  background: none !important;
-  color: #ffffff;
-  padding: 0;
-  margin: 0;
+  background: none;
+  color: #fff;
   font-size: 3.8rem;
   font-weight: 800;
-  line-height: 1.15;
-  max-width: 90%;
   text-align: center;
+  max-width: 90%;
   text-shadow:
     0 3px 10px rgba(0,0,0,0.6),
     0 1px 2px rgba(0,0,0,0.85);
