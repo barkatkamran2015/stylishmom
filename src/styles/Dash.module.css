@@ -79,6 +79,8 @@
   .homePage__sliderImage {
     height: 55vh;
     min-height: 400px;
+    object-fit: contain;
+    background-color: #000;
   }
 
   .homePage__sliderText {
@@ -95,6 +97,8 @@
   .homePage__sliderImage {
     height: 50vh;
     min-height: 350px;
+    object-fit: contain;
+    background-color: #000;
   }
 
   .homePage__sliderText {
