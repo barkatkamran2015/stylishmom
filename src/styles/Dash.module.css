@@ -35,44 +35,50 @@
 /* Text overlay container - strong dark gradient */
 .slideTextOverlay {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 80px 40px 60px;
-  background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0));
-  text-align: center;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 40px 80px;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.75) 0%,
+    rgba(0,0,0,0.35) 40%,
+    rgba(0,0,0,0) 70%
+  );
   z-index: 10;
   pointer-events: none;
 }
 
-/* Ultimate text - white panel for perfect contrast */
+
 .homePage__sliderText {
-  display: inline-block;
-  background: rgba(255,255,255,0.92);
-  color: #333;
-  padding: 24px 48px;
-  border-radius: 16px;
+  background: transparent; /* 🔥 removes white box */
+  color: #ffffff;
+  padding: 0;
+  border-radius: 0;
   font-size: 3.8rem;
   font-weight: 800;
-  line-height: 1.2;
-  text-shadow: none;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
-  max-width: 90%;
-  margin: 0 auto;
+  line-height: 1.15;
+  text-align: center;
+  max-width: 900px;
+  text-shadow:
+    0 4px 12px rgba(0,0,0,0.6),
+    0 1px 2px rgba(0,0,0,0.8);
 }
 
-/* Responsive - Perfect mobile balance */
+/* Responsive – Clean mobile balance (fixed) */
 @media (max-width: 1024px) {
   .homePage__sliderImage {
     height: 65vh;
     min-height: 450px;
   }
+
   .homePage__sliderText {
     font-size: 3.2rem;
-    padding: 20px 40px;
   }
+
   .slideTextOverlay {
-    padding: 70px 30px 50px;
+    padding: 0 32px 70px;
   }
 }
 
@@ -81,12 +87,14 @@
     height: 55vh;
     min-height: 400px;
   }
+
   .homePage__sliderText {
-    font-size: 2.6rem;
-    padding: 18px 35px;
+    font-size: 2.4rem;
+    line-height: 1.2;
   }
+
   .slideTextOverlay {
-    padding: 60px 20px 40px;
+    padding: 0 24px 60px;
   }
 }
 
@@ -95,12 +103,14 @@
     height: 50vh;
     min-height: 350px;
   }
+
   .homePage__sliderText {
-    font-size: 2.2rem;
-    padding: 16px 30px;
+    font-size: 2rem;
+    line-height: 1.15;
   }
+
   .slideTextOverlay {
-    padding: 50px 15px 35px;
+    padding: 0 16px 50px;
   }
 }
 
