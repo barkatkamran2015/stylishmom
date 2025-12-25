@@ -80,7 +80,6 @@
     height: 55vh;
     min-height: 400px;
     object-fit: contain;
-    background-color: #000;
   }
 
   .homePage__sliderText {
@@ -98,7 +97,6 @@
     height: 50vh;
     min-height: 350px;
     object-fit: contain;
-    background-color: #000;
   }
 
   .homePage__sliderText {
