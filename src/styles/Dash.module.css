@@ -24,7 +24,7 @@
 /* Image fills container perfectly - full display, no cropping */
 .homePage__sliderImage {
   width: 100%;
-  height: 80vh; /* Tall hero feel */
+  height: 60vh; /* Tall hero feel */
   min-height: 500px;
   object-fit: cover; /* Shows full image, crops intelligently if needed */
   object-position: center;
@@ -32,20 +32,12 @@
 
 /* Ultimate text overlay - centered, bold, readable, premium feel */
 .homePage__sliderText {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 80px 40px 60px;
-  background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0));
   color: white;
-  text-align: center;
   font-size: 3.5rem;
   font-weight: 800;
   line-height: 1.2;
   text-shadow: 0 4px 15px rgba(0,0,0,0.6);
-  letter-spacing: 0.5px;
-  z-index: 10;
+  margin: 0;
 }
 /* Posts Layout */
 .homePage__postsContainer {
