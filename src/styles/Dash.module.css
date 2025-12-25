@@ -13,8 +13,15 @@
   position: relative;
   border-radius: 16px;
   overflow: hidden;
-  background-color: #000; /* 🔥 prevents background bleed */
+  background-color: #000; /* prevents background bleed */
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+/* Slide wrapper */
+.slideWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 /* Image - full background */
@@ -27,25 +34,24 @@
   display: block;
 }
 
-/* Text overlay - centered ON the image */
-.slideWrapper {
-  position: relative;
-}
-
+/* Text overlay - bottom centered ON the image */
 .slideTextOverlay {
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-end;     /* ⬇ bottom */
+  justify-content: center;   /* ↔ center */
+  padding: 0 24px 64px;      /* spacing from edges */
   pointer-events: none;
 }
 
+/* Slider text - clean, no background */
 .homePage__sliderText {
   background: none;
-  color: #fff;
+  color: #ffffff;
   font-size: 3.8rem;
   font-weight: 800;
+  line-height: 1.1;
   text-align: center;
   max-width: 90%;
   text-shadow:
@@ -63,6 +69,10 @@
   .homePage__sliderText {
     font-size: 3.2rem;
   }
+
+  .slideTextOverlay {
+    padding-bottom: 56px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -73,7 +83,11 @@
 
   .homePage__sliderText {
     font-size: 2.4rem;
-    line-height: 1.2;
+    line-height: 1.15;
+  }
+
+  .slideTextOverlay {
+    padding-bottom: 48px;
   }
 }
 
@@ -85,15 +99,12 @@
 
   .homePage__sliderText {
     font-size: 2rem;
-    line-height: 1.15;
+    line-height: 1.1;
   }
-}
 
-/* All your other styles below — unchanged */
-.homePage__postsContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  .slideTextOverlay {
+    padding-bottom: 40px;
+  }
 }
 
 .homePage__postItem {
