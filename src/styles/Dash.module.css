@@ -23,7 +23,7 @@
   width: 100%;
 }
 
-/* Image - adaptive and perfect fit */
+/* Image - balanced height */
 .homePage__sliderImage {
   width: 100%;
   height: 70vh;
@@ -32,7 +32,7 @@
   object-position: center;
 }
 
-/* Text overlay container - stronger contrast */
+/* Text overlay container - strong dark gradient */
 .slideTextOverlay {
   position: absolute;
   bottom: 0;
@@ -45,23 +45,23 @@
   pointer-events: none;
 }
 
-/* Ultimate text - bold, high contrast, premium panel */
+/* Ultimate text - white panel for perfect contrast */
 .homePage__sliderText {
   display: inline-block;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.92);
   color: #333;
-  padding: 20px 40px;
-  border-radius: 12px;
+  padding: 24px 48px;
+  border-radius: 16px;
   font-size: 3.8rem;
   font-weight: 800;
   line-height: 1.2;
   text-shadow: none;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
   max-width: 90%;
   margin: 0 auto;
 }
 
-/* Responsive - Perfect on mobile */
+/* Responsive - Perfect mobile balance */
 @media (max-width: 1024px) {
   .homePage__sliderImage {
     height: 65vh;
@@ -69,7 +69,7 @@
   }
   .homePage__sliderText {
     font-size: 3.2rem;
-    padding: 18px 35px;
+    padding: 20px 40px;
   }
   .slideTextOverlay {
     padding: 70px 30px 50px;
@@ -83,7 +83,7 @@
   }
   .homePage__sliderText {
     font-size: 2.6rem;
-    padding: 16px 30px;
+    padding: 18px 35px;
   }
   .slideTextOverlay {
     padding: 60px 20px 40px;
@@ -97,14 +97,14 @@
   }
   .homePage__sliderText {
     font-size: 2.2rem;
-    padding: 14px 25px;
+    padding: 16px 30px;
   }
   .slideTextOverlay {
     padding: 50px 15px 35px;
   }
 }
 
-/* All your other styles below remain exactly the same */
+/* All your other styles below — unchanged */
 .homePage__postsContainer {
   display: flex;
   flex-direction: column;
