@@ -6,13 +6,11 @@
   font-family: 'Arial', sans-serif;
   background-color: #f5f5f5; /* Light background for better contrast */
 }
+/* Slide wrapper for proper positioning */
 .slideWrapper {
   position: relative;
   width: 100%;
-  height: 60vh;
-  min-height: 500px;
 }
-/* Featured Slider */
 .homePage__featuredSlider {
   margin-bottom: 60px;
   position: relative;
@@ -21,22 +19,35 @@
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
-/* Image fills container perfectly - full display, no cropping */
+/* Image - adaptive height */
 .homePage__sliderImage {
   width: 100%;
-  height: 60vh; /* Tall hero feel */
+  height: 70vh; /* Balanced desktop height */
   min-height: 500px;
-  object-fit: cover; /* Shows full image, crops intelligently if needed */
+  object-fit: cover;
   object-position: center;
 }
 
-/* Ultimate text overlay - centered, bold, readable, premium feel */
+/* Text overlay container */
+.slideTextOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 80px 40px 60px;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
+  text-align: center;
+  z-index: 10;
+  pointer-events: none; /* Allows clicks through to slider controls */
+}
+
+/* Premium text style */
 .homePage__sliderText {
   color: white;
-  font-size: 3.5rem;
+  font-size: 3.8rem;
   font-weight: 800;
   line-height: 1.2;
-  text-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  text-shadow: 0 4px 15px rgba(0,0,0,0.7);
   margin: 0;
 }
 /* Posts Layout */
