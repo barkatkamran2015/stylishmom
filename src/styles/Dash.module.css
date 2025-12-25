@@ -1,5 +1,4 @@
 /* src/styles/Dash.module.css */
-/* General Home Page Styling */
 .homePage {
   max-width: 1200px;
   margin: 0 auto;
@@ -9,24 +8,38 @@
 }
 /* Featured Slider */
 .homePage__featuredSlider {
-  margin-bottom: 30px;
+  margin-bottom: 60px;
   position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
+
+/* Image fills container perfectly - full display, no cropping */
 .homePage__sliderImage {
   width: 100%;
-  height: auto;
-  max-height: 400px;
-  object-fit: cover;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  height: 80vh; /* Tall hero feel */
+  min-height: 500px;
+  object-fit: cover; /* Shows full image, crops intelligently if needed */
+  object-position: center;
 }
+
+/* Ultimate text overlay - centered, bold, readable, premium feel */
 .homePage__sliderText {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 80px 40px 60px;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0));
+  color: white;
   text-align: center;
-  margin-top: 10px;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #333;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle text shadow for readability */
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  letter-spacing: 0.5px;
+  z-index: 10;
 }
 /* Posts Layout */
 .homePage__postsContainer {
