@@ -77,8 +77,6 @@
 
 @media (max-width: 768px) {
   .homePage__sliderImage {
-    height: 55vh;
-    min-height: 400px;
     object-fit: contain;
   }
 
@@ -94,8 +92,6 @@
 
 @media (max-width: 480px) {
   .homePage__sliderImage {
-    height: 50vh;
-    min-height: 350px;
     object-fit: contain;
   }
 
