@@ -70,35 +70,35 @@
   }
 }
 
-/* Mobile - full image, container fits exactly */
 @media (max-width: 768px) {
-  .slideWrapper {
-    height: auto;
-  }
   .homePage__sliderImage {
-    height: auto;
-    max-height: none;
-    object-fit: contain;
-    background: transparent;
+    height: 55vh;
+    min-height: 400px;
   }
+
   .homePage__sliderText {
     font-size: 2.4rem;
     line-height: 1.15;
   }
+
   .slideTextOverlay {
-    position: static;
-    padding: 40px 20px;
-    background: rgba(0,0,0,0.7);
+    padding-bottom: 48px;
   }
 }
 
 @media (max-width: 480px) {
+  .homePage__sliderImage {
+    height: 50vh;
+    min-height: 350px;
+  }
+
   .homePage__sliderText {
     font-size: 2rem;
     line-height: 1.1;
   }
+
   .slideTextOverlay {
-    padding: 30px 15px;
+    padding-bottom: 40px;
   }
 }
 
