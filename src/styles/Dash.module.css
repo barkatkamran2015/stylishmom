@@ -5,10 +5,10 @@
   margin: 0 auto;
   padding: 20px;
   font-family: 'Arial', sans-serif;
-  background-color: #f5f5f5; /* Light background for better contrast */
+  background-color: #f5f5f5;
 }
 
-/* Featured Slider - Clean and premium */
+/* Featured Slider - Premium and clean */
 .homePage__featuredSlider {
   margin-bottom: 60px;
   position: relative;
@@ -17,13 +17,13 @@
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
-/* Slide wrapper for proper positioning */
+/* Slide wrapper */
 .slideWrapper {
   position: relative;
   width: 100%;
 }
 
-/* Image - adaptive height, perfect fit */
+/* Image - adaptive and perfect fit */
 .homePage__sliderImage {
   width: 100%;
   height: 70vh;
@@ -32,30 +32,79 @@
   object-position: center;
 }
 
-/* Text overlay container */
+/* Text overlay container - stronger contrast */
 .slideTextOverlay {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   padding: 80px 40px 60px;
-  background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
+  background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0));
   text-align: center;
   z-index: 10;
   pointer-events: none;
 }
 
-/* Ultimate text style */
+/* Ultimate text - bold, high contrast, premium panel */
 .homePage__sliderText {
-  color: white;
+  display: inline-block;
+  background: rgba(255,255,255,0.9);
+  color: #333;
+  padding: 20px 40px;
+  border-radius: 12px;
   font-size: 3.8rem;
   font-weight: 800;
   line-height: 1.2;
-  text-shadow: 0 4px 15px rgba(0,0,0,0.7);
-  margin: 0;
+  text-shadow: none;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  max-width: 90%;
+  margin: 0 auto;
 }
 
-/* Posts Layout */
+/* Responsive - Perfect on mobile */
+@media (max-width: 1024px) {
+  .homePage__sliderImage {
+    height: 65vh;
+    min-height: 450px;
+  }
+  .homePage__sliderText {
+    font-size: 3.2rem;
+    padding: 18px 35px;
+  }
+  .slideTextOverlay {
+    padding: 70px 30px 50px;
+  }
+}
+
+@media (max-width: 768px) {
+  .homePage__sliderImage {
+    height: 55vh;
+    min-height: 400px;
+  }
+  .homePage__sliderText {
+    font-size: 2.6rem;
+    padding: 16px 30px;
+  }
+  .slideTextOverlay {
+    padding: 60px 20px 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .homePage__sliderImage {
+    height: 50vh;
+    min-height: 350px;
+  }
+  .homePage__sliderText {
+    font-size: 2.2rem;
+    padding: 14px 25px;
+  }
+  .slideTextOverlay {
+    padding: 50px 15px 35px;
+  }
+}
+
+/* All your other styles below remain exactly the same */
 .homePage__postsContainer {
   display: flex;
   flex-direction: column;
@@ -63,7 +112,7 @@
 }
 
 .homePage__postItem {
-  position: relative; /* For positioning the "Updated" badge */
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: 20px;
@@ -76,11 +125,10 @@
 }
 
 .homePage__postItem:hover {
-  transform: translateY(-5px); /* Lift effect on hover */
+  transform: translateY(-5px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
-/* "Updated" Badge for Edited Posts */
 .homePage__postItem--updated::after {
   content: "Updated";
   position: absolute;
@@ -94,7 +142,6 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* Post Image */
 .homePage__postImage {
   width: 300px;
   height: 200px;
@@ -104,7 +151,6 @@
   transition: opacity 0.3s ease-in-out;
 }
 
-/* Fallback for Posts Without Images */
 .homePage__postImage--placeholder {
   width: 300px;
   height: 200px;
@@ -118,7 +164,6 @@
   font-style: italic;
 }
 
-/* Post Details */
 .homePage__postDetails {
   flex: 1;
   display: flex;
@@ -127,7 +172,6 @@
   min-width: 0;
 }
 
-/* Post Title */
 .homePage__postTitle {
   font-size: 1.8rem;
   font-weight: bold;
@@ -162,10 +206,9 @@
 }
 
 .homePage__postTitle:hover {
-  color: #0b9299; /* Match the CTA button color for consistency */
+  color: #0b9299;
 }
 
-/* Post Date */
 .homePage__postDate {
   font-size: 0.9rem;
   color: #666;
@@ -173,7 +216,6 @@
   font-style: italic;
 }
 
-/* Post Excerpt */
 .homePage__postExcerpt {
   font-size: 1rem;
   color: #555;
@@ -183,7 +225,6 @@
   text-overflow: ellipsis;
 }
 
-/* Call-to-Action Button */
 .homePage__ctaButton {
   background-color: #0b9299;
   color: white;
@@ -198,11 +239,10 @@
 }
 
 .homePage__ctaButton:hover {
-  background-color: #08787f; /* Darker shade for hover */
-  transform: scale(1.05); /* Slight scale effect on hover */
+  background-color: #08787f;
+  transform: scale(1.05);
 }
 
-/* Heart Loader Styling */
 .loadingContainer {
   display: flex;
   justify-content: center;
@@ -241,16 +281,6 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .homePage__sliderImage {
-    height: 65vh;
-    min-height: 450px;
-  }
-  .homePage__sliderText {
-    font-size: 3.2rem;
-  }
-  .slideTextOverlay {
-    padding: 70px 30px 50px;
-  }
   .homePage__postImage,
   .homePage__postImage--placeholder {
     width: 250px;
@@ -259,16 +289,6 @@
 }
 
 @media (max-width: 768px) {
-  .homePage__sliderImage {
-    height: 55vh;
-    min-height: 400px;
-  }
-  .homePage__sliderText {
-    font-size: 2.6rem;
-  }
-  .slideTextOverlay {
-    padding: 60px 20px 40px;
-  }
   .homePage__postItem {
     flex-direction: column;
     align-items: center;
@@ -303,16 +323,6 @@
 }
 
 @media (max-width: 480px) {
-  .homePage__sliderImage {
-    height: 50vh;
-    min-height: 350px;
-  }
-  .homePage__sliderText {
-    font-size: 2.2rem;
-  }
-  .slideTextOverlay {
-    padding: 50px 15px 35px;
-  }
   .homePage__postTitle {
     font-size: 1.3rem;
   }
@@ -332,7 +342,7 @@
   }
 }
 
-/* COLORFUL STACKED CARD LAYOUT - MORE VIBRANT COLORS & 6-COLOR CYCLE */
+/* COLORFUL STACKED CARD LAYOUT */
 .colorfulCardsContainer {
   max-width: 1000px;
   margin: 60px auto;
@@ -349,13 +359,12 @@
   color: white;
 }
 
-/* 6 richer color cycles for variety and better contrast */
-.cardColor1 { background: linear-gradient(135deg, #43cea2, #185a9d); } /* Teal-Blue */
-.cardColor2 { background: linear-gradient(135deg, #8e2de2, #4a00e0); } /* Purple */
-.cardColor3 { background: linear-gradient(135deg, #ff512f, #dd2476); } /* Orange-Pink */
-.cardColor4 { background: linear-gradient(135deg, #11998e, #38ef7d); } /* Green */
-.cardColor5 { background: linear-gradient(135deg, #fc4a1a, #f7b733); } /* Orange-Yellow */
-.cardColor6 { background: linear-gradient(135deg, #6a11cb, #2575fc); } /* Indigo-Blue */
+.cardColor1 { background: linear-gradient(135deg, #43cea2, #185a9d); }
+.cardColor2 { background: linear-gradient(135deg, #8e2de2, #4a00e0); }
+.cardColor3 { background: linear-gradient(135deg, #ff512f, #dd2476); }
+.cardColor4 { background: linear-gradient(135deg, #11998e, #38ef7d); }
+.cardColor5 { background: linear-gradient(135deg, #fc4a1a, #f7b733); }
+.cardColor6 { background: linear-gradient(135deg, #6a11cb, #2575fc); }
 
 .cardContentWrapper {
   display: grid;
