@@ -22,19 +22,18 @@ const API_URL = 'https://www.barkatkamran.com/api.php';
 
 const generateSlug = (title) => {
   if (!title) return '';
-  // Gently clean: lowercase, spaces to hyphens, remove some unsafe chars but preserve & ( ), !
   return title
     .toLowerCase()
     .trim()
-    .replace(/'/g, '')               // Remove apostrophes (common mismatch)
-    .replace(/[^\w\s&()-]/g, '')     // Keep letters, numbers, spaces, &, -, (, ), !
-    .replace(/\s+/g, '-')            // Spaces → hyphens
-    .replace(/-+/g, '-')             // Multiple hyphens → single
-    .replace(/^-+|-+$/g, '');        // Trim hyphens
+    .replace(/'/g, '')
+    .replace(/[^\w\s&()-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
 };
 
 export async function getStaticProps({ params }) {
-  const limit = 100; // Load plenty for "View More"
+  const limit = 100;
   const offset = 0;
   try {
     const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`);
@@ -217,39 +216,25 @@ export default function Home({ initialPosts, error: initialError }) {
         <p className={styles.errorMessage}>{error}</p>
       ) : (
         <>
-          <div className={styles.sliderWithLights}>
-            <div className={styles.merryChristmas}>
-              <span>M</span><span>e</span><span>r</span><span>r</span><span>y</span>
-              <span className={styles.space}></span>
-              <span>C</span><span>h</span><span>r</span><span>i</span>
-              <span>s</span><span>t</span><span>m</span><span>a</span><span>s</span>
+          {/* Clean slider without Christmas decorations */}
+          <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
+            <div>
+              <Image src={imageBlog} alt="Blog" className={styles.homePage__sliderImage} width={1200} height={600} priority />
+              <h3 className={styles.homePage__sliderText}>Meals that Bring Everyone Together</h3>
             </div>
-            <div className={styles.christmasLights}>
-              <ul>
-                {Array.from({ length: 40 }, (_, i) => (
-                  <li key={i} style={{ '--delay': i }} />
-                ))}
-              </ul>
+            <div>
+              <Image src={imageNature} alt="Natures Beauty" className={styles.homePage__sliderImage} width={1200} height={600} priority />
+              <h3 className={styles.homePage__sliderText}>Quick, Delicious, Stress-Free Cooking</h3>
             </div>
-            <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
-              <div>
-                <Image src={imageBlog} alt="Blog" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-                <h3 className={styles.homePage__sliderText}>Meals that Bring Everyone Together</h3>
-              </div>
-              <div>
-                <Image src={imageNature} alt="Natures Beauty" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-                <h3 className={styles.homePage__sliderText}>Quick, Delicious, Stress-Free Cooking</h3>
-              </div>
-              <div>
-                <Image src={imageRecipe} alt="Recipe" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-                <h3 className={styles.homePage__sliderText}>Comfort food made Simple</h3>
-              </div>
-                <div>
-                <Image src={imageBurger} alt="Burger" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-                <h3 className={styles.homePage__sliderText}>Delicious Recipes for busy Parents!</h3>
-              </div>
-            </Slider>
-          </div>
+            <div>
+              <Image src={imageRecipe} alt="Recipe" className={styles.homePage__sliderImage} width={1200} height={600} priority />
+              <h3 className={styles.homePage__sliderText}>Comfort food made Simple</h3>
+            </div>
+            <div>
+              <Image src={imageBurger} alt="Burger" className={styles.homePage__sliderImage} width={1200} height={600} priority />
+              <h3 className={styles.homePage__sliderText}>Delicious Recipes for busy Parents!</h3>
+            </div>
+          </Slider>
 
           <SearchBar onSearch={handleSearch} placeholder="Search for blogs, reviews, or recipes..." />
 
