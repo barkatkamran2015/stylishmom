@@ -1,5 +1,4 @@
 /* src/styles/Dash.module.css */
-/* General Home Page Styling */
 .homePage {
   max-width: 1200px;
   margin: 0 auto;
@@ -14,6 +13,7 @@
   position: relative;
   border-radius: 16px;
   overflow: hidden;
+  background-color: #000; /* 🔥 prevents background bleed */
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
@@ -21,52 +21,53 @@
 .slideWrapper {
   position: relative;
   width: 100%;
+  height: 100%;
 }
 
-/* Image - balanced height */
+/* Image - full background */
 .homePage__sliderImage {
   width: 100%;
   height: 70vh;
   min-height: 500px;
   object-fit: cover;
   object-position: center;
+  display: block;
 }
 
-/* Text overlay container - strong dark gradient */
+/* Text overlay - centered ON the image */
 .slideTextOverlay {
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 0 40px 80px;
+  align-items: center;       /* vertical center */
+  justify-content: center;   /* horizontal center */
   background: linear-gradient(
     to top,
-    rgba(0,0,0,0.75) 0%,
+    rgba(0,0,0,0.6) 0%,
     rgba(0,0,0,0.35) 40%,
     rgba(0,0,0,0) 70%
   );
   z-index: 10;
   pointer-events: none;
+  text-align: center;
 }
 
-
+/* Slider text - NO background, image only */
 .homePage__sliderText {
-  background: transparent; /* 🔥 removes white box */
+  background: none !important;
   color: #ffffff;
   padding: 0;
-  border-radius: 0;
+  margin: 0;
   font-size: 3.8rem;
   font-weight: 800;
   line-height: 1.15;
-  text-align: center;
-  max-width: 900px;
+  max-width: 90%;
   text-shadow:
-    0 4px 12px rgba(0,0,0,0.6),
-    0 1px 2px rgba(0,0,0,0.8);
+    0 3px 10px rgba(0,0,0,0.6),
+    0 1px 2px rgba(0,0,0,0.85);
 }
 
-/* Responsive – Clean mobile balance (fixed) */
+/* Responsive */
 @media (max-width: 1024px) {
   .homePage__sliderImage {
     height: 65vh;
@@ -75,10 +76,6 @@
 
   .homePage__sliderText {
     font-size: 3.2rem;
-  }
-
-  .slideTextOverlay {
-    padding: 0 32px 70px;
   }
 }
 
@@ -92,10 +89,6 @@
     font-size: 2.4rem;
     line-height: 1.2;
   }
-
-  .slideTextOverlay {
-    padding: 0 24px 60px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -107,10 +100,6 @@
   .homePage__sliderText {
     font-size: 2rem;
     line-height: 1.15;
-  }
-
-  .slideTextOverlay {
-    padding: 0 16px 50px;
   }
 }
 
