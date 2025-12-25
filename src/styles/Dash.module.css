@@ -70,13 +70,14 @@
   }
 }
 
+/* Mobile - full image, container fits exactly */
 @media (max-width: 768px) {
   .slideWrapper {
     height: auto;
   }
   .homePage__sliderImage {
     height: auto;
-    max-height: 60vh;
+    max-height: none;
     object-fit: contain;
     background: transparent;
   }
@@ -92,9 +93,6 @@
 }
 
 @media (max-width: 480px) {
-  .homePage__sliderImage {
-    max-height: 50vh;
-  }
   .homePage__sliderText {
     font-size: 2rem;
     line-height: 1.1;
