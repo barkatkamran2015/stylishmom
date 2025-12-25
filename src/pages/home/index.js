@@ -6,9 +6,10 @@ import Head from 'next/head';
 import Image from 'next/image';
 import SearchBar from "../components/SearchBar";
 import styles from "../../styles/Dash.module.css";
-import imageBlog from "../Assets/family.png";
+import imageBlog from "../Assets/family.jpg";
 import imageNature from "../Assets/lotto.jpg";
 import imageRecipe from "../Assets/make.jpg";
+import imageBurger from "../Assets/burger.jpg";
 
 const Slider = dynamic(() => import('react-slick'), { ssr: false });
 
@@ -233,15 +234,19 @@ export default function Home({ initialPosts, error: initialError }) {
             <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
               <div>
                 <Image src={imageBlog} alt="Blog" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-                <h3 className={styles.homePage__sliderText}>Love Does not Divide, It Multiplies</h3>
+                <h3 className={styles.homePage__sliderText}>Meals that Bring Everyone Together</h3>
               </div>
               <div>
                 <Image src={imageNature} alt="Natures Beauty" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-                <h3 className={styles.homePage__sliderText}>Every family is Unique</h3>
+                <h3 className={styles.homePage__sliderText}>Quick, Delicious, Stress-Free Cooking</h3>
               </div>
               <div>
                 <Image src={imageRecipe} alt="Recipe" className={styles.homePage__sliderImage} width={1200} height={600} priority />
-                <h3 className={styles.homePage__sliderText}>I carry Hope in here. And half a granola bar</h3>
+                <h3 className={styles.homePage__sliderText}>Comfort food made Simple</h3>
+              </div>
+                <div>
+                <Image src={imageBurger} alt="Burger" className={styles.homePage__sliderImage} width={1200} height={600} priority />
+                <h3 className={styles.homePage__sliderText}>Delicious Recipes for busy Parents!</h3>
               </div>
             </Slider>
           </div>
