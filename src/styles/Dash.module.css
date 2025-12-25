@@ -1,4 +1,5 @@
 /* src/styles/Dash.module.css */
+/* General Home Page Styling */
 .homePage {
   max-width: 1200px;
   margin: 0 auto;
@@ -6,11 +7,8 @@
   font-family: 'Arial', sans-serif;
   background-color: #f5f5f5; /* Light background for better contrast */
 }
-/* Slide wrapper for proper positioning */
-.slideWrapper {
-  position: relative;
-  width: 100%;
-}
+
+/* Featured Slider - Clean and premium */
 .homePage__featuredSlider {
   margin-bottom: 60px;
   position: relative;
@@ -19,10 +17,16 @@
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
-/* Image - adaptive height */
+/* Slide wrapper for proper positioning */
+.slideWrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Image - adaptive height, perfect fit */
 .homePage__sliderImage {
   width: 100%;
-  height: 70vh; /* Balanced desktop height */
+  height: 70vh;
   min-height: 500px;
   object-fit: cover;
   object-position: center;
@@ -38,10 +42,10 @@
   background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
   text-align: center;
   z-index: 10;
-  pointer-events: none; /* Allows clicks through to slider controls */
+  pointer-events: none;
 }
 
-/* Premium text style */
+/* Ultimate text style */
 .homePage__sliderText {
   color: white;
   font-size: 3.8rem;
@@ -50,12 +54,14 @@
   text-shadow: 0 4px 15px rgba(0,0,0,0.7);
   margin: 0;
 }
+
 /* Posts Layout */
 .homePage__postsContainer {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
+
 .homePage__postItem {
   position: relative; /* For positioning the "Updated" badge */
   display: flex;
@@ -68,10 +74,12 @@
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
   cursor: pointer;
 }
+
 .homePage__postItem:hover {
   transform: translateY(-5px); /* Lift effect on hover */
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
+
 /* "Updated" Badge for Edited Posts */
 .homePage__postItem--updated::after {
   content: "Updated";
@@ -85,6 +93,7 @@
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
+
 /* Post Image */
 .homePage__postImage {
   width: 300px;
@@ -94,6 +103,7 @@
   flex-shrink: 0;
   transition: opacity 0.3s ease-in-out;
 }
+
 /* Fallback for Posts Without Images */
 .homePage__postImage--placeholder {
   width: 300px;
@@ -107,6 +117,7 @@
   font-size: 1rem;
   font-style: italic;
 }
+
 /* Post Details */
 .homePage__postDetails {
   flex: 1;
@@ -115,6 +126,7 @@
   justify-content: center;
   min-width: 0;
 }
+
 /* Post Title */
 .homePage__postTitle {
   font-size: 1.8rem;
@@ -126,6 +138,7 @@
   line-height: 1.4;
   transition: color 0.3s ease-in-out;
 }
+
 .pagination {
   display: flex;
   justify-content: center;
@@ -134,6 +147,7 @@
   margin-top: 2rem;
   font-size: 1rem;
 }
+
 .paginationLink {
   padding: 0.5rem 1rem;
   background-color: #0070f3;
@@ -142,12 +156,15 @@
   border-radius: 5px;
   transition: background-color 0.3s;
 }
+
 .paginationLink:hover {
   background-color: #005bb5;
 }
+
 .homePage__postTitle:hover {
   color: #0b9299; /* Match the CTA button color for consistency */
 }
+
 /* Post Date */
 .homePage__postDate {
   font-size: 0.9rem;
@@ -155,6 +172,7 @@
   margin-bottom: 10px;
   font-style: italic;
 }
+
 /* Post Excerpt */
 .homePage__postExcerpt {
   font-size: 1rem;
@@ -164,6 +182,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 /* Call-to-Action Button */
 .homePage__ctaButton {
   background-color: #0b9299;
@@ -177,10 +196,12 @@
   transition: background-color 0.3s ease, transform 0.2s ease;
   align-self: flex-start;
 }
+
 .homePage__ctaButton:hover {
   background-color: #08787f; /* Darker shade for hover */
   transform: scale(1.05); /* Slight scale effect on hover */
 }
+
 /* Heart Loader Styling */
 .loadingContainer {
   display: flex;
@@ -189,26 +210,30 @@
   height: 100vh;
   background-color: #f5f5f5;
 }
+
 .heartLoader {
   position: relative;
-  width: 60px; /* Slightly larger for better visibility */
+  width: 60px;
   height: 60px;
   transform: rotate(-45deg);
   animation: beat 1s infinite;
 }
+
 .heartLoader::before,
 .heartLoader::after {
   content: '';
   position: absolute;
   width: 60px;
   height: 60px;
-  background: #ff6f61; /* Softer red color */
+  background: #ff6f61;
   border-radius: 50%;
 }
+
 .heartLoader::before {
   top: -30px;
   left: 0;
 }
+
 .heartLoader::after {
   left: 30px;
   top: 0;
@@ -217,7 +242,14 @@
 /* Responsive Design */
 @media (max-width: 1024px) {
   .homePage__sliderImage {
-    max-height: 350px;
+    height: 65vh;
+    min-height: 450px;
+  }
+  .homePage__sliderText {
+    font-size: 3.2rem;
+  }
+  .slideTextOverlay {
+    padding: 70px 30px 50px;
   }
   .homePage__postImage,
   .homePage__postImage--placeholder {
@@ -225,9 +257,17 @@
     height: 180px;
   }
 }
+
 @media (max-width: 768px) {
   .homePage__sliderImage {
-    max-height: 300px;
+    height: 55vh;
+    min-height: 400px;
+  }
+  .homePage__sliderText {
+    font-size: 2.6rem;
+  }
+  .slideTextOverlay {
+    padding: 60px 20px 40px;
   }
   .homePage__postItem {
     flex-direction: column;
@@ -261,12 +301,17 @@
     padding: 3px 6px;
   }
 }
+
 @media (max-width: 480px) {
   .homePage__sliderImage {
-    max-height: 200px;
+    height: 50vh;
+    min-height: 350px;
   }
   .homePage__sliderText {
-    font-size: 1.2rem;
+    font-size: 2.2rem;
+  }
+  .slideTextOverlay {
+    padding: 50px 15px 35px;
   }
   .homePage__postTitle {
     font-size: 1.3rem;
@@ -287,243 +332,6 @@
   }
 }
 
-/* ============================================ */
-/* NEW POSTS LAYOUT - RIVERSIDE-INSPIRED STYLES (FIXED HERO HEIGHT) */
-/* ============================================ */
-
-.newPostsLayout {
-  max-width: 1200px;
-  margin: 60px auto 40px;
-  padding: 0 20px;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 40px; /* Reduced gap for tighter layout */
-}
-
-/* Featured Hero Post - Fixed height */
-.featuredHero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-  height: fit-content; /* Key fix: no unnecessary stretching */
-  align-items: stretch;
-}
-
-.featuredImageWrapper {
-  position: relative;
-  overflow: hidden;
-  min-height: 500px; /* Consistent image height */
-}
-
-.featuredImage {
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.featuredHero:hover .featuredImage {
-  transform: scale(1.05);
-}
-
-.featuredContent {
-  padding: 40px; /* Reduced from 50px */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: white;
-}
-
-.featuredTitle {
-  font-size: 2.4rem; /* Slightly smaller for balance */
-  line-height: 1.2;
-  margin-bottom: 16px;
-  color: #333;
-}
-
-.featuredDate {
-  font-size: 1rem;
-  color: #666;
-  margin-bottom: 16px;
-  font-style: italic;
-}
-
-.featuredExcerpt {
-  font-size: 1.15rem;
-  line-height: 1.6;
-  color: #555;
-  margin-bottom: 24px;
-  display: -webkit-box;
-  -webkit-line-clamp: 6; /* Limit to ~6 lines */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.featuredButton {
-  align-self: flex-start;
-  padding: 12px 32px; /* Slightly smaller button */
-  background-color: #0b9299;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.featuredButton:hover {
-  background-color: #08787f;
-  transform: scale(1.05);
-}
-
-/* Latest Posts Section */
-.latestPostsSection {
-  display: flex;
-  flex-direction: column;
-}
-
-.latestPostsHeading {
-  font-size: 1.8rem; /* Slightly smaller */
-  margin-bottom: 24px;
-  color: #333;
-  font-weight: bold;
-}
-
-.latestPostsGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px; /* Tighter spacing */
-}
-
-/* Rest of the latest card styles remain the same */
-.latestPostCard {
-  display: flex;
-  gap: 20px;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  transition: all 0.3s ease;
-}
-
-.latestPostCard:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-}
-
-.latestCardImageWrapper {
-  position: relative;
-  width: 140px;
-  height: 140px;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.latestCardImage {
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.latestPostCard:hover .latestCardImage {
-  transform: scale(1.1);
-}
-
-.latestCardText {
-  padding: 18px 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  flex: 1;
-}
-
-.latestCardTitle {
-  font-size: 1.25rem;
-  margin-bottom: 8px;
-  color: #333;
-  line-height: 1.4;
-  font-weight: 600;
-}
-
-.latestCardDate {
-  font-size: 0.9rem;
-  color: #888;
-  margin-bottom: 14px;
-  font-style: italic;
-}
-
-.latestCardButton {
-  align-self: flex-start;
-  padding: 8px 20px;
-  background-color: #0b9299;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.latestCardButton:hover {
-  background-color: #08787f;
-  transform: scale(1.05);
-}
-
-.latestCardPlaceholder {
-  width: 140px;
-  height: 140px;
-  background: #e0e0e0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #999;
-  font-style: italic;
-  flex-shrink: 0;
-}
-
-/* Responsive Fixes */
-@media (max-width: 968px) {
-  .newPostsLayout {
-    grid-template-columns: 1fr;
-    gap: 30px;
-  }
-  .featuredHero {
-    grid-template-columns: 1fr;
-  }
-  .featuredImageWrapper {
-    min-height: 350px;
-  }
-  .featuredContent {
-    padding: 35px;
-  }
-  .featuredTitle {
-    font-size: 2.2rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .featuredContent {
-    padding: 25px;
-  }
-  .featuredTitle {
-    font-size: 1.9rem;
-  }
-  .latestPostCard {
-    flex-direction: column;
-  }
-  .latestCardImageWrapper {
-    width: 100%;
-    height: 180px;
-  }
-  .latestCardText {
-    padding: 18px;
-  }
-}
-
-
-
-
 /* COLORFUL STACKED CARD LAYOUT - MORE VIBRANT COLORS & 6-COLOR CYCLE */
 .colorfulCardsContainer {
   max-width: 1000px;
@@ -542,12 +350,12 @@
 }
 
 /* 6 richer color cycles for variety and better contrast */
-.cardColor1 { background: linear-gradient(135deg, #43cea2, #185a9d); }   /* Teal-Blue */
-.cardColor2 { background: linear-gradient(135deg, #8e2de2, #4a00e0); }   /* Purple */
-.cardColor3 { background: linear-gradient(135deg, #ff512f, #dd2476); }   /* Orange-Pink */
-.cardColor4 { background: linear-gradient(135deg, #11998e, #38ef7d); }   /* Green */
-.cardColor5 { background: linear-gradient(135deg, #fc4a1a, #f7b733); }   /* Orange-Yellow */
-.cardColor6 { background: linear-gradient(135deg, #6a11cb, #2575fc); }   /* Indigo-Blue */
+.cardColor1 { background: linear-gradient(135deg, #43cea2, #185a9d); } /* Teal-Blue */
+.cardColor2 { background: linear-gradient(135deg, #8e2de2, #4a00e0); } /* Purple */
+.cardColor3 { background: linear-gradient(135deg, #ff512f, #dd2476); } /* Orange-Pink */
+.cardColor4 { background: linear-gradient(135deg, #11998e, #38ef7d); } /* Green */
+.cardColor5 { background: linear-gradient(135deg, #fc4a1a, #f7b733); } /* Orange-Yellow */
+.cardColor6 { background: linear-gradient(135deg, #6a11cb, #2575fc); } /* Indigo-Blue */
 
 .cardContentWrapper {
   display: grid;
@@ -566,7 +374,7 @@
   font-size: 2.8rem;
   margin-bottom: 20px;
   line-height: 1.2;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* Added shadow for extra readability */
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 }
 
 .cardDate {
@@ -618,7 +426,7 @@
   transform: scale(1.08);
 }
 
-/* Responsive */
+/* Responsive for cards */
 @media (max-width: 900px) {
   .cardContentWrapper {
     grid-template-columns: 1fr;
@@ -630,7 +438,7 @@
     font-size: 2.4rem;
   }
   .cardImageSide {
-    min-height: 300px; /* or 40vh, or whatever fits your design */
+    min-height: 300px;
     width: 100%;
   }
 }
