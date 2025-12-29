@@ -1,5 +1,5 @@
 // pages/blog/index.js
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -26,37 +26,50 @@ const getExcerpt = (content, maxLength = 150) => {
   return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 };
 
-export default function Blog({ initialPosts, initialCategories, initialTags, initialError, pagination }) {
-  const [posts] = useState(initialPosts || []);
-  const [filteredPosts, setFilteredPosts] = useState(initialPosts || []);
-  const [categories] = useState(initialCategories || []);
-  const [tags] = useState(initialTags || []);
+export default function Blog({ initialPosts, initialCategories, initialTags, initialError }) {
+  const [allPosts] = useState(initialPosts || []);
+  const [displayedPosts, setDisplayedPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error] = useState(initialError || '');
-  const [loading] = useState(false);
+
+  const INITIAL_LOAD = 6;
+  const LOAD_MORE = 3;
+
+  useEffect(() => {
+    setDisplayedPosts(allPosts.slice(0, INITIAL_LOAD));
+  }, [allPosts]);
+
+  const loadMore = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setDisplayedPosts(prev => allPosts.slice(0, prev.length + LOAD_MORE));
+      setLoading(false);
+    }, 300);
+  };
 
   const handleSearch = useCallback((searchTerm) => {
     if (!searchTerm.trim()) {
-      setFilteredPosts(posts);
+      setDisplayedPosts(allPosts.slice(0, INITIAL_LOAD));
     } else {
-      const filtered = posts.filter(
+      const filtered = allPosts.filter(
         (post) =>
           (post.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
           (post.content || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredPosts(filtered);
+      setDisplayedPosts(filtered.slice(0, INITIAL_LOAD));
       console.log('Filtered Posts Slugs:', filtered.map(p => p.slug));
     }
-  }, [posts]);
+  }, [allPosts]);
 
   const handleFilterApply = useCallback((selectedCategories, selectedTags) => {
-    const filtered = posts.filter(
+    const filtered = allPosts.filter(
       (post) =>
         (!selectedCategories.length || selectedCategories.includes(post.category)) &&
         (!selectedTags.length || (post.tags || []).some((tag) => selectedTags.includes(tag)))
     );
-    setFilteredPosts(filtered);
+    setDisplayedPosts(filtered.slice(0, INITIAL_LOAD));
     console.log('Filtered Posts Slugs after Filter:', filtered.map(p => p.slug));
-  }, [posts]);
+  }, [allPosts]);
 
   const incrementViewCount = useCallback(async (postId) => {
     try {
@@ -70,14 +83,21 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
   }, []);
 
   const baseUrl = 'https://www.thestylishmama.com';
+  const hasMore = displayedPosts.length < allPosts.length;
+
+  const primaryPost = displayedPosts[0];
+  const dynamicDescription = primaryPost
+    ? `${sanitizeText(primaryPost.content).substring(0, 120)}... Read more on The Stylish Mama!`
+    : 'Discover insightful blog posts on motherhood, lifestyle, and more at The Stylish Mama.';
+  const dynamicTitle = primaryPost
+    ? `${primaryPost.title || 'Untitled'} | The Stylish Mama`
+    : 'Blog | The Stylish Mama';
 
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: 'Blog | The Stylish Mama',
-    description: filteredPosts.length > 0
-      ? `Explore insightful blog posts like "${filteredPosts[0].title || 'Untitled'}" on motherhood, lifestyle, and more at The Stylish Mama.`
-      : 'Discover insightful blog posts on motherhood, lifestyle, and more at The Stylish Mama.',
+    description: dynamicDescription,
     url: `${baseUrl}/blog`,
     publisher: {
       '@type': 'Organization',
@@ -89,7 +109,7 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
     },
     mainEntity: {
       '@type': 'ItemList',
-      itemListElement: filteredPosts.map((post, index) => {
+      itemListElement: displayedPosts.map((post, index) => {
         const sanitizedContent = sanitizeText(post.content);
         return {
           '@type': 'ListItem',
@@ -125,19 +145,6 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
     },
   };
 
-  const primaryPost = filteredPosts[0];
-  const dynamicDescription = primaryPost
-    ? `${sanitizeText(primaryPost.content).substring(0, 120)}... Read more on The Stylish Mama!`
-    : 'Discover insightful blog posts on motherhood, lifestyle, and more at The Stylish Mama.';
-  const dynamicTitle = primaryPost
-    ? `${primaryPost.title || 'Untitled'} | The Stylish Mama`
-    : 'Blog | The Stylish Mama';
-  const keywords = filteredPosts
-    .slice(0, 3)
-    .map((post) => (post.title || '').toLowerCase().split(' ').slice(0, 3).join(','))
-    .join(',')
-    .concat(',blog,motherhood,lifestyle');
-
   return (
     <div className={styles.blogPage}>
       <Head>
@@ -145,7 +152,7 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content={dynamicDescription} />
-        <meta name="keywords" content={keywords} />
+        <meta name="keywords" content="blog,motherhood,lifestyle" />
         <meta name="robots" content="index, follow" />
         <meta name="author" content={primaryPost?.author || 'The Stylish Mama'} />
         <link rel="canonical" href={`${baseUrl}/blog`} />
@@ -168,134 +175,92 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
-        {pagination.offset > 0 && (
-          <link
-            rel="prev"
-            href={`${baseUrl}/blog?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
-          />
-        )}
-        {pagination.offset + pagination.limit < pagination.total && (
-          <link
-            rel="next"
-            href={`${baseUrl}/blog?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
-          />
-        )}
       </Head>
 
-      {loading ? (
-        <div className={styles.loadingContainer}>
-          <div className={styles.heartLoader}></div>
-        </div>
-      ) : (
-        <>
-          <div className={styles.blogPageSearchContainer}>
-            <Header
-              onSearch={handleSearch}
-              onFilterApply={handleFilterApply}
-              categories={categories}
-              tags={tags}
-            />
-          </div>
+      <div className={styles.blogPageSearchContainer}>
+        <Header
+          onSearch={handleSearch}
+          onFilterApply={handleFilterApply}
+          categories={initialCategories}
+          tags={initialTags}
+        />
+      </div>
 
-          <section className={styles.blogPageContentWrapper}>
-            {error ? (
-              <p className={styles.blogPageErrorMessage}>{error}</p>
-            ) : filteredPosts.length === 0 ? (
-              <p className={styles.blogPageNoPostsMessage}>No posts available</p>
-            ) : (
-              <>
-                <div className={styles.blogPageGrid}>
-                  {filteredPosts.map((post, index) => (
-                    <article
-                      key={post.slug}
-                      id={`blog-post-${post.slug}`}
-                      className={styles.blogPageCard}
-                      style={{
-                        backgroundColor: post.backgroundColor || 'transparent',
-                        '--index': index,
-                      }}
-                      onMouseEnter={() => incrementViewCount(post.id)}
-                    >
-                      <Link href={`/blog/${post.slug}`}>
-                        {post.imageUrl ? (
-                          <Image
-                            src={post.imageUrl}
-                            alt={`Image for ${post.title || 'Untitled'} - Blog Post`}
-                            className={styles.blogPageImage}
-                            width={300}
-                            height={300}
-                            onError={(e) => {
-                              console.error('Image failed to load:', post.imageUrl);
-                              e.target.src = 'https://www.thestylishmama.com/default-blog-image.jpg';
-                            }}
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className={styles.blogPageImagePlaceholder}>No Image Available</div>
-                        )}
-                      </Link>
-                      <h2
-                        className={styles.blogPageTitle}
-                        style={{
-                          color: post.titleStyle?.color || '#000',
-                          fontSize: post.titleStyle?.fontSize || '1.5rem',
-                          textAlign: post.titleStyle?.textAlign || 'left',
+      <section className={styles.blogPageContentWrapper}>
+        {error ? (
+          <p className={styles.blogPageErrorMessage}>{error}</p>
+        ) : displayedPosts.length === 0 ? (
+          <p className={styles.blogPageNoPostsMessage}>No posts available</p>
+        ) : (
+          <>
+            <div className={styles.blogPageGrid}>
+              {displayedPosts.map((post, index) => (
+                <article
+                  key={post.slug}
+                  id={`blog-post-${post.slug}`}
+                  className={styles.blogPageCard}
+                  style={{
+                    backgroundColor: post.backgroundColor || 'transparent',
+                    '--index': index,
+                  }}
+                  onMouseEnter={() => incrementViewCount(post.id)}
+                >
+                  <Link href={`/blog/${post.slug}`}>
+                    {post.imageUrl ? (
+                      <Image
+                        src={post.imageUrl}
+                        alt={`Image for ${post.title || 'Untitled'} - Blog Post`}
+                        className={styles.blogPageImage}
+                        width={300}
+                        height={300}
+                        onError={(e) => {
+                          console.error('Image failed to load:', post.imageUrl);
+                          e.target.src = 'https://www.thestylishmama.com/default-blog-image.jpg';
                         }}
-                      >
-                        <Link href={`/blog/${post.slug}`} className={styles.blogPageTitleLink}>
-                          {console.log('Rendering Slug for Link:', post.slug)}
-                          {post.title || 'Untitled'}
-                        </Link>
-                      </h2>
-                      <p className={styles.blogPageContent}>{getExcerpt(post.content, 150)}</p>
-                    </article>
-                  ))}
-                </div>
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className={styles.blogPageImagePlaceholder}>No Image Available</div>
+                    )}
+                  </Link>
+                  <h2
+                    className={styles.blogPageTitle}
+                    style={{
+                      color: post.titleStyle?.color || '#000',
+                      fontSize: post.titleStyle?.fontSize || '1.5rem',
+                      textAlign: post.titleStyle?.textAlign || 'left',
+                    }}
+                  >
+                    <Link href={`/blog/${post.slug}`} className={styles.blogPageTitleLink}>
+                      {post.title || 'Untitled'}
+                    </Link>
+                  </h2>
+                  <p className={styles.blogPageContent}>{getExcerpt(post.content, 150)}</p>
+                </article>
+              ))}
+            </div>
 
-                <nav className={styles.pagination} aria-label="Pagination">
-                  {pagination.offset > 0 && (
-                    <Link
-                      href={`/blog?limit=${pagination.limit}&offset=${pagination.offset - pagination.limit}`}
-                      className={styles.paginationLink}
-                      aria-label="Previous page"
-                    >
-                      Previous
-                    </Link>
-                  )}
-                  {pagination.offset + pagination.limit < pagination.total && (
-                    <Link
-                      href={`/blog?limit=${pagination.limit}&offset=${pagination.offset + pagination.limit}`}
-                      className={styles.paginationLink}
-                      aria-label="Next page"
-                    >
-                      Next
-                    </Link>
-                  )}
-                  <p>
-                    Page {pagination.offset / pagination.limit + 1} of {pagination.totalPages}
-                  </p>
-                </nav>
-              </>
+            {hasMore && (
+              <div className={styles.viewMoreContainer}>
+                <button className={styles.viewMoreButton} onClick={loadMore} disabled={loading}>
+                  {loading ? 'Loading...' : 'View More'}
+                </button>
+              </div>
             )}
-          </section>
-        </>
-      )}
+          </>
+        )}
+      </section>
     </div>
   );
 }
 
-// THIS IS THE ONLY CHANGE — getStaticProps instead of getServerSideProps
 export async function getStaticProps() {
-  const limit = 10;
-  const offset = 0;
-
   try {
-    const response = await fetch(`${API_URL}?page=Blog&limit=${limit}&offset=${offset}`);
+    const response = await fetch(`${API_URL}?page=Blog&limit=1000&offset=0`);
     const data = await response.json();
-    const { posts = [], pagination = {} } = data;
+    const { posts = [] } = data;
 
     const blogPosts = posts.map((post) => {
-      console.log('Post Slug from API Response:', post.slug);
       return {
         ...post,
         id: post.id || null,
@@ -329,12 +294,6 @@ export async function getStaticProps() {
         initialCategories: uniqueCategories,
         initialTags: uniqueTags,
         initialError: blogPosts.length === 0 ? 'No posts found for the Blog page.' : '',
-        pagination: {
-          total: pagination?.total || 0,
-          limit: pagination?.limit || 10,
-          offset: pagination?.offset || 0,
-          totalPages: pagination?.totalPages || 0,
-        },
       },
       revalidate: 60,
     };
@@ -346,7 +305,6 @@ export async function getStaticProps() {
         initialCategories: [],
         initialTags: [],
         initialError: `Failed to load posts: ${err.message}`,
-        pagination: { total: 0, limit: 10, offset: 0, totalPages: 0 },
       },
       revalidate: 60,
     };
