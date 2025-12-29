@@ -1,11 +1,12 @@
 /* src/styles/Blog.module.css */
+/* Container for the blog page */
 .blogPage {
   max-width: 1250px;
   margin: 0 auto;
   padding: 25px 30px;
   box-sizing: border-box;
   overflow-x: hidden;
-  background-color: #fff; /* Plain white background for the entire container */
+  background-color: #fff;
 }
 
 /* Header/Search Container */
@@ -20,29 +21,49 @@
   padding: 0 15px;
 }
 
-/* Grid Layout for Post List */
+/* Single post view override */
+.blogPageContentWrapper:has(> .blogPageTitle) {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+/* Error and empty messages */
+.blogPageErrorMessage,
+.blogPageNoPostsMessage {
+  text-align: center;
+  color: #e53e3e;
+  font-size: 1.2rem;
+  font-family: 'Inter', sans-serif;
+  margin: 30px 0;
+  padding: 10px;
+  background-color: #fef5f5;
+  border-radius: 4px;
+}
+
+/* Grid for list of posts */
 .blogPageGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 3 columns on wide screens */
-  gap: 30px; /* Spacing between posts */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
   padding: 0 10px;
 }
 
-/* Individual Post (No Card Styling) */
+/* Card styling */
 .blogPageCard {
-  background-color: transparent; /* No background */
-  padding: 15px; /* Reduced padding for a tighter layout */
+  background-color: transparent;
+  padding: 15px;
   box-sizing: border-box;
 }
 
-/* Single Post Container (for [slug].js) */
+/* Single Post Container */
 .blogPageSingle {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px 15px;
 }
 
-/* Title */
+/* Titles */
 .blogPageTitle {
   font-size: 1.5rem;
   font-weight: bold;
@@ -154,30 +175,6 @@
   text-align: right;
 }
 
-/* Pagination */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  margin-top: 30px;
-  font-size: 1rem;
-  color: #333;
-}
-
-.paginationLink {
-  padding: 8px 16px;
-  background-color: #0070f3;
-  color: white;
-  text-decoration: none;
-  border-radius: 5px;
-  transition: background-color 0.3s ease;
-}
-
-.paginationLink:hover {
-  background-color: #005bb5;
-}
-
 /* Loading Container */
 .loadingContainer {
   display: flex;
@@ -227,8 +224,7 @@
 
 /* Animation */
 @keyframes beat {
-  0%,
-  100% {
+  0%, 100% {
     transform: scale(1) rotate(-45deg);
   }
   50% {
@@ -236,44 +232,52 @@
   }
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .blogPage {
-    padding: 15px 20px;
-  }
-  .blogPageGrid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    padding: 0 5px;
-  }
-  .blogPageSingle {
-    padding: 15px 10px;
-  }
-  .blogPageTitle {
-    font-size: 1.4rem;
-  }
-  .blogPageSingle .blogPageTitle {
-    font-size: 1.8rem;
-  }
-  .blogPageContent {
-    font-size: 0.9rem;
-  }
-  .blogPageCard {
-    padding: 15px;
-  }
+/* View More Button - NEW */
+.viewMoreContainer {
+  max-width: 1250px;
+  margin: 60px auto 40px;
+  padding: 0 20px;
+  text-align: center;
 }
 
+.viewMoreButton {
+  padding: 16px 48px;
+  background: #0b9299;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 15px rgba(11,146,153,0.3);
+}
+
+.viewMoreButton:hover {
+  background: #08787f;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(11,146,153,0.4);
+}
+
+.viewMoreButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .blogPage {
-    padding: 10px 15px;
+    padding: 15px;
+  }
+  .blogPageContentWrapper {
+    padding: 15px;
   }
   .blogPageGrid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 15px;
-    padding: 0 5px;
   }
-  .blogPageSingle {
-    padding: 10px 5px;
+  .blogPageCard {
+    padding: 15px;
   }
   .blogPageTitle {
     font-size: 1.3rem;
@@ -284,15 +288,8 @@
   .blogPageContent {
     font-size: 0.85rem;
   }
-  .blogPageCard {
-    padding: 10px;
-  }
   .shareButton {
     padding: 8px 12px;
-  }
-  .pagination {
-    flex-direction: column;
-    gap: 10px;
   }
 }
 
@@ -302,10 +299,10 @@
   }
   .blogPageGrid {
     grid-template-columns: 1fr;
-    padding: 0 2px;
+    gap: 12px;
   }
-  .blogPageSingle {
-    padding: 10px 5px;
+  .blogPageCard {
+    padding: 12px;
   }
   .blogPageTitle {
     font-size: 1.2rem;
@@ -316,9 +313,6 @@
   .blogPageContent {
     font-size: 0.8rem;
   }
-  .blogPageCard {
-    padding: 10px;
-  }
   .blogPageImagePlaceholder {
     height: 150px;
   }
@@ -327,7 +321,6 @@
     justify-content: center;
   }
 }
-
 
 /* Hero Section */
 .heroSection {
