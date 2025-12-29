@@ -10,10 +10,18 @@ const API_URL = 'https://www.thestylishmama.com/api/posts';
 
 const sanitizeText = (htmlContent) => {
   if (!htmlContent) return '';
-  return htmlContent.replace(/<[^>]+>/g, '').trim();
+  let text = htmlContent.replace(/<[^>]+>/g, '');
+  text = text
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
+    .replace(/'/g, "'")
+    .replace(/\//g, '/');
+  return text.trim();
 };
 
-export default function Food({ posts, initialCategories, initialTags, error }) {
+export default function Food({ posts, initialCategories, initialTags, error, pagination }) {
   const [allPosts] = useState(posts || []);
   const [displayedPosts, setDisplayedPosts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -43,6 +51,7 @@ export default function Food({ posts, initialCategories, initialTags, error }) {
           (post.content || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
       setDisplayedPosts(filtered.slice(0, INITIAL_LOAD));
+      console.log('Filtered Food Slugs:', filtered.map(p => p.slug));
     }
   }, [allPosts]);
 
@@ -53,15 +62,18 @@ export default function Food({ posts, initialCategories, initialTags, error }) {
         (!selectedTags.length || (post.tags || []).some((tag) => selectedTags.includes(tag)))
     );
     setDisplayedPosts(filtered.slice(0, INITIAL_LOAD));
+    console.log('Filtered Food Slugs after Filter:', filtered.map(p => p.slug));
   }, [allPosts]);
 
   const baseUrl = 'https://www.thestylishmama.com';
-  const hasMore = displayedPosts.length < allPosts.length;
-
-  const dynamicDescription = displayedPosts.length > 0
-    ? `Explore delicious food recipes like "${displayedPosts[0].title}" and more on The Stylish Mama.`
-    : 'Discover a variety of delicious food recipes and ideas on The Stylish Mama.';
-
+  const dynamicDescription =
+    displayedPosts.length > 0
+      ? `Explore delicious food recipes like "${displayedPosts[0].title}" and more on The Stylish Mama.`
+      : 'Discover a variety of delicious food recipes and ideas on The Stylish Mama.';
+  const dynamicTitle =
+    displayedPosts.length > 0
+      ? `${displayedPosts[0].title} - Food Recipes | The Stylish Mama`
+      : 'Delicious Food Recipes and Ideas | The Stylish Mama';
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -77,21 +89,27 @@ export default function Food({ posts, initialCategories, initialTags, error }) {
           '@type': 'Recipe',
           name: post.title,
           description: sanitizeText(post.content).substring(0, 160),
+          datePublished: post.createdAt || new Date().toISOString(),
+          dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
+          author: { '@type': 'Person', name: 'The Stylish Mama' },
           image: post.imageUrl || '/default-food-image.jpg',
+          recipeCategory: 'Food',
           url: `${baseUrl}/food/${post.slug}`,
         },
       })),
     },
   };
+  const hasMore = displayedPosts.length < allPosts.length;
 
   return (
     <div className={styles.foodPage}>
       <Head>
-        <title>Delicious Food Recipes | The Stylish Mama</title>
+        <title>{dynamicTitle}</title>
         <meta name="description" content={dynamicDescription} />
         <meta name="keywords" content="food, recipes, cooking, meals, savory" />
+        <meta name="robots" content="index, follow" />
         <link rel="canonical" href={`${baseUrl}/food`} />
-        <meta property="og:title" content="Delicious Food Recipes | The Stylish Mama" />
+        <meta property="og:title" content={dynamicTitle} />
         <meta property="og:description" content={dynamicDescription} />
         <meta property="og:url" content={`${baseUrl}/food`} />
         <meta property="og:type" content="website" />
@@ -123,10 +141,14 @@ export default function Food({ posts, initialCategories, initialTags, error }) {
                 <Link href={`/food/${post.slug}`}>
                   <Image
                     src={post.imageUrl}
-                    alt={post.title}
+                    alt={`Thumbnail for ${post.title} - Food Recipe`}
                     className={styles.foodPageImage}
                     width={300}
                     height={200}
+                    onError={(e) => {
+                      console.error('Image failed to load:', post.imageUrl);
+                      e.target.src = '/default-food-image.jpg';
+                    }}
                     loading="lazy"
                   />
                 </Link>
@@ -139,7 +161,7 @@ export default function Food({ posts, initialCategories, initialTags, error }) {
                 <h2 className={styles.foodPageTitle}>{post.title}</h2>
               </Link>
               <p className={styles.foodPageExcerpt}>
-                {sanitizeText(post.content).substring(0, 200)}...
+                {sanitizeText(post.content).substring(0, 200) || 'No content available...'}
               </p>
             </div>
           ))}
@@ -158,8 +180,10 @@ export default function Food({ posts, initialCategories, initialTags, error }) {
 }
 
 export async function getStaticProps() {
+  const limit = 100; // Load plenty for "View More"
+  const offset = 0;
   try {
-    const response = await fetch(`${API_URL}?page=Recipe&limit=1000&offset=0`);
+    const response = await fetch(`${API_URL}?page=Recipe&limit=${limit}&offset=${offset}`);
     const data = await response.json();
     const { posts = [] } = data;
 
