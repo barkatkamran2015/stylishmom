@@ -1,5 +1,4 @@
 /* src/styles/Food.module.css */
-
 /* Container for the food page */
 .foodPage {
   max-width: 1250px;
@@ -176,29 +175,36 @@
   font-size: 1rem;
 }
 
-/* Pagination */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  margin-top: 30px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  color: #555;
+/* View More Button - NEW */
+.viewMoreContainer {
+  max-width: 1250px;
+  margin: 60px auto 40px;
+  padding: 0 20px;
+  text-align: center;
 }
 
-.paginationLink {
-  padding: 8px 16px;
-  background-color: #6b7280;
+.viewMoreButton {
+  padding: 16px 48px;
+  background: #0b9299;
   color: white;
-  border-radius: 5px;
-  text-decoration: none;
-  transition: background-color 0.3s ease;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 15px rgba(11,146,153,0.3);
 }
 
-.paginationLink:hover {
-  background-color: #4b5563;
+.viewMoreButton:hover {
+  background: #08787f;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(11,146,153,0.4);
+}
+
+.viewMoreButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 /* Responsive adjustments */
@@ -206,45 +212,35 @@
   .foodPage {
     padding: 15px;
   }
-
   .foodPageContentWrapper {
     padding: 15px;
   }
-
   .foodPageGrid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 15px;
   }
-
   .foodPageCard {
     padding: 15px;
   }
-
   .foodPageTitle {
     font-size: 1.3rem;
   }
-
   .foodPageContentWrapper > .foodPageTitle {
     font-size: 2rem;
   }
-
   .foodPageExcerpt {
     font-size: 0.9rem;
   }
-
   .foodPageContent {
     font-size: 0.95rem;
   }
-
   .foodPageMeta {
     font-size: 0.85rem;
   }
-
   .foodPageImage,
   .foodPageImagePlaceholder {
     height: 180px;
   }
-
   .foodPageContentWrapper > .foodPageImage,
   .foodPageContentWrapper > .foodPageImagePlaceholder {
     height: auto;
@@ -257,31 +253,25 @@
     grid-template-columns: 1fr;
     gap: 12px;
   }
-
   .foodPageCard {
     padding: 12px;
   }
-
   .foodPageTitle {
     font-size: 1.2rem;
   }
-
   .foodPageContentWrapper > .foodPageTitle {
     font-size: 1.8rem;
   }
-
   .foodPageImage,
   .foodPageImagePlaceholder {
     height: 160px;
   }
-
   .foodPageContentWrapper > .foodPageImage,
   .foodPageContentWrapper > .foodPageImagePlaceholder {
     height: auto;
     max-height: 300px;
   }
 }
-
 
 /* Hero Section */
 .heroSection {
