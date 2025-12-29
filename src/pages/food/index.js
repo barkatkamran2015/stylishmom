@@ -1,5 +1,5 @@
 // pages/food/index.js
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
