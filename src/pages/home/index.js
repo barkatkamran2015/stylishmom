@@ -20,18 +20,6 @@ if (typeof window !== 'undefined') {
 
 const API_URL = 'https://www.barkatkamran.com/api.php';
 
-const generateSlug = (title) => {
-  if (!title) return '';
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/'/g, '')
-    .replace(/[^\w\s&()-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '');
-};
-
 export async function getStaticProps({ params }) {
   const limit = 100;
   const offset = 0;
@@ -59,6 +47,7 @@ export async function getStaticProps({ params }) {
         page: post.page,
         titleStyle: post.titleStyle || { color: "#000", fontSize: "1.8rem", textAlign: "left" },
         userId: post.creator_uid,
+        slug: post.slug,  // Keep the real slug from API
       };
     });
     return {
@@ -113,6 +102,7 @@ export default function Home({ initialPosts, error: initialError }) {
     }, 300);
   };
 
+  // FIXED: Use real post.slug instead of generateSlug
   const navigateToPost = (post) => {
     const pagePaths = {
       Recipe: "/food",
@@ -122,7 +112,8 @@ export default function Home({ initialPosts, error: initialError }) {
       ProductsReview: "/productsreview",
     };
     const categoryPath = pagePaths[post.page] || '/blog';
-    const slug = generateSlug(post.title);
+    const slug = post.slug;  // Use the actual slug from API
+
     if (slug) {
       router.push(`/${categoryPath}/${slug}`);
     }
@@ -217,71 +208,68 @@ export default function Home({ initialPosts, error: initialError }) {
       ) : (
         <>
           {/* Clean slider without Christmas decorations */}
-         <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
-  <div className={styles.slideWrapper}>
-    <Image
-      src={imageBlog}
-      alt="Meals That Bring Everyone Together"
-      className={styles.homePage__sliderImage}
-      width={1200}
-      height={600}
-      priority
-    />
-    <div className={styles.slideTextOverlay}>
-      <h3 className={styles.homePage__sliderText}>
-        Meals That Bring Everyone Together
-      </h3>
-    </div>
-  </div>
-
-  <div className={styles.slideWrapper}>
-    <Image
-      src={imageNature}
-      alt="Quick, Delicious, Stress-Free Cooking"
-      className={styles.homePage__sliderImage}
-      width={1200}
-      height={600}
-      priority
-    />
-    <div className={styles.slideTextOverlay}>
-      <h3 className={styles.homePage__sliderText}>
-        Quick, Delicious, Stress-Free Cooking
-      </h3>
-    </div>
-  </div>
-
-  <div className={styles.slideWrapper}>
-    <Image
-      src={imageRecipe}
-      alt="Comfort Food Made Simple"
-      className={styles.homePage__sliderImage}
-      width={1200}
-      height={600}
-      priority
-    />
-    <div className={styles.slideTextOverlay}>
-      <h3 className={styles.homePage__sliderText}>
-        Comfort Food Made Simple
-      </h3>
-    </div>
-  </div>
-
-  <div className={styles.slideWrapper}>
-    <Image
-      src={imageBurger}
-      alt="Delicious Recipes for Busy Parents!"
-      className={styles.homePage__sliderImage}
-      width={1200}
-      height={600}
-      priority
-    />
-    <div className={styles.slideTextOverlay}>
-      <h3 className={styles.homePage__sliderText}>
-        Delicious Recipes for Busy Parents!
-      </h3>
-    </div>
-  </div>
-</Slider>
+          <Slider {...sliderSettings} className={styles.homePage__featuredSlider}>
+            <div className={styles.slideWrapper}>
+              <Image
+                src={imageBlog}
+                alt="Meals That Bring Everyone Together"
+                className={styles.homePage__sliderImage}
+                width={1200}
+                height={600}
+                priority
+              />
+              <div className={styles.slideTextOverlay}>
+                <h3 className={styles.homePage__sliderText}>
+                  Meals That Bring Everyone Together
+                </h3>
+              </div>
+            </div>
+            <div className={styles.slideWrapper}>
+              <Image
+                src={imageNature}
+                alt="Quick, Delicious, Stress-Free Cooking"
+                className={styles.homePage__sliderImage}
+                width={1200}
+                height={600}
+                priority
+              />
+              <div className={styles.slideTextOverlay}>
+                <h3 className={styles.homePage__sliderText}>
+                  Quick, Delicious, Stress-Free Cooking
+                </h3>
+              </div>
+            </div>
+            <div className={styles.slideWrapper}>
+              <Image
+                src={imageRecipe}
+                alt="Comfort Food Made Simple"
+                className={styles.homePage__sliderImage}
+                width={1200}
+                height={600}
+                priority
+              />
+              <div className={styles.slideTextOverlay}>
+                <h3 className={styles.homePage__sliderText}>
+                  Comfort Food Made Simple
+                </h3>
+              </div>
+            </div>
+            <div className={styles.slideWrapper}>
+              <Image
+                src={imageBurger}
+                alt="Delicious Recipes for Busy Parents!"
+                className={styles.homePage__sliderImage}
+                width={1200}
+                height={600}
+                priority
+              />
+              <div className={styles.slideTextOverlay}>
+                <h3 className={styles.homePage__sliderText}>
+                  Delicious Recipes for Busy Parents!
+                </h3>
+              </div>
+            </div>
+          </Slider>
 
           <SearchBar onSearch={handleSearch} placeholder="Search for blogs, reviews, or recipes..." />
 
