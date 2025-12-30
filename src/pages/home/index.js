@@ -104,19 +104,22 @@ export default function Home({ initialPosts, error: initialError }) {
 
   // FIXED: Use real post.slug instead of generateSlug
   const navigateToPost = (post) => {
-    const pagePaths = {
-      Recipe: "/food",
-      Drinks: "/drinks",
-      Dessert: "/dessert",
-      Blog: "/blog",
-      ProductsReview: "/productsreview",
-    };
-    const categoryPath = pagePaths[post.page] || '/blog';
-    const slug = generateSlug(post.title);
-    if (slug) {
-      router.push(/${categoryPath}/${slug});
-    }
-  };
+  console.log('Clicked post:', post);  // Temporary log to see the object
+
+  const pagePaths = {
+    Recipe: "/food",
+    Drinks: "/drinks",
+    Dessert: "/dessert",
+    Blog: "/blog",
+    ProductsReview: "/productsreview",
+  };
+  const categoryPath = pagePaths[post.page] || '/blog';
+  const slug = post.slug || generateSlug(post.title);  // Fallback to generateSlug if no real slug
+
+  if (slug && categoryPath) {
+    router.push(`/${categoryPath}/${slug}`);
+  }
+};
 
   const incrementViewCount = async (postId, page) => {
     try {
