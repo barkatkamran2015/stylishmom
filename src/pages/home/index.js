@@ -104,22 +104,19 @@ export default function Home({ initialPosts, error: initialError }) {
 
   // FIXED: Use real post.slug instead of generateSlug
   const navigateToPost = (post) => {
-  const pagePaths = {
-    Recipe: "/food",
-    Drinks: "/drinks",
-    Dessert: "/dessert",
-    Blog: "/blog",
-    ProductsReview: "/productsreview",
-  };
-  const categoryPath = pagePaths[post.page] || '/blog';
-  
-  // Use real slug if available, otherwise fall back to generateSlug
-  const slug = post.slug || generateSlug(post.title);
-
-  if (slug) {
-    router.push(`/${categoryPath}/${slug}`);
-  }
-};
+    const pagePaths = {
+      Recipe: "/food",
+      Drinks: "/drinks",
+      Dessert: "/dessert",
+      Blog: "/blog",
+      ProductsReview: "/productsreview",
+    };
+    const categoryPath = pagePaths[post.page] || '/blog';
+    const slug = generateSlug(post.title);
+    if (slug) {
+      router.push(/${categoryPath}/${slug});
+    }
+  };
 
   const incrementViewCount = async (postId, page) => {
     try {
