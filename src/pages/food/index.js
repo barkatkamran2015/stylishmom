@@ -21,7 +21,7 @@ const sanitizeText = (htmlContent) => {
   return text.trim();
 };
 
-export default function Food({ posts, initialCategories, initialTags, error, pagination }) {
+export default function Food({ posts, initialCategories, initialTags, error }) {
   const [allPosts] = useState(posts || []);
   const [displayedPosts, setDisplayedPosts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -66,6 +66,8 @@ export default function Food({ posts, initialCategories, initialTags, error, pag
   }, [allPosts]);
 
   const baseUrl = 'https://www.thestylishmama.com';
+  const hasMore = displayedPosts.length < allPosts.length;
+
   const dynamicDescription =
     displayedPosts.length > 0
       ? `Explore delicious food recipes like "${displayedPosts[0].title}" and more on The Stylish Mama.`
@@ -74,6 +76,7 @@ export default function Food({ posts, initialCategories, initialTags, error, pag
     displayedPosts.length > 0
       ? `${displayedPosts[0].title} - Food Recipes | The Stylish Mama`
       : 'Delicious Food Recipes and Ideas | The Stylish Mama';
+
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -99,7 +102,6 @@ export default function Food({ posts, initialCategories, initialTags, error, pag
       })),
     },
   };
-  const hasMore = displayedPosts.length < allPosts.length;
 
   return (
     <div className={styles.foodPage}>
