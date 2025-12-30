@@ -10,6 +10,7 @@ import imageBlog from "../Assets/family.jpg";
 import imageNature from "../Assets/lotto.jpg";
 import imageRecipe from "../Assets/make.jpg";
 import imageBurger from "../Assets/burger.jpg";
+
 const Slider = dynamic(() => import('react-slick'), { ssr: false });
 if (typeof window !== 'undefined') {
   require('slick-carousel/slick/slick.css');
