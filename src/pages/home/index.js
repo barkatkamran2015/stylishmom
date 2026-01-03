@@ -21,74 +21,63 @@ if (typeof window !== "undefined") {
 
 const API_URL = "https://www.barkatkamran.com/api.php";
 
-/**
- * Extract slug from whatever key your API uses.
- * Add keys here if your API returns different naming.
- */
-function extractSlug(post) {
+/** ---------- Helpers (robust + backwards compatible) ---------- */
+
+// Try MANY possible keys your API might use for slug
+const getPostSlug = (post) => {
   return (
-    post?.slug ||
-    post?.post_slug ||
-    post?.postSlug ||
-    post?.slug_text ||
-    post?.slugText ||
-    post?.seo_slug ||
-    post?.seoSlug ||
+    post?.slug ??
+    post?.post_slug ??
+    post?.postSlug ??
+    post?.slug_text ??
+    post?.slugText ??
+    post?.seo_slug ??
+    post?.seoSlug ??
+    post?.post_url_slug ??
+    post?.url_slug ??
+    post?.urlSlug ??
     ""
   );
-}
+};
 
-/**
- * Some of your backend slugs preserve commas as ",-".
- * If homepage API returns a cleaned slug, we can correct it
- * ONLY when the title actually contains a comma.
- */
-function normalizeSlugToBackendStyle({ slug, title }) {
-  if (!slug) return "";
+// If API provides a full URL/path, use it (best)
+const getPostPermalink = (post) => {
+  return post?.permalink ?? post?.url ?? post?.path ?? "";
+};
 
-  // Only try to fix if the title actually contains commas
-  const hasCommaInTitle = (title || "").includes(",");
-  if (!hasCommaInTitle) return slug;
-
-  // If slug already contains ",-" then it's already backend-style
-  if (slug.includes(",-")) return slug;
-
-  // If title contains comma, backend seems to insert ",-" at that comma position
-  // Most common scenario: cleaned slug removed comma completely.
-  // We can insert ",-" at the first comma spot by matching the title segments.
-  const titleParts = title
+// LAST fallback only: generate slug from title.
+// IMPORTANT: includes your backend comma behavior ",-"
+const generateSlugFallback = (title) => {
+  if (!title) return "";
+  return title
+    .replace(/[\u2018\u2019]/g, "") // curly apostrophes
+    .replace(/['"]/g, "") // straight quotes/apostrophes
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u0300-\u036f]/g, "") // accents
     .toLowerCase()
-    .split(",")
-    .map((p) => p.trim())
-    .filter(Boolean);
+    .trim()
+    .replace(/,/g, ",-") // ✅ match your backend comma rule
+    .replace(/[^\w\s&()-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
 
-  if (titleParts.length < 2) return slug;
+// Normalize page value so routing stays correct even if API changes case/label
+const getCategoryPath = (page) => {
+  const p = (page || "").toString().trim().toLowerCase();
 
-  // Convert those title parts into slug-like segments
-  const partToSlug = (s) =>
-    s
-      .replace(/[\u2018\u2019]/g, "")
-      .replace(/['"]/g, "")
-      .replace(/[^\w\s&()-]/g, "")
-      .trim()
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-+|-+$/g, "");
+  if (p === "recipe" || p === "recipes") return "/food";
+  if (p === "drinks" || p === "drink") return "/drinks";
+  if (p === "dessert" || p === "desserts") return "/dessert";
+  if (p === "productsreview" || p === "productreview" || p === "products review")
+    return "/productsreview";
+  if (p === "blog" || p === "blogs") return "/blog";
 
-  const left = partToSlug(titleParts[0]);
-  const right = partToSlug(titleParts[1]);
+  return "/blog";
+};
 
-  // If slug contains left-right contiguous, replace that join with left + ",-" + right
-  const joined = `${left}-${right}`;
-  if (slug.includes(joined)) {
-    return slug.replace(joined, `${left},-${right}`);
-  }
-
-  // Fallback: if we can't confidently reconstruct, keep slug as is
-  return slug;
-}
+/** ------------------------------------------------------------ */
 
 export async function getStaticProps() {
   const limit = 100;
@@ -109,7 +98,8 @@ export async function getStaticProps() {
       };
     }
 
-    const { posts = [] } = await response.json();
+    const data = await response.json();
+    const posts = data?.posts ?? [];
 
     const parsedPosts = posts.map((post) => {
       const contentHtml = post.content || post.post_content || post.body || "";
@@ -120,24 +110,11 @@ export async function getStaticProps() {
         post.image_url ||
         (imageMatch ? imageMatch[1] : "/default-image.jpg");
 
-      const rawSlug = extractSlug(post);
       const title = post.title || "Untitled";
 
-      // If backend has comma behavior, normalize to match it
-      const slug = normalizeSlugToBackendStyle({ slug: rawSlug, title });
-
-      const permalink = post.permalink || post.url || post.path || "";
-
-      // Debug only in dev
-      if (process.env.NODE_ENV !== "production") {
-        if (!slug) {
-          console.warn("Post missing slug in HOME API:", {
-            id: post.id,
-            title,
-            page: post.page,
-          });
-        }
-      }
+      // ✅ Pull real slug/permalink from API if available
+      const slug = getPostSlug(post);
+      const permalink = getPostPermalink(post);
 
       return {
         id: post.id,
@@ -178,6 +155,7 @@ export async function getStaticProps() {
 
 export default function Home({ initialPosts, error: initialError }) {
   const router = useRouter();
+
   const [allPosts] = useState(initialPosts || []);
   const [displayedPosts, setDisplayedPosts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -210,34 +188,31 @@ export default function Home({ initialPosts, error: initialError }) {
     }, 300);
   };
 
-  const pagePaths = useMemo(
-    () => ({
-      Recipe: "/food",
-      Drinks: "/drinks",
-      Dessert: "/dessert",
-      Blog: "/blog",
-      ProductsReview: "/productsreview",
-    }),
-    []
-  );
-
   const navigateToPost = (post) => {
-    const categoryPath = pagePaths[post.page] || "/blog";
+    const categoryPath = getCategoryPath(post.page);
 
-    // Best: use permalink if provided
+    // 1) Best: if API gives a full URL/path, use it
     if (post.permalink) {
       router.push(post.permalink);
       return;
     }
 
-    // Use slug only (no title generation)
-    const slug = post.slug;
+    // 2) Prefer slug from API
+    let slug = post.slug;
+
+    // 3) If API slug missing, try re-extract (defensive)
+    if (!slug) slug = getPostSlug(post);
+
+    // 4) LAST fallback to keep buttons working for any post
+    // (includes comma rule ",-")
+    if (!slug) slug = generateSlugFallback(post.title);
 
     if (!slug) {
-      console.error("Cannot navigate: slug missing for post", post);
+      console.error("Cannot navigate: missing slug for post", post);
       return;
     }
 
+    // IMPORTANT: categoryPath already starts with "/"
     router.push(`${categoryPath}/${encodeURIComponent(slug)}`);
   };
 
@@ -308,6 +283,39 @@ export default function Home({ initialPosts, error: initialError }) {
         />
         <link rel="canonical" href="https://www.thestylishmama.com/" />
         <link rel="icon" href="/favicon.ico" />
+
+        <meta
+          property="og:title"
+          content="Barkat Kamran | Lifestyle Blog, Reviews & Recipes"
+        />
+        <meta
+          property="og:description"
+          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
+        />
+        <meta property="og:url" content="https://www.thestylishmama.com/" />
+        <meta property="og:type" content="website" />
+        <meta
+          property="og:image"
+          content="https://www.thestylishmama.com/default-image.jpg"
+        />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="Barkat Kamran" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:title"
+          content="Barkat Kamran | Lifestyle Blog, Reviews & Recipes"
+        />
+        <meta
+          name="twitter:description"
+          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
+        />
+        <meta
+          name="twitter:image"
+          content="https://www.thestylishmama.com/default-image.jpg"
+        />
+        <meta name="twitter:site" content="@YourTwitterHandle" />
 
         <script
           type="application/ld+json"
@@ -414,40 +422,87 @@ export default function Home({ initialPosts, error: initialError }) {
                 onMouseEnter={() => incrementViewCount(post.id, post.page)}
               >
                 <div className={styles.cardContentWrapper}>
-                  <div className={styles.cardTextSide}>
-                    <h2 className={styles.cardTitle}>{post.title}</h2>
-                    <p className={styles.cardDate}>
-                      {new Date(post.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                    <p className={styles.cardExcerpt}>
-                      {(post.contentHtml || "")
-                        .replace(/<[^>]+>/g, "")
-                        .slice(0, 250)}
-                      ...
-                    </p>
-                    <button
-                      className={styles.cardButton}
-                      onClick={() => navigateToPost(post)}
-                    >
-                      Read More
-                    </button>
-                  </div>
+                  {index % 2 === 0 ? (
+                    <>
+                      <div className={styles.cardTextSide}>
+                        <h2 className={styles.cardTitle}>{post.title}</h2>
 
-                  <div className={styles.cardImageSide}>
-                    {post.thumbnailUrl &&
-                    post.thumbnailUrl !== "/default-image.jpg" ? (
-                      <Image
-                        src={post.thumbnailUrl}
-                        alt={post.title}
-                        fill
-                        className={styles.cardImage}
-                      />
-                    ) : null}
-                  </div>
+                        <p className={styles.cardDate}>
+                          {new Date(post.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
+
+                        <p className={styles.cardExcerpt}>
+                          {(post.contentHtml || "")
+                            .replace(/<[^>]+>/g, "")
+                            .slice(0, 250)}
+                          ...
+                        </p>
+
+                        <button
+                          className={styles.cardButton}
+                          onClick={() => navigateToPost(post)}
+                        >
+                          Read More
+                        </button>
+                      </div>
+
+                      <div className={styles.cardImageSide}>
+                        {post.thumbnailUrl &&
+                        post.thumbnailUrl !== "/default-image.jpg" ? (
+                          <Image
+                            src={post.thumbnailUrl}
+                            alt={post.title}
+                            fill
+                            className={styles.cardImage}
+                          />
+                        ) : null}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className={styles.cardImageSide}>
+                        {post.thumbnailUrl &&
+                        post.thumbnailUrl !== "/default-image.jpg" ? (
+                          <Image
+                            src={post.thumbnailUrl}
+                            alt={post.title}
+                            fill
+                            className={styles.cardImage}
+                          />
+                        ) : null}
+                      </div>
+
+                      <div className={styles.cardTextSide}>
+                        <h2 className={styles.cardTitle}>{post.title}</h2>
+
+                        <p className={styles.cardDate}>
+                          {new Date(post.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
+
+                        <p className={styles.cardExcerpt}>
+                          {(post.contentHtml || "")
+                            .replace(/<[^>]+>/g, "")
+                            .slice(0, 250)}
+                          ...
+                        </p>
+
+                        <button
+                          className={styles.cardButton}
+                          onClick={() => navigateToPost(post)}
+                        >
+                          Read More
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
