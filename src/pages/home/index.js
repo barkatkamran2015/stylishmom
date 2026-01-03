@@ -23,13 +23,14 @@ const API_URL = 'https://www.barkatkamran.com/api.php';
 const generateSlug = (title) => {
   if (!title) return '';
   return title
-    .replace(/[\u2018\u2019]/g, '')  // Remove curly apostrophes ’ and ‘
+    .replace(/[\u2018\u2019]/g, '')    // Remove curly apostrophes ’ and ‘
     .replace(/'/g, '')               // Remove straight apostrophe '
+    .replace(/,/g, '-')              // Turn commas into hyphens (Spicy, Sweet → spicy-sweet)
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')  // Remove other accents
+    .replace(/[\u0300-\u036f]/g, '') // Remove accents (ñ → n, é → e, etc.)
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s&()-]/g, '')
+    .replace(/[^\w\s&()-]/g, '')     // Remove remaining special chars
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-+|-+$/g, '');
