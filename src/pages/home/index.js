@@ -20,22 +20,21 @@ if (typeof window !== 'undefined') {
 
 const API_URL = 'https://www.barkatkamran.com/api.php';
 
-const titleToSlug = (title) => {
+const generateSlug = (title) => {
   if (!title) return '';
   return title
+    .replace(/[\u2018\u2019]/g, '') // curly apostrophes
+    .replace(/'/g, '') // straight apostrophe
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')   // remove accents
-    .replace(/[\u2018\u2019]/g, '')    // curly apostrophes
-    .replace(/['"]/g, '')             // straight quotes/apostrophes
-    .replace(/,/g, '-')               // commas → hyphen
+    .replace(/[\u0300-\u036f]/g, '') // accents
     .toLowerCase()
     .trim()
+    .replace(/,/g, ',-')  // <--- ADD THIS LINE: comma → ,-
     .replace(/[^\w\s&()-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-+|-+$/g, '');
 };
-
 
 export async function getStaticProps({ params }) {
   const limit = 100;
