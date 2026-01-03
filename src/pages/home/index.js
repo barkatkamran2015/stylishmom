@@ -179,36 +179,6 @@ export default function Home({ initialPosts, error: initialError }) {
   router.push(`${categoryPath}/${encodeURIComponent(post.slug)}`);
 };
 
-
-      // ❗ If slug missing from home list, resolve canonical slug from backend
-      const guess = generateSlugGuess(post.title);
-
-      // Try guess as-is
-      let canonical = await resolveCanonicalSlug({ page, slugGuess: guess });
-
-      // If not found, try comma backend style variant quickly (your known pattern)
-      if (!canonical && guess.includes(",")) {
-        const commaVariant = guess.replace(/,/g, ",-");
-        canonical = await resolveCanonicalSlug({ page, slugGuess: commaVariant });
-      }
-
-      // If still not found, try removing commas (another common)
-      if (!canonical) {
-        const noComma = guess.replace(/,/g, "");
-        canonical = await resolveCanonicalSlug({ page, slugGuess: noComma });
-      }
-
-      if (!canonical) {
-        console.error("Could not resolve canonical slug for:", post);
-        return;
-      }
-
-      router.push(`${categoryPath}/${encodeURIComponent(canonical)}`);
-    } finally {
-      setResolvingId(null);
-    }
-  };
-
   const incrementViewCount = async (postId, page) => {
     try {
       await fetch(
