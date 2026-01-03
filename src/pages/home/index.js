@@ -20,6 +20,22 @@ if (typeof window !== 'undefined') {
 
 const API_URL = 'https://www.barkatkamran.com/api.php';
 
+const titleToSlug = (title) => {
+  if (!title) return '';
+  return title
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')   // remove accents
+    .replace(/[\u2018\u2019]/g, '')    // curly apostrophes
+    .replace(/['"]/g, '')             // straight quotes/apostrophes
+    .replace(/,/g, '-')               // commas → hyphen
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s&()-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 
 export async function getStaticProps({ params }) {
   const limit = 100;
