@@ -170,18 +170,15 @@ export default function Home({ initialPosts, error: initialError }) {
     }, 300);
   };
 
-  const navigateToPost = async (post) => {
-    const categoryPath = getCategoryPath(post.page);
-    const page = (post.page || "").toString();
+  const navigateToPost = (post) => {
+  const categoryPath = getCategoryPath(post.page);
+  if (!post.slug) {
+    console.error("Missing slug from API for post:", post);
+    return;
+  }
+  router.push(`${categoryPath}/${encodeURIComponent(post.slug)}`);
+};
 
-    try {
-      setResolvingId(post.id);
-
-      // ✅ If we already have a slug from the list, go directly
-      if (post.slug) {
-        router.push(`${categoryPath}/${encodeURIComponent(post.slug)}`);
-        return;
-      }
 
       // ❗ If slug missing from home list, resolve canonical slug from backend
       const guess = generateSlugGuess(post.title);
