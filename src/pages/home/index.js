@@ -111,9 +111,14 @@ export default function Home({ initialPosts, error: initialError }) {
     ProductsReview: "/productsreview",
   };
   const categoryPath = pagePaths[post.page] || '/blog';
-  const slug = post.slug;  // Use the real slug from the API
 
-  if (slug) {
+  // Use real slug if available, otherwise generate from title
+  let slug = post.slug;
+  if (!slug) {
+    slug = titleToSlug(post.title);  // We'll define this below
+  }
+
+  if (slug && categoryPath) {
     router.push(`/${categoryPath}/${slug}`);
   }
 };
