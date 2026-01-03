@@ -21,33 +21,22 @@ if (typeof window !== "undefined") {
 
 const API_URL = "https://www.barkatkamran.com/api.php";
 
-/** ---------- Helpers (robust + backwards compatible) ---------- */
+/** -------- Helpers -------- */
 
-// Try MANY possible keys your API might use for slug
-const getPostSlug = (post) => {
-  return (
-    post?.slug ??
-    post?.post_slug ??
-    post?.postSlug ??
-    post?.slug_text ??
-    post?.slugText ??
-    post?.seo_slug ??
-    post?.seoSlug ??
-    post?.post_url_slug ??
-    post?.url_slug ??
-    post?.urlSlug ??
-    ""
-  );
+const getCategoryPath = (page) => {
+  const p = (page || "").toString().trim().toLowerCase();
+  if (p === "recipe" || p === "recipes") return "/food";
+  if (p === "drinks" || p === "drink") return "/drinks";
+  if (p === "dessert" || p === "desserts") return "/dessert";
+  if (p === "productsreview" || p === "productreview" || p === "products review")
+    return "/productsreview";
+  if (p === "blog" || p === "blogs") return "/blog";
+  return "/blog";
 };
 
-// If API provides a full URL/path, use it (best)
-const getPostPermalink = (post) => {
-  return post?.permalink ?? post?.url ?? post?.path ?? "";
-};
-
-// LAST fallback only: generate slug from title.
-// IMPORTANT: includes your backend comma behavior ",-"
-const generateSlugFallback = (title) => {
+// If home API doesn’t provide slug, we’ll generate a “best guess”
+// ONLY to query the backend resolver (not to route directly).
+const generateSlugGuess = (title) => {
   if (!title) return "";
   return title
     .replace(/[\u2018\u2019]/g, "") // curly apostrophes
@@ -56,28 +45,38 @@ const generateSlugFallback = (title) => {
     .replace(/[\u0300-\u036f]/g, "") // accents
     .toLowerCase()
     .trim()
-    .replace(/,/g, ",-") // ✅ match your backend comma rule
-    .replace(/[^\w\s&()-]/g, "")
+    // NOTE: do NOT force comma style here; we want to test either way via backend fallback
+    .replace(/[^\w\s&(),-]/g, "") // keep comma too
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-+|-+$/g, "");
 };
 
-// Normalize page value so routing stays correct even if API changes case/label
-const getCategoryPath = (page) => {
-  const p = (page || "").toString().trim().toLowerCase();
+// Try many keys (until backend is fully consistent everywhere)
+const extractSlugFromList = (post) =>
+  post?.slug ??
+  post?.post_slug ??
+  post?.postSlug ??
+  post?.slugText ??
+  post?.slug_text ??
+  "";
 
-  if (p === "recipe" || p === "recipes") return "/food";
-  if (p === "drinks" || p === "drink") return "/drinks";
-  if (p === "dessert" || p === "desserts") return "/dessert";
-  if (p === "productsreview" || p === "productreview" || p === "products review")
-    return "/productsreview";
-  if (p === "blog" || p === "blogs") return "/blog";
+const extractContentHtml = (post) => post.content || post.post_content || post.body || "";
 
-  return "/blog";
-};
+/**
+ * 🔥 Resolver: asks backend for the canonical slug using GET by slug.
+ * Your backend fallback will resolve commas/apostrophes differences and return DB slug.
+ */
+async function resolveCanonicalSlug({ page, slugGuess }) {
+  const res = await fetch(
+    `${API_URL}?page=${encodeURIComponent(page)}&slug=${encodeURIComponent(slugGuess)}`
+  );
+  const data = await res.json();
+  // Expect: { post: { slug: "canonical-db-slug", ... } } or { post: null }
+  return data?.post?.slug || null;
+}
 
-/** ------------------------------------------------------------ */
+/** ------------------------- */
 
 export async function getStaticProps() {
   const limit = 100;
@@ -90,19 +89,15 @@ export async function getStaticProps() {
 
     if (!response.ok) {
       return {
-        props: {
-          initialPosts: [],
-          error: `Failed to fetch posts: ${response.status}`,
-        },
+        props: { initialPosts: [], error: `Failed to fetch posts: ${response.status}` },
         revalidate: 60,
       };
     }
 
-    const data = await response.json();
-    const posts = data?.posts ?? [];
+    const { posts = [] } = await response.json();
 
     const parsedPosts = posts.map((post) => {
-      const contentHtml = post.content || post.post_content || post.body || "";
+      const contentHtml = extractContentHtml(post);
 
       const imageMatch = contentHtml.match(/<img[^>]+src=["'](.*?)["']/i);
       const thumbnailUrl =
@@ -110,44 +105,28 @@ export async function getStaticProps() {
         post.image_url ||
         (imageMatch ? imageMatch[1] : "/default-image.jpg");
 
-      const title = post.title || "Untitled";
-
-      // ✅ Pull real slug/permalink from API if available
-      const slug = getPostSlug(post);
-      const permalink = getPostPermalink(post);
-
       return {
         id: post.id,
-        title,
-        slug,
-        permalink,
+        title: post.title || "Untitled",
+        // ✅ Use slug if the API provides it; if not, we’ll resolve on click
+        slug: extractSlugFromList(post) || "",
         contentHtml,
         thumbnailUrl,
         createdAt: post.createdAt || post.created_at || new Date().toISOString(),
         page: post.page,
         titleStyle:
-          post.titleStyle || {
-            color: "#000",
-            fontSize: "1.8rem",
-            textAlign: "left",
-          },
+          post.titleStyle || { color: "#000", fontSize: "1.8rem", textAlign: "left" },
         userId: post.creator_uid,
       };
     });
 
     return {
-      props: {
-        initialPosts: parsedPosts,
-        error: null,
-      },
+      props: { initialPosts: parsedPosts, error: null },
       revalidate: 60,
     };
   } catch (error) {
     return {
-      props: {
-        initialPosts: [],
-        error: error?.message || "Unknown error",
-      },
+      props: { initialPosts: [], error: error?.message || "Unknown error" },
       revalidate: 60,
     };
   }
@@ -161,6 +140,9 @@ export default function Home({ initialPosts, error: initialError }) {
   const [loading, setLoading] = useState(false);
   const [error] = useState(initialError);
   const [isClient, setIsClient] = useState(false);
+
+  // For click resolving state
+  const [resolvingId, setResolvingId] = useState(null);
 
   const INITIAL_LOAD = 6;
   const LOAD_MORE = 3;
@@ -188,32 +170,46 @@ export default function Home({ initialPosts, error: initialError }) {
     }, 300);
   };
 
-  const navigateToPost = (post) => {
+  const navigateToPost = async (post) => {
     const categoryPath = getCategoryPath(post.page);
+    const page = (post.page || "").toString();
 
-    // 1) Best: if API gives a full URL/path, use it
-    if (post.permalink) {
-      router.push(post.permalink);
-      return;
+    try {
+      setResolvingId(post.id);
+
+      // ✅ If we already have a slug from the list, go directly
+      if (post.slug) {
+        router.push(`${categoryPath}/${encodeURIComponent(post.slug)}`);
+        return;
+      }
+
+      // ❗ If slug missing from home list, resolve canonical slug from backend
+      const guess = generateSlugGuess(post.title);
+
+      // Try guess as-is
+      let canonical = await resolveCanonicalSlug({ page, slugGuess: guess });
+
+      // If not found, try comma backend style variant quickly (your known pattern)
+      if (!canonical && guess.includes(",")) {
+        const commaVariant = guess.replace(/,/g, ",-");
+        canonical = await resolveCanonicalSlug({ page, slugGuess: commaVariant });
+      }
+
+      // If still not found, try removing commas (another common)
+      if (!canonical) {
+        const noComma = guess.replace(/,/g, "");
+        canonical = await resolveCanonicalSlug({ page, slugGuess: noComma });
+      }
+
+      if (!canonical) {
+        console.error("Could not resolve canonical slug for:", post);
+        return;
+      }
+
+      router.push(`${categoryPath}/${encodeURIComponent(canonical)}`);
+    } finally {
+      setResolvingId(null);
     }
-
-    // 2) Prefer slug from API
-    let slug = post.slug;
-
-    // 3) If API slug missing, try re-extract (defensive)
-    if (!slug) slug = getPostSlug(post);
-
-    // 4) LAST fallback to keep buttons working for any post
-    // (includes comma rule ",-")
-    if (!slug) slug = generateSlugFallback(post.title);
-
-    if (!slug) {
-      console.error("Cannot navigate: missing slug for post", post);
-      return;
-    }
-
-    // IMPORTANT: categoryPath already starts with "/"
-    router.push(`${categoryPath}/${encodeURIComponent(slug)}`);
   };
 
   const incrementViewCount = async (postId, page) => {
@@ -254,9 +250,7 @@ export default function Home({ initialPosts, error: initialError }) {
           item: {
             "@type": "BlogPosting",
             headline: post.title,
-            description: (post.contentHtml || "")
-              .replace(/<[^>]+>/g, "")
-              .substring(0, 160),
+            description: (post.contentHtml || "").replace(/<[^>]+>/g, "").substring(0, 160),
             datePublished: post.createdAt || new Date().toISOString(),
             author: { "@type": "Person", name: "Admin" },
             image: post.thumbnailUrl || "/default-image.jpg",
@@ -284,39 +278,6 @@ export default function Home({ initialPosts, error: initialError }) {
         <link rel="canonical" href="https://www.thestylishmama.com/" />
         <link rel="icon" href="/favicon.ico" />
 
-        <meta
-          property="og:title"
-          content="Barkat Kamran | Lifestyle Blog, Reviews & Recipes"
-        />
-        <meta
-          property="og:description"
-          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
-        />
-        <meta property="og:url" content="https://www.thestylishmama.com/" />
-        <meta property="og:type" content="website" />
-        <meta
-          property="og:image"
-          content="https://www.thestylishmama.com/default-image.jpg"
-        />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:site_name" content="Barkat Kamran" />
-
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta
-          name="twitter:title"
-          content="Barkat Kamran | Lifestyle Blog, Reviews & Recipes"
-        />
-        <meta
-          name="twitter:description"
-          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
-        />
-        <meta
-          name="twitter:image"
-          content="https://www.thestylishmama.com/default-image.jpg"
-        />
-        <meta name="twitter:site" content="@YourTwitterHandle" />
-
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -342,9 +303,7 @@ export default function Home({ initialPosts, error: initialError }) {
                 priority
               />
               <div className={styles.slideTextOverlay}>
-                <h3 className={styles.homePage__sliderText}>
-                  Meals That Bring Everyone Together
-                </h3>
+                <h3 className={styles.homePage__sliderText}>Meals That Bring Everyone Together</h3>
               </div>
             </div>
 
@@ -358,9 +317,7 @@ export default function Home({ initialPosts, error: initialError }) {
                 priority
               />
               <div className={styles.slideTextOverlay}>
-                <h3 className={styles.homePage__sliderText}>
-                  Quick, Delicious, Stress-Free Cooking
-                </h3>
+                <h3 className={styles.homePage__sliderText}>Quick, Delicious, Stress-Free Cooking</h3>
               </div>
             </div>
 
@@ -374,9 +331,7 @@ export default function Home({ initialPosts, error: initialError }) {
                 priority
               />
               <div className={styles.slideTextOverlay}>
-                <h3 className={styles.homePage__sliderText}>
-                  Comfort Food Made Simple
-                </h3>
+                <h3 className={styles.homePage__sliderText}>Comfort Food Made Simple</h3>
               </div>
             </div>
 
@@ -390,17 +345,12 @@ export default function Home({ initialPosts, error: initialError }) {
                 priority
               />
               <div className={styles.slideTextOverlay}>
-                <h3 className={styles.homePage__sliderText}>
-                  Delicious Recipes for Busy Parents!
-                </h3>
+                <h3 className={styles.homePage__sliderText}>Delicious Recipes for Busy Parents!</h3>
               </div>
             </div>
           </Slider>
 
-          <SearchBar
-            onSearch={handleSearch}
-            placeholder="Search for blogs, reviews, or recipes..."
-          />
+          <SearchBar onSearch={handleSearch} placeholder="Search for blogs, reviews, or recipes..." />
 
           <div className={styles.colorfulCardsContainer}>
             {displayedPosts.map((post, index) => (
@@ -426,7 +376,6 @@ export default function Home({ initialPosts, error: initialError }) {
                     <>
                       <div className={styles.cardTextSide}>
                         <h2 className={styles.cardTitle}>{post.title}</h2>
-
                         <p className={styles.cardDate}>
                           {new Date(post.createdAt).toLocaleDateString("en-US", {
                             year: "numeric",
@@ -434,51 +383,35 @@ export default function Home({ initialPosts, error: initialError }) {
                             day: "numeric",
                           })}
                         </p>
-
                         <p className={styles.cardExcerpt}>
-                          {(post.contentHtml || "")
-                            .replace(/<[^>]+>/g, "")
-                            .slice(0, 250)}
-                          ...
+                          {(post.contentHtml || "").replace(/<[^>]+>/g, "").slice(0, 250)}...
                         </p>
 
                         <button
                           className={styles.cardButton}
                           onClick={() => navigateToPost(post)}
+                          disabled={resolvingId === post.id}
                         >
-                          Read More
+                          {resolvingId === post.id ? "Opening..." : "Read More"}
                         </button>
                       </div>
 
                       <div className={styles.cardImageSide}>
-                        {post.thumbnailUrl &&
-                        post.thumbnailUrl !== "/default-image.jpg" ? (
-                          <Image
-                            src={post.thumbnailUrl}
-                            alt={post.title}
-                            fill
-                            className={styles.cardImage}
-                          />
+                        {post.thumbnailUrl && post.thumbnailUrl !== "/default-image.jpg" ? (
+                          <Image src={post.thumbnailUrl} alt={post.title} fill className={styles.cardImage} />
                         ) : null}
                       </div>
                     </>
                   ) : (
                     <>
                       <div className={styles.cardImageSide}>
-                        {post.thumbnailUrl &&
-                        post.thumbnailUrl !== "/default-image.jpg" ? (
-                          <Image
-                            src={post.thumbnailUrl}
-                            alt={post.title}
-                            fill
-                            className={styles.cardImage}
-                          />
+                        {post.thumbnailUrl && post.thumbnailUrl !== "/default-image.jpg" ? (
+                          <Image src={post.thumbnailUrl} alt={post.title} fill className={styles.cardImage} />
                         ) : null}
                       </div>
 
                       <div className={styles.cardTextSide}>
                         <h2 className={styles.cardTitle}>{post.title}</h2>
-
                         <p className={styles.cardDate}>
                           {new Date(post.createdAt).toLocaleDateString("en-US", {
                             year: "numeric",
@@ -486,19 +419,16 @@ export default function Home({ initialPosts, error: initialError }) {
                             day: "numeric",
                           })}
                         </p>
-
                         <p className={styles.cardExcerpt}>
-                          {(post.contentHtml || "")
-                            .replace(/<[^>]+>/g, "")
-                            .slice(0, 250)}
-                          ...
+                          {(post.contentHtml || "").replace(/<[^>]+>/g, "").slice(0, 250)}...
                         </p>
 
                         <button
                           className={styles.cardButton}
                           onClick={() => navigateToPost(post)}
+                          disabled={resolvingId === post.id}
                         >
-                          Read More
+                          {resolvingId === post.id ? "Opening..." : "Read More"}
                         </button>
                       </div>
                     </>
@@ -510,11 +440,7 @@ export default function Home({ initialPosts, error: initialError }) {
 
           {hasMore && (
             <div className={styles.viewMoreContainer}>
-              <button
-                className={styles.viewMoreButton}
-                onClick={loadMorePosts}
-                disabled={loading}
-              >
+              <button className={styles.viewMoreButton} onClick={loadMorePosts} disabled={loading}>
                 {loading ? "Loading..." : "View More"}
               </button>
             </div>
