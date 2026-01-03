@@ -118,19 +118,20 @@ export default function Home({ initialPosts, error: initialError }) {
   };
 
   const navigateToPost = (post) => {
-    const pagePaths = {
-      Recipe: "/food",
-      Drinks: "/drinks",
-      Dessert: "/dessert",
-      Blog: "/blog",
-      ProductsReview: "/productsreview",
-    };
-    const categoryPath = pagePaths[post.page] || '/blog';
-    const slug = generateSlug(post.title);
-    if (slug) {
-      router.push(`/${categoryPath}/${slug}`);
-    }
+  const pagePaths = {
+    Recipe: "/food",
+    Drinks: "/drinks",
+    Dessert: "/dessert",
+    Blog: "/blog",
+    ProductsReview: "/productsreview",
   };
+  const categoryPath = pagePaths[post.page] || '/blog';
+  const slug = post.slug;  // Use the real slug from the API
+
+  if (slug) {
+    router.push(`/${categoryPath}/${slug}`);
+  }
+};
 
   const incrementViewCount = async (postId, page) => {
     try {
