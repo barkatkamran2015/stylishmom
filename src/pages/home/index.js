@@ -235,21 +235,40 @@ export default function Home({ initialPosts, error: initialError }) {
   return (
     <div className={styles.homePage}>
       <Head>
-        <title>Barkat Kamran | Lifestyle Blog, Reviews & Recipes</title>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta
-          name="description"
-          content="Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!"
-        />
-        <link rel="canonical" href="https://www.thestylishmama.com/" />
-        <link rel="icon" href="/favicon.ico" />
+  <title>The Stylish Mama | Easy Family Recipes & Home Cooking</title>
+  <meta charSet="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-        />
-      </Head>
+  <meta
+    name="description"
+    content="The Stylish Mama shares easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms."
+  />
+
+  <link rel="canonical" href="https://www.thestylishmama.com/" />
+  <link rel="icon" href="/favicon.ico" />
+
+  {/* Optional but recommended for better Google/social previews */}
+  <meta property="og:title" content="The Stylish Mama | Easy Family Recipes & Home Cooking" />
+  <meta
+    property="og:description"
+    content="Easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms."
+  />
+  <meta property="og:url" content="https://www.thestylishmama.com/" />
+  <meta property="og:type" content="website" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Stylish Mama | Easy Family Recipes & Home Cooking" />
+  <meta
+    name="twitter:description"
+    content="Easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms."
+  />
+
+  <script
+    type="application/ld+json"
+    dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+  />
+</Head>
+
 
       {loading && displayedPosts.length === 0 ? (
         <div className={styles.loadingContainer}>
