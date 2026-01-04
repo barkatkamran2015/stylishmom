@@ -34,8 +34,6 @@ const getCategoryPath = (page) => {
   return "/blog";
 };
 
-// If home API doesn’t provide slug, we’ll generate a “best guess”
-// ONLY to query the backend resolver (not to route directly).
 const generateSlugGuess = (title) => {
   if (!title) return "";
   return title
@@ -45,14 +43,12 @@ const generateSlugGuess = (title) => {
     .replace(/[\u0300-\u036f]/g, "") // accents
     .toLowerCase()
     .trim()
-    // NOTE: do NOT force comma style here; we want to test either way via backend fallback
     .replace(/[^\w\s&(),-]/g, "") // keep comma too
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-+|-+$/g, "");
 };
 
-// Try many keys (until backend is fully consistent everywhere)
 const extractSlugFromList = (post) =>
   post?.slug ??
   post?.post_slug ??
@@ -63,16 +59,36 @@ const extractSlugFromList = (post) =>
 
 const extractContentHtml = (post) => post.content || post.post_content || post.body || "";
 
+// ✅ Hydration-safe, deterministic date display
+const formatDateUTC = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", {
+    timeZone: "UTC",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+// Optional: absolute image for schema (helps SEO)
+const toAbsoluteImage = (url) => {
+  if (!url) return "https://www.thestylishmama.com/default-image.jpg";
+  if (typeof url === "string" && url.startsWith("http")) return url;
+  // if relative
+  return `https://www.thestylishmama.com${url.startsWith("/") ? url : `/${url}`}`;
+};
+
 /**
- * 🔥 Resolver: asks backend for the canonical slug using GET by slug.
- * Your backend fallback will resolve commas/apostrophes differences and return DB slug.
+ * Resolver: asks backend for canonical slug using GET by slug guess.
+ * (Not used in navigateToPost below right now since you already require post.slug)
  */
 async function resolveCanonicalSlug({ page, slugGuess }) {
   const res = await fetch(
     `${API_URL}?page=${encodeURIComponent(page)}&slug=${encodeURIComponent(slugGuess)}`
   );
   const data = await res.json();
-  // Expect: { post: { slug: "canonical-db-slug", ... } } or { post: null }
   return data?.post?.slug || null;
 }
 
@@ -83,9 +99,7 @@ export async function getStaticProps() {
   const offset = 0;
 
   try {
-    const response = await fetch(
-      `${API_URL}?page=all&limit=${limit}&offset=${offset}`
-    );
+    const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`);
 
     if (!response.ok) {
       return {
@@ -108,11 +122,11 @@ export async function getStaticProps() {
       return {
         id: post.id,
         title: post.title || "Untitled",
-        // ✅ Use slug if the API provides it; if not, we’ll resolve on click
         slug: extractSlugFromList(post) || "",
         contentHtml,
         thumbnailUrl,
-        createdAt: post.createdAt || post.created_at || new Date().toISOString(),
+        // ✅ CRITICAL FIX: do NOT use new Date() during SSR/ISR
+        createdAt: post.createdAt || post.created_at || "",
         page: post.page,
         titleStyle:
           post.titleStyle || { color: "#000", fontSize: "1.8rem", textAlign: "left" },
@@ -141,7 +155,6 @@ export default function Home({ initialPosts, error: initialError }) {
   const [error] = useState(initialError);
   const [isClient, setIsClient] = useState(false);
 
-  // For click resolving state
   const [resolvingId, setResolvingId] = useState(null);
 
   const INITIAL_LOAD = 6;
@@ -170,21 +183,43 @@ export default function Home({ initialPosts, error: initialError }) {
     }, 300);
   };
 
-  const navigateToPost = (post) => {
-  const categoryPath = getCategoryPath(post.page);
-  if (!post.slug) {
-    console.error("Missing slug from API for post:", post);
-    return;
-  }
-  router.push(`${categoryPath}/${encodeURIComponent(post.slug)}`);
-};
+  // ✅ Make button click reliable: stop bubbling to card hover handlers, and handle missing slug
+  const navigateToPost = async (post, e) => {
+    if (e?.preventDefault) e.preventDefault();
+    if (e?.stopPropagation) e.stopPropagation();
+
+    const categoryPath = getCategoryPath(post.page);
+
+    // Prefer API slug
+    let slug = post.slug;
+
+    // If missing slug, do a best-effort resolver (optional but helps)
+    if (!slug) {
+      try {
+        setResolvingId(post.id);
+        const guess = generateSlugGuess(post.title);
+        const canonical = await resolveCanonicalSlug({ page: post.page, slugGuess: guess });
+        slug = canonical || guess || "";
+      } catch (err) {
+        console.error("Could not resolve canonical slug for:", post, err);
+      } finally {
+        setResolvingId(null);
+      }
+    }
+
+    if (!slug) {
+      console.error("Missing slug from API for post:", post);
+      return;
+    }
+
+    router.push(`${categoryPath}/${encodeURIComponent(slug)}`);
+  };
 
   const incrementViewCount = async (postId, page) => {
     try {
-      await fetch(
-        `${API_URL}?method=INCREMENT_VIEW_COUNT&postId=${postId}&page=${page}`,
-        { method: "POST" }
-      );
+      await fetch(`${API_URL}?method=INCREMENT_VIEW_COUNT&postId=${postId}&page=${page}`, {
+        method: "POST",
+      });
     } catch (err) {
       console.error("Error incrementing view count:", err);
     }
@@ -201,32 +236,37 @@ export default function Home({ initialPosts, error: initialError }) {
     arrows: true,
   };
 
-  const structuredData = useMemo(
-    () => ({
+  // ✅ Hydration-safe JSON-LD: never use new Date() fallback here
+  const structuredData = useMemo(() => {
+    return {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      name: "Barkat Kamran | Lifestyle Blog, Reviews & Recipes",
+      name: "The Stylish Mama | Easy Family Recipes & Home Cooking",
       description:
-        "Discover Barkat Kamran's lifestyle blog with inspiring posts, honest product reviews, and tasty recipes. Explore now for parenting tips and more!",
+        "The Stylish Mama shares easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms.",
       url: "https://www.thestylishmama.com/",
       mainEntity: {
         "@type": "ItemList",
-        itemListElement: displayedPosts.map((post, index) => ({
-          "@type": "ListItem",
-          position: index + 1,
-          item: {
-            "@type": "BlogPosting",
-            headline: post.title,
-            description: (post.contentHtml || "").replace(/<[^>]+>/g, "").substring(0, 160),
-            datePublished: post.createdAt || new Date().toISOString(),
-            author: { "@type": "Person", name: "Admin" },
-            image: post.thumbnailUrl || "/default-image.jpg",
-          },
-        })),
+        itemListElement: displayedPosts.map((post, index) => {
+          const desc = (post.contentHtml || "").replace(/<[^>]+>/g, "").substring(0, 160);
+          const datePublished = post.createdAt || undefined;
+
+          return {
+            "@type": "ListItem",
+            position: index + 1,
+            item: {
+              "@type": "BlogPosting",
+              headline: post.title,
+              description: desc,
+              ...(datePublished ? { datePublished } : {}),
+              author: { "@type": "Organization", name: "The Stylish Mama" },
+              image: toAbsoluteImage(post.thumbnailUrl),
+            },
+          };
+        }),
       },
-    }),
-    [displayedPosts]
-  );
+    };
+  }, [displayedPosts]);
 
   if (!isClient) return <p>Loading...</p>;
 
@@ -235,40 +275,36 @@ export default function Home({ initialPosts, error: initialError }) {
   return (
     <div className={styles.homePage}>
       <Head>
-  <title>The Stylish Mama | Easy Family Recipes & Home Cooking</title>
-  <meta charSet="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>The Stylish Mama | Easy Family Recipes & Home Cooking</title>
+        <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="description"
+          content="The Stylish Mama shares easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms."
+        />
+        <link rel="canonical" href="https://www.thestylishmama.com/" />
+        <link rel="icon" href="/favicon.ico" />
 
-  <meta
-    name="description"
-    content="The Stylish Mama shares easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms."
-  />
+        <meta property="og:title" content="The Stylish Mama | Easy Family Recipes & Home Cooking" />
+        <meta
+          property="og:description"
+          content="Easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms."
+        />
+        <meta property="og:url" content="https://www.thestylishmama.com/" />
+        <meta property="og:type" content="website" />
 
-  <link rel="canonical" href="https://www.thestylishmama.com/" />
-  <link rel="icon" href="/favicon.ico" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="The Stylish Mama | Easy Family Recipes & Home Cooking" />
+        <meta
+          name="twitter:description"
+          content="Easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms."
+        />
 
-  {/* Optional but recommended for better Google/social previews */}
-  <meta property="og:title" content="The Stylish Mama | Easy Family Recipes & Home Cooking" />
-  <meta
-    property="og:description"
-    content="Easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms."
-  />
-  <meta property="og:url" content="https://www.thestylishmama.com/" />
-  <meta property="og:type" content="website" />
-
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="The Stylish Mama | Easy Family Recipes & Home Cooking" />
-  <meta
-    name="twitter:description"
-    content="Easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms."
-  />
-
-  <script
-    type="application/ld+json"
-    dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-  />
-</Head>
-
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+      </Head>
 
       {loading && displayedPosts.length === 0 ? (
         <div className={styles.loadingContainer}>
@@ -362,20 +398,15 @@ export default function Home({ initialPosts, error: initialError }) {
                     <>
                       <div className={styles.cardTextSide}>
                         <h2 className={styles.cardTitle}>{post.title}</h2>
-                        <p className={styles.cardDate}>
-                          {new Date(post.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </p>
+                        <p className={styles.cardDate}>{formatDateUTC(post.createdAt)}</p>
                         <p className={styles.cardExcerpt}>
                           {(post.contentHtml || "").replace(/<[^>]+>/g, "").slice(0, 250)}...
                         </p>
 
                         <button
+                          type="button"
                           className={styles.cardButton}
-                          onClick={() => navigateToPost(post)}
+                          onClick={(e) => navigateToPost(post, e)}
                           disabled={resolvingId === post.id}
                         >
                           {resolvingId === post.id ? "Opening..." : "Read More"}
@@ -398,20 +429,15 @@ export default function Home({ initialPosts, error: initialError }) {
 
                       <div className={styles.cardTextSide}>
                         <h2 className={styles.cardTitle}>{post.title}</h2>
-                        <p className={styles.cardDate}>
-                          {new Date(post.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </p>
+                        <p className={styles.cardDate}>{formatDateUTC(post.createdAt)}</p>
                         <p className={styles.cardExcerpt}>
                           {(post.contentHtml || "").replace(/<[^>]+>/g, "").slice(0, 250)}...
                         </p>
 
                         <button
+                          type="button"
                           className={styles.cardButton}
-                          onClick={() => navigateToPost(post)}
+                          onClick={(e) => navigateToPost(post, e)}
                           disabled={resolvingId === post.id}
                         >
                           {resolvingId === post.id ? "Opening..." : "Read More"}
