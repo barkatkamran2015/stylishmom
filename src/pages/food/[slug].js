@@ -1,23 +1,36 @@
 // pages/food/[slug].js
-import Head from 'next/head';
-import Image from 'next/image';
-import styles from '../../styles/Food.module.css';
+import Head from "next/head";
+import Image from "next/image";
+import styles from "../../styles/Food.module.css";
 
-const API_URL = 'https://www.thestylishmama.com/api/posts';
+const API_URL = "https://www.thestylishmama.com/api/posts";
+const baseUrl = "https://www.thestylishmama.com";
 
 const sanitizeText = (htmlContent) => {
-  if (!htmlContent) return '';
-  return htmlContent.replace(/<[^>]+>/g, '').trim();
+  if (!htmlContent) return "";
+  return htmlContent.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 };
 
-export default function FoodPost({ post }) {
+const absoluteImage = (url) => {
+  if (!url) return `${baseUrl}/default-food-image.jpg`;
+  if (typeof url === "string" && url.startsWith("http")) return url;
+  return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
+};
+
+export default function FoodPost({ post, canonicalSlug }) {
+  // 404 page (SEO-safe)
   if (!post) {
     return (
       <div className={styles.foodPage}>
         <Head>
-          <title>Post Not Found | The Stylish Mama</title>
-          <meta name="description" content="The food recipe you are looking for could not be found." />
+          <title>Recipe Not Found | The Stylish Mama</title>
+          <meta
+            name="description"
+            content="The recipe you are looking for could not be found."
+          />
+          <meta name="robots" content="noindex, follow" />
         </Head>
+
         <section className={styles.heroSection}>
           <h1 className={styles.notFoundTitle}>404 - This page could not be found</h1>
         </section>
@@ -25,106 +38,128 @@ export default function FoodPost({ post }) {
     );
   }
 
-  const baseUrl = 'https://www.thestylishmama.com';
+  const slug = canonicalSlug || post.slug; // canonicalSlug is safer if provided
+  const pageUrl = `${baseUrl}/food/${encodeURIComponent(slug)}`;
+
+  const description = sanitizeText(post.content).substring(0, 160) || "A delicious recipe from The Stylish Mama.";
+  const ogImage = absoluteImage(post.imageUrl);
+
+  // ✅ Recipe JSON-LD (safe + absolute URLs)
   const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'Recipe',
-    name: post.title || 'Untitled',
-    description: sanitizeText(post.content).substring(0, 160),
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    name: post.title || "Untitled",
+    description,
     datePublished: post.createdAt || new Date().toISOString(),
     dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
-    author: { '@type': 'Person', name: 'The Stylish Mama' },
-    publisher: { '@type': 'Organization', name: 'The Stylish Mama' },
-    image: post.imageUrl || '/default-food-image.jpg',
-    url: `${baseUrl}/food/${post.slug}`,
-    recipeCategory: 'Food',
+    author: { "@type": "Organization", name: "The Stylish Mama" },
+    publisher: { "@type": "Organization", name: "The Stylish Mama" },
+    image: [ogImage],
+    url: pageUrl,
+    recipeCategory: "Food",
   };
 
   return (
     <div className={styles.foodPage}>
       <Head>
-        <title>{`${post.title || 'Untitled'} | The Stylish Mama`}</title>
-        <meta name="description" content={sanitizeText(post.content).substring(0, 160)} />
-        <meta property="og:title" content={post.title || 'Untitled'} />
-        <meta property="og:description" content={sanitizeText(post.content).substring(0, 160)} />
-        <meta property="og:url" content={`${baseUrl}/food/${post.slug}`} />
+        <title>{`${post.title || "Untitled"} | The Stylish Mama`}</title>
+        <meta name="description" content={description} />
+        <link rel="canonical" href={pageUrl} />
+
+        {/* Open Graph */}
+        <meta property="og:title" content={post.title || "Untitled"} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={pageUrl} />
         <meta property="og:type" content="article" />
-        <meta property="og:image" content={post.imageUrl || '/default-food-image.jpg'} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+        <meta property="og:site_name" content="The Stylish Mama" />
+        <meta property="og:image" content={ogImage} />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={post.title || "Untitled"} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImage} />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
       </Head>
 
       {/* Hero Section */}
       <section className={styles.heroSection}>
         {post.imageUrl ? (
           <Image
-            src={post.imageUrl}
-            alt={post.title}
+            src={ogImage}
+            alt={post.title || "Recipe image"}
             fill
             className={styles.heroImage}
             priority
-            onError={(e) => (e.currentTarget.src = '/default-food-image.jpg')}
+            sizes="100vw"
           />
         ) : (
           <div className={styles.heroPlaceholder} />
         )}
         <div className={styles.heroOverlay} />
         <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>{post.title || 'Untitled'}</h1>
+          <h1 className={styles.heroTitle}>{post.title || "Untitled"}</h1>
           <p className={styles.heroDate}>
-            Published on {new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            Published on{" "}
+            {new Date(post.createdAt || Date.now()).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
           </p>
         </div>
       </section>
 
       {/* Main Content */}
       <section className={styles.contentSection}>
-        <div
-          className={styles.postContent}
-          dangerouslySetInnerHTML={{ __html: post.content || '' }}
-        />
+        <div className={styles.postContent} dangerouslySetInnerHTML={{ __html: post.content || "" }} />
       </section>
     </div>
   );
 }
 
 export async function getStaticPaths() {
-  try {
-    const res = await fetch(`${API_URL}?page=Recipe&limit=1000&offset=0`);
-    const { posts = [] } = await res.json();
-    const paths = posts
-      .filter(post => post.slug)
-      .map((post) => ({
-        params: { slug: post.slug.toString() },
-      }));
-    return { paths, fallback: 'blocking' };
-  } catch {
-    return { paths: [], fallback: 'blocking' };
-  }
+  // ✅ Do NOT prebuild 1000 paths; let Next build on demand
+  return { paths: [], fallback: "blocking" };
 }
 
 export async function getStaticProps({ params }) {
-  const { slug } = params;
+  const slugParam = params?.slug ? String(params.slug) : "";
+  const encodedSlug = encodeURIComponent(slugParam);
 
   try {
-    // Try direct single post fetch first
-    const res = await fetch(`${API_URL}?page=Recipe&slug=${slug}`);
+    // ✅ Primary: fetch post by slug (backend should handle commas/apostrophes)
+    const res = await fetch(`${API_URL}?page=Recipe&slug=${encodedSlug}`);
     if (res.ok) {
       const data = await res.json();
-      if (data.post) {
-        return { props: { post: data.post }, revalidate: 60 };
+      if (data?.post) {
+        const post = data.post;
+
+        // ✅ Canonical redirect if backend slug differs
+        const canonicalSlug = post.slug;
+        if (canonicalSlug && canonicalSlug !== slugParam) {
+          return {
+            redirect: {
+              destination: `/food/${encodeURIComponent(canonicalSlug)}`,
+              permanent: true,
+            },
+          };
+        }
+
+        return {
+          props: { post, canonicalSlug: canonicalSlug || slugParam },
+          revalidate: 60,
+        };
       }
     }
 
-    // Fallback to list if needed
-    const listRes = await fetch(`${API_URL}?page=Recipe&limit=1000&offset=0`);
-    if (!listRes.ok) throw new Error();
-    const { posts = [] } = await listRes.json();
-    const targetPost = posts.find(p => p.slug === slug);
-
-    if (!targetPost) return { notFound: true };
-
-    return { props: { post: targetPost }, revalidate: 60 };
+    // If not found
+    return { notFound: true, revalidate: 60 };
   } catch (err) {
-    return { notFound: true };
+    return { notFound: true, revalidate: 60 };
   }
 }
