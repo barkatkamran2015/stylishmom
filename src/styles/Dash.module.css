@@ -9,7 +9,7 @@
 
 /* Featured Slider - Premium and clean */
 .homePage__featuredSlider {
-  margin-bottom: 60px;
+  margin-bottom: 24px;
   position: relative;
   border-radius: 16px;
   overflow: hidden;
@@ -336,11 +336,11 @@
 /* COLORFUL STACKED CARD LAYOUT */
 .colorfulCardsContainer {
   max-width: 1000px;
-  margin: 60px auto;
+  margin: 24px auto;
   padding: 0 20px;
   display: flex;
   flex-direction: column;
-  gap: 60px;
+  gap: 36px;
 }
 
 .colorfulCard {
