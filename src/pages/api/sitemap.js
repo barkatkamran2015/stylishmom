@@ -1,6 +1,6 @@
 // pages/api/sitemap.js
 const SITE_URL = 'https://www.thestylishmama.com';
-const PHP_API_URL = process.env.PHP_API_URL || 'https://www.barkatkamran.com/api.php';
+const PHP_API_URL = process.env.PHP_API_URL || 'https://api.barkatkamran.com/api.php';
 
 const pageToPath = {
   Blog: 'blog',

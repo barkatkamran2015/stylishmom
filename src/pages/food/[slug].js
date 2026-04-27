@@ -4,7 +4,7 @@ import Image from "next/image";
 import styles from "../../styles/Food.module.css";
 import { SITE_NAME } from "../../lib/seo";
 
-const API_URL = process.env.PHP_API_URL || "https://www.barkatkamran.com/api.php";
+const API_URL = process.env.PHP_API_URL || "https://api.barkatkamran.com/api.php";
 const baseUrl = "https://www.thestylishmama.com";
 
 const sanitizeText = (htmlContent) => {

@@ -10,6 +10,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'api.barkatkamran.com'
+      },
+      {
+        protocol: 'https',
         hostname: 'www.thestylishmama.com'
       }
     ],

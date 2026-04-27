@@ -20,7 +20,7 @@ if (typeof window !== "undefined") {
   require("slick-carousel/slick/slick-theme.css");
 }
 
-const API_URL = "https://www.barkatkamran.com/api.php";
+const API_URL = "https://api.barkatkamran.com/api.php";
 
 /** -------- Helpers -------- */
 

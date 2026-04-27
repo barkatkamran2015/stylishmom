@@ -7,7 +7,7 @@ import Header from '../header';
 import styles from '../../styles/Drinks.module.css';
 import { SITE_NAME, SITE_URL, absoluteImage, fetchWithTimeout, pageSeo } from '../../lib/seo';
 
-const API_URL = process.env.PHP_API_URL || 'https://www.barkatkamran.com/api.php';
+const API_URL = process.env.PHP_API_URL || 'https://api.barkatkamran.com/api.php';
 
 const sanitizeText = (htmlContent) => {
   if (!htmlContent) return '';

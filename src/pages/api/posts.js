@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import getRawBody from 'raw-body';
 
-const PHP_API_URL = process.env.PHP_API_URL || 'https://www.barkatkamran.com/api.php';
+const PHP_API_URL = process.env.PHP_API_URL || 'https://api.barkatkamran.com/api.php';
 
 export const config = {
     api: {
@@ -11,10 +11,12 @@ export const config = {
 
 export default async function handler(req, res) {
     try {
-        const allowedOrigin =
+        const allowedOrigins =
             process.env.NODE_ENV === 'production'
-                ? 'https://stylishmom.vercel.app'
-                : 'http://localhost:3000';
+                ? ['https://www.thestylishmama.com', 'https://thestylishmama.com', 'https://stylishmom.vercel.app']
+                : ['http://localhost:3000'];
+        const requestOrigin = req.headers.origin;
+        const allowedOrigin = allowedOrigins.includes(requestOrigin) ? requestOrigin : allowedOrigins[0];
         res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
         res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
