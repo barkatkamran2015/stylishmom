@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Header from '../header';
 import styles from '../../styles/Blog.module.css';
-import { SITE_NAME, SITE_URL, absoluteImage, collectionJsonLd, fetchWithTimeout, pageSeo } from '../../lib/seo';
+import { SITE_NAME, SITE_URL, absoluteImage, collectionJsonLd, fetchWithTimeout, normalizeContentHtml, normalizeImageUrl, pageSeo } from '../../lib/seo';
 
 const API_URL = process.env.PHP_API_URL || 'https://api.barkatkamran.com/api.php';
 
@@ -226,12 +226,8 @@ export async function getStaticProps() {
             ? JSON.parse(post.titleStyle)
             : post.titleStyle
           : { color: '#000', fontSize: '1.5rem', textAlign: 'left' },
-        imageUrl: post.imageUrl?.startsWith('http')
-          ? post.imageUrl
-          : post.imageUrl
-          ? `https://www.thestylishmama.com${post.imageUrl}`
-          : null,
-        content: post.content || '',
+        imageUrl: normalizeImageUrl(post.imageUrl) || null,
+        content: normalizeContentHtml(post.content || ''),
         title: post.title || 'Untitled',
         author: post.author || 'The Stylish Mama',
       };

@@ -6,7 +6,7 @@ import Head from "next/head";
 import Image from "next/image";
 import SearchBar from "../components/SearchBar";
 import styles from "../../styles/Dash.module.css";
-import { SITE_NAME, SITE_URL, absoluteImage, fetchWithTimeout, pageSeo } from "../../lib/seo";
+import { SITE_NAME, SITE_URL, absoluteImage, fetchWithTimeout, normalizeContentHtml, normalizeImageUrl, pageSeo } from "../../lib/seo";
 
 import imageBlog from "../Assets/family.jpg";
 import imageNature from "../Assets/lotto.jpg";
@@ -104,13 +104,14 @@ export async function getStaticProps() {
     const { posts = [] } = await response.json();
 
     const parsedPosts = posts.map((post) => {
-      const contentHtml = extractContentHtml(post);
+      const contentHtml = normalizeContentHtml(extractContentHtml(post));
 
       const imageMatch = contentHtml.match(/<img[^>]+src=["'](.*?)["']/i);
-      const thumbnailUrl =
+      const thumbnailUrl = normalizeImageUrl(
         post.imageUrl ||
         post.image_url ||
-        (imageMatch ? imageMatch[1] : "/default-image.jpg");
+        (imageMatch ? imageMatch[1] : "")
+      ) || "/default-image.jpg";
 
       return {
         id: post.id,

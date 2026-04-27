@@ -2,7 +2,7 @@
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../../styles/Food.module.css";
-import { SITE_NAME } from "../../lib/seo";
+import { SITE_NAME, normalizeContentHtml, normalizeImageUrl } from "../../lib/seo";
 
 const API_URL = process.env.PHP_API_URL || "https://api.barkatkamran.com/api.php";
 const baseUrl = "https://www.thestylishmama.com";
@@ -14,6 +14,8 @@ const sanitizeText = (htmlContent) => {
 
 const absoluteImage = (url) => {
   if (!url) return `${baseUrl}/default-food-image.jpg`;
+  const normalized = normalizeImageUrl(url);
+  if (normalized !== url) return normalized;
   if (typeof url === "string" && url.startsWith("http")) return url;
   return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
 };
@@ -138,7 +140,11 @@ export async function getStaticProps({ params }) {
     if (res.ok) {
       const data = await res.json();
       if (data?.post) {
-        const post = data.post;
+        const post = {
+          ...data.post,
+          content: normalizeContentHtml(data.post.content || ""),
+          imageUrl: normalizeImageUrl(data.post.imageUrl) || null,
+        };
 
         // ✅ Canonical redirect if backend slug differs
         const canonicalSlug = post.slug;

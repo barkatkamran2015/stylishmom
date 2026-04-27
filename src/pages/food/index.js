@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Header from "../header";
 import styles from "../../styles/Food.module.css";
-import { SITE_NAME, SITE_URL, absoluteImage, fetchWithTimeout, pageSeo } from "../../lib/seo";
+import { SITE_NAME, SITE_URL, absoluteImage, fetchWithTimeout, normalizeContentHtml, normalizeImageUrl, pageSeo } from "../../lib/seo";
 
 const API_URL = process.env.PHP_API_URL || "https://api.barkatkamran.com/api.php";
 
@@ -237,11 +237,8 @@ export async function getStaticProps() {
 
     const formattedPosts = posts.map((post) => ({
       ...post,
-      imageUrl: post.imageUrl?.startsWith("http")
-        ? post.imageUrl
-        : post.imageUrl
-        ? `https://www.thestylishmama.com${post.imageUrl}`
-        : null,
+      content: normalizeContentHtml(post.content || ""),
+      imageUrl: normalizeImageUrl(post.imageUrl) || null,
     }));
 
     return {

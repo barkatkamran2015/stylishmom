@@ -1,6 +1,7 @@
 export const SITE_URL = "https://www.thestylishmama.com";
 export const SITE_NAME = "The Stylish Mama";
 export const DEFAULT_IMAGE = `${SITE_URL}/logo2.png`;
+export const API_MEDIA_URL = "https://api.barkatkamran.com";
 
 export const pageSeo = {
   home: {
@@ -54,8 +55,36 @@ export const excerpt = (htmlContent = "", maxLength = 160) => {
   return text.length > maxLength ? `${text.slice(0, maxLength - 3).trim()}...` : text;
 };
 
+export const normalizeImageUrl = (imageUrl = "") => {
+  if (!imageUrl) return "";
+
+  const url = imageUrl.trim();
+  if (!url) return "";
+
+  if (url.startsWith("https://www.barkatkamran.com/uploads/")) {
+    return url.replace("https://www.barkatkamran.com", API_MEDIA_URL);
+  }
+
+  if (url.startsWith("http://www.barkatkamran.com/uploads/")) {
+    return url.replace("http://www.barkatkamran.com", API_MEDIA_URL);
+  }
+
+  if (url.startsWith("/uploads/")) {
+    return `${API_MEDIA_URL}${url}`;
+  }
+
+  return url;
+};
+
+export const normalizeContentHtml = (htmlContent = "") =>
+  htmlContent
+    .replace(/https:\/\/www\.barkatkamran\.com\/uploads\//g, `${API_MEDIA_URL}/uploads/`)
+    .replace(/http:\/\/www\.barkatkamran\.com\/uploads\//g, `${API_MEDIA_URL}/uploads/`);
+
 export const absoluteUrl = (path = "") => {
   if (!path) return SITE_URL;
+  const normalized = normalizeImageUrl(path);
+  if (normalized !== path) return normalized;
   if (path.startsWith("http")) return path;
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 };

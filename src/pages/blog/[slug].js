@@ -2,7 +2,7 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../../styles/Blog.module.css';
-import { SITE_NAME, SITE_URL, absoluteImage, excerpt } from '../../lib/seo';
+import { SITE_NAME, SITE_URL, absoluteImage, excerpt, normalizeContentHtml, normalizeImageUrl } from '../../lib/seo';
 
 const API_URL = process.env.PHP_API_URL || 'https://api.barkatkamran.com/api.php';
 
@@ -133,7 +133,16 @@ export async function getStaticProps({ params }) {
     if (res.ok) {
       const data = await res.json();
       if (data.post) {
-        return { props: { post: data.post }, revalidate: 60 };
+        return {
+          props: {
+            post: {
+              ...data.post,
+              content: normalizeContentHtml(data.post.content || ''),
+              imageUrl: normalizeImageUrl(data.post.imageUrl) || null
+            }
+          },
+          revalidate: 60
+        };
       }
     }
 
@@ -147,7 +156,16 @@ export async function getStaticProps({ params }) {
 
     if (!targetPost) return { notFound: true };
 
-    return { props: { post: targetPost }, revalidate: 60 };
+    return {
+      props: {
+        post: {
+          ...targetPost,
+          content: normalizeContentHtml(targetPost.content || ''),
+          imageUrl: normalizeImageUrl(targetPost.imageUrl) || null
+        }
+      },
+      revalidate: 60
+    };
   } catch (err) {
     return { notFound: true };
   }
