@@ -1,9 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  outputFileTracingRoot: new URL('.', import.meta.url).pathname,
   images: {
-    domains: ['example.com'], 
-    domains: ['www.barkatkamran.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'www.barkatkamran.com'
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.thestylishmama.com'
+      }
+    ],
   },
 };
 

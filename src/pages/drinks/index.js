@@ -5,8 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from '../header';
 import styles from '../../styles/Drinks.module.css';
+import { SITE_NAME, SITE_URL, absoluteImage, fetchWithTimeout, pageSeo } from '../../lib/seo';
 
-const API_URL = 'https://www.thestylishmama.com/api/posts';
+const API_URL = process.env.PHP_API_URL || 'https://www.barkatkamran.com/api.php';
 
 const sanitizeText = (htmlContent) => {
   if (!htmlContent) return '';
@@ -27,16 +28,10 @@ export default function Drinks({ posts, initialCategories, initialTags, error, p
   const [categories] = useState(initialCategories || []);
   const [tags] = useState(initialTags || []);
 
-  const baseUrl = 'https://www.thestylishmama.com';
+  const baseUrl = SITE_URL;
 
-  const dynamicDescription =
-    filteredPosts.length > 0
-      ? `Discover refreshing drink recipes like "${filteredPosts[0].title}" and more on The Stylish Mama.`
-      : 'Explore refreshing drink recipes perfect for any occasion at The Stylish Mama.';
-  const dynamicTitle =
-    filteredPosts.length > 0
-      ? `${filteredPosts[0].title} - Refreshing Drink Recipes | The Stylish Mama`
-      : 'Refreshing Drink Recipes | The Stylish Mama';
+  const dynamicDescription = pageSeo.drinks.description;
+  const dynamicTitle = pageSeo.drinks.title;
 
   const structuredData = {
     '@context': 'https://schema.org',
@@ -53,18 +48,18 @@ export default function Drinks({ posts, initialCategories, initialTags, error, p
           '@type': 'Recipe',
           name: post.title || 'Untitled',
           description: sanitizeText(post.content).substring(0, 160),
-          datePublished: post.createdAt || new Date().toISOString(),
-          dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
-          author: { '@type': 'Person', name: 'The Stylish Mama' },
+          ...(post.createdAt ? { datePublished: post.createdAt } : {}),
+          ...(post.updated_at || post.createdAt ? { dateModified: post.updated_at || post.createdAt } : {}),
+          author: { '@type': 'Person', name: SITE_NAME },
           publisher: {
             '@type': 'Organization',
-            name: 'The Stylish Mama',
+            name: SITE_NAME,
             logo: {
               '@type': 'ImageObject',
-              url: `${baseUrl}/logo1.png`,
+              url: absoluteImage('/logo2.png'),
             },
           },
-          image: post.imageUrl || '/default-drinks-image.jpg',
+          image: post.imageUrl || absoluteImage('/logo2.png'),
           recipeCategory: post.category || 'Beverage',
           recipeCuisine: post.tags?.includes('cocktail') ? 'Cocktail' : 'Non-Alcoholic',
           prepTime: 'PT15M',
@@ -153,17 +148,12 @@ export default function Drinks({ posts, initialCategories, initialTags, error, p
         <meta property="og:description" content={dynamicDescription} />
         <meta property="og:url" content={`${baseUrl}/drinks`} />
         <meta property="og:type" content="website" />
-        <meta
-          property="og:image"
-          content={filteredPosts[0]?.imageUrl || '/default-drinks-image.jpg'}
-        />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:image" content={absoluteImage('/logo2.png')} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={dynamicTitle} />
         <meta name="twitter:description" content={dynamicDescription} />
-        <meta
-          name="twitter:image"
-          content={filteredPosts[0]?.imageUrl || '/default-drinks-image.jpg'}
-        />
+        <meta name="twitter:image" content={absoluteImage('/logo2.png')} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -280,7 +270,7 @@ export async function getStaticProps() {
   const offset = 0;
 
   try {
-    const response = await fetch(`${API_URL}?page=Drinks&limit=${limit}&offset=${offset}`);
+    const response = await fetchWithTimeout(`${API_URL}?page=Drinks&limit=${limit}&offset=${offset}`);
     const data = await response.json();
     const { posts = [], pagination = {} } = data;
 

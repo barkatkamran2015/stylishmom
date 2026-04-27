@@ -2,13 +2,11 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../../styles/ProductsReview.module.css';
+import { SITE_NAME, SITE_URL, absoluteImage, excerpt } from '../../lib/seo';
 
-const API_URL = 'https://www.thestylishmama.com/api/posts';
+const API_URL = process.env.PHP_API_URL || 'https://www.barkatkamran.com/api.php';
 
-const sanitizeText = (htmlContent) => {
-  if (!htmlContent) return '';
-  return htmlContent.replace(/<[^>]+>/g, '').trim();
-};
+const sanitizeText = (htmlContent) => excerpt(htmlContent, 5000);
 
 export default function ProductsReviewPost({ post }) {
   if (!post) {
@@ -25,18 +23,21 @@ export default function ProductsReviewPost({ post }) {
     );
   }
 
-  const baseUrl = 'https://www.thestylishmama.com';
+  const baseUrl = SITE_URL;
+  const description = excerpt(post.content, 160) || 'Read this product review from The Stylish Mama.';
+  const pageUrl = `${baseUrl}/productsreview/${encodeURIComponent(post.slug)}`;
+  const imageUrl = absoluteImage(post.imageUrl);
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Review",
     "name": post.title,
-    "url": `${baseUrl}/productsreview/${post.slug}`,
+    "url": pageUrl,
     "datePublished": post.createdAt,
-    "author": { "@type": "Person", "name": post.author || "The Stylish Mama" },
+    "author": { "@type": "Person", "name": post.author || SITE_NAME },
     "publisher": {
       "@type": "Organization",
-      "name": "The Stylish Mama",
-      "logo": { "@type": "ImageObject", "url": `${baseUrl}/logo.png` }
+      "name": SITE_NAME,
+      "logo": { "@type": "ImageObject", "url": absoluteImage('/logo2.png') }
     },
     "reviewRating": {
       "@type": "Rating",
@@ -47,8 +48,8 @@ export default function ProductsReviewPost({ post }) {
     "itemReviewed": {
       "@type": "Product",
       "name": (post.title || '').replace(/review:/gi, '').trim(),
-      "image": post.imageUrl || `${baseUrl}/default-product-image.jpg`,
-      "description": sanitizeText(post.content).substring(0, 200)
+      "image": imageUrl,
+      "description": excerpt(post.content, 200)
     },
     "reviewBody": sanitizeText(post.content)
   };
@@ -57,12 +58,18 @@ export default function ProductsReviewPost({ post }) {
     <div className={styles.productsReviewPage}>
       <Head>
         <title>{`${post.title} | The Stylish Mama`}</title>
-        <meta name="description" content={sanitizeText(post.content).substring(0, 160)} />
+        <meta name="description" content={description} />
+        <link rel="canonical" href={pageUrl} />
         <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={sanitizeText(post.content).substring(0, 160)} />
-        <meta property="og:url" content={`${baseUrl}/productsreview/${post.slug}`} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={pageUrl} />
         <meta property="og:type" content="article" />
-        <meta property="og:image" content={post.imageUrl || `${baseUrl}/default-product-image.jpg`} />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:image" content={imageUrl} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={post.title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={imageUrl} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       </Head>
 

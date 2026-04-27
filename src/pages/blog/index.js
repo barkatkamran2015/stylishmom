@@ -5,8 +5,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Header from '../header';
 import styles from '../../styles/Blog.module.css';
+import { SITE_NAME, SITE_URL, absoluteImage, collectionJsonLd, fetchWithTimeout, pageSeo } from '../../lib/seo';
 
-const API_URL = 'https://www.thestylishmama.com/api/posts';
+const API_URL = process.env.PHP_API_URL || 'https://www.barkatkamran.com/api.php';
 
 const sanitizeText = (htmlContent) => {
   if (!htmlContent) return '';
@@ -82,95 +83,36 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
     }
   }, []);
 
-  const baseUrl = 'https://www.thestylishmama.com';
+  const baseUrl = SITE_URL;
   const hasMore = displayedPosts.length < allPosts.length;
 
-  const primaryPost = displayedPosts[0];
-  const dynamicDescription = primaryPost
-    ? `${sanitizeText(primaryPost.content).substring(0, 120)}... Read more on The Stylish Mama!`
-    : 'Discover insightful blog posts on motherhood, lifestyle, and more at The Stylish Mama.';
-  const dynamicTitle = primaryPost
-    ? `${primaryPost.title || 'Untitled'} | The Stylish Mama`
-    : 'Blog | The Stylish Mama';
-
-  const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
-    name: 'Blog | The Stylish Mama',
-    description: dynamicDescription,
-    url: `${baseUrl}/blog`,
-    publisher: {
-      '@type': 'Organization',
-      name: 'The Stylish Mama',
-      logo: {
-        '@type': 'ImageObject',
-        url: `${baseUrl}/logo.png`,
-      },
-    },
-    mainEntity: {
-      '@type': 'ItemList',
-      itemListElement: displayedPosts.map((post, index) => {
-        const sanitizedContent = sanitizeText(post.content);
-        return {
-          '@type': 'ListItem',
-          position: index + 1,
-          item: {
-            '@type': 'BlogPosting',
-            headline: post.title || 'Untitled',
-            description: sanitizedContent.substring(0, 160),
-            datePublished: post.createdAt || new Date().toISOString(),
-            dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
-            author: {
-              '@type': 'Person',
-              name: post.author || 'The Stylish Mama',
-            },
-            publisher: {
-              '@type': 'Organization',
-              name: 'The Stylish Mama',
-              logo: {
-                '@type': 'ImageObject',
-                url: `${baseUrl}/logo.png`,
-              },
-            },
-            image: post.imageUrl || 'https://www.thestylishmama.com/default-blog-image.jpg',
-            url: `${baseUrl}/blog/${post.slug}`,
-            mainEntityOfPage: {
-              '@type': 'WebPage',
-              '@id': `${baseUrl}/blog/${post.slug}`,
-            },
-            keywords: post.tags?.join(', ') || 'blog, motherhood, lifestyle',
-          },
-        };
-      }),
-    },
-  };
+  const structuredData = collectionJsonLd({
+    section: 'blog',
+    seo: pageSeo.blog,
+    posts: displayedPosts
+  });
 
   return (
     <div className={styles.blogPage}>
       <Head>
-        <title>{dynamicTitle}</title>
+        <title>{pageSeo.blog.title}</title>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content={dynamicDescription} />
+        <meta name="description" content={pageSeo.blog.description} />
         <meta name="keywords" content="blog,motherhood,lifestyle" />
         <meta name="robots" content="index, follow" />
-        <meta name="author" content={primaryPost?.author || 'The Stylish Mama'} />
+        <meta name="author" content={SITE_NAME} />
         <link rel="canonical" href={`${baseUrl}/blog`} />
-        <meta property="og:title" content={dynamicTitle} />
-        <meta property="og:description" content={dynamicDescription} />
+        <meta property="og:title" content={pageSeo.blog.title} />
+        <meta property="og:description" content={pageSeo.blog.description} />
         <meta property="og:url" content={`${baseUrl}/blog`} />
         <meta property="og:type" content="website" />
-        <meta
-          property="og:image"
-          content={primaryPost?.imageUrl || 'https://www.thestylishmama.com/default-blog-image.jpg'}
-        />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:image" content={absoluteImage('/logo2.png')} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={dynamicTitle} />
-        <meta name="twitter:description" content={dynamicDescription} />
-        <meta
-          name="twitter:image"
-          content={primaryPost?.imageUrl || 'https://www.thestylishmama.com/default-blog-image.jpg'}
-        />
+        <meta name="twitter:title" content={pageSeo.blog.title} />
+        <meta name="twitter:description" content={pageSeo.blog.description} />
+        <meta name="twitter:image" content={absoluteImage('/logo2.png')} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -256,7 +198,7 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
 
 export async function getStaticProps() {
   try {
-    const response = await fetch(`${API_URL}?page=Blog&limit=1000&offset=0`);
+    const response = await fetchWithTimeout(`${API_URL}?page=Blog&limit=1000&offset=0`);
     const data = await response.json();
     const { posts = [] } = data;
 

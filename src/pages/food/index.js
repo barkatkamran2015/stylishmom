@@ -5,8 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import Header from "../header";
 import styles from "../../styles/Food.module.css";
+import { SITE_NAME, SITE_URL, absoluteImage, fetchWithTimeout, pageSeo } from "../../lib/seo";
 
-const API_URL = "https://www.thestylishmama.com/api/posts";
+const API_URL = process.env.PHP_API_URL || "https://www.barkatkamran.com/api.php";
 
 const sanitizeText = (htmlContent) => {
   if (!htmlContent) return "";
@@ -71,21 +72,20 @@ export default function Food({ posts, initialCategories, initialTags, error }) {
     [allPosts]
   );
 
-  const baseUrl = "https://www.thestylishmama.com";
+  const baseUrl = SITE_URL;
   const pageUrl = `${baseUrl}/food`;
 
   const hasMore = displayedPosts.length < allPosts.length;
 
   // ✅ Stable SEO (does not change based on first post)
-  const dynamicTitle = "Food Recipes | The Stylish Mama (Easy Family Meals)";
-  const dynamicDescription =
-    "Browse easy, family-friendly recipes, quick weeknight dinners, and comforting home cooking from The Stylish Mama. Simple ingredients, big flavor.";
+  const dynamicTitle = pageSeo.food.title;
+  const dynamicDescription = pageSeo.food.description;
 
   // ✅ Absolute OG image (safe fallback)
   const ogImage = (() => {
     const img = displayedPosts?.[0]?.imageUrl;
     if (img && typeof img === "string" && img.startsWith("http")) return img;
-    return `${baseUrl}/default-food-image.jpg`;
+    return absoluteImage("/logo2.png");
   })();
 
   // ✅ Correct category schema: CollectionPage + ItemList of BlogPosting
@@ -112,9 +112,9 @@ export default function Food({ posts, initialCategories, initialTags, error }) {
             "@type": "BlogPosting",
             headline: post.title,
             description: sanitizeText(post.content).substring(0, 160),
-            datePublished: post.createdAt || new Date().toISOString(),
-            dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
-            author: { "@type": "Organization", name: "The Stylish Mama" },
+            ...(post.createdAt ? { datePublished: post.createdAt } : {}),
+            ...(post.updated_at || post.createdAt ? { dateModified: post.updated_at || post.createdAt } : {}),
+            author: { "@type": "Organization", name: SITE_NAME },
             image,
             mainEntityOfPage: postUrl,
           },
@@ -136,7 +136,7 @@ export default function Food({ posts, initialCategories, initialTags, error }) {
         <meta property="og:description" content={dynamicDescription} />
         <meta property="og:url" content={pageUrl} />
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="The Stylish Mama" />
+        <meta property="og:site_name" content={SITE_NAME} />
         <meta property="og:image" content={ogImage} />
 
         {/* Twitter */}
@@ -216,7 +216,7 @@ export async function getStaticProps() {
   const offset = 0;
 
   try {
-    const response = await fetch(`${API_URL}?page=Recipe&limit=${limit}&offset=${offset}`);
+    const response = await fetchWithTimeout(`${API_URL}?page=Recipe&limit=${limit}&offset=${offset}`);
     const data = await response.json();
     const { posts = [] } = data;
 

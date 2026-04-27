@@ -6,6 +6,7 @@ import Head from "next/head";
 import Image from "next/image";
 import SearchBar from "../components/SearchBar";
 import styles from "../../styles/Dash.module.css";
+import { SITE_NAME, SITE_URL, absoluteImage, fetchWithTimeout, pageSeo } from "../../lib/seo";
 
 import imageBlog from "../Assets/family.jpg";
 import imageNature from "../Assets/lotto.jpg";
@@ -72,14 +73,6 @@ const formatDateUTC = (dateStr) => {
   });
 };
 
-// Optional: absolute image for schema (helps SEO)
-const toAbsoluteImage = (url) => {
-  if (!url) return "https://www.thestylishmama.com/default-image.jpg";
-  if (typeof url === "string" && url.startsWith("http")) return url;
-  // if relative
-  return `https://www.thestylishmama.com${url.startsWith("/") ? url : `/${url}`}`;
-};
-
 /**
  * Resolver: asks backend for canonical slug using GET by slug guess.
  * (Not used in navigateToPost below right now since you already require post.slug)
@@ -99,7 +92,7 @@ export async function getStaticProps() {
   const offset = 0;
 
   try {
-    const response = await fetch(`${API_URL}?page=all&limit=${limit}&offset=${offset}`);
+    const response = await fetchWithTimeout(`${API_URL}?page=all&limit=${limit}&offset=${offset}`);
 
     if (!response.ok) {
       return {
@@ -150,10 +143,9 @@ export default function Home({ initialPosts, error: initialError }) {
   const router = useRouter();
 
   const [allPosts] = useState(initialPosts || []);
-  const [displayedPosts, setDisplayedPosts] = useState([]);
+  const [displayedPosts, setDisplayedPosts] = useState((initialPosts || []).slice(0, 6));
   const [loading, setLoading] = useState(false);
   const [error] = useState(initialError);
-  const [isClient, setIsClient] = useState(false);
 
   const [resolvingId, setResolvingId] = useState(null);
 
@@ -161,7 +153,6 @@ export default function Home({ initialPosts, error: initialError }) {
   const LOAD_MORE = 3;
 
   useEffect(() => {
-    setIsClient(true);
     setDisplayedPosts(allPosts.slice(0, INITIAL_LOAD));
   }, [allPosts]);
 
@@ -241,10 +232,14 @@ export default function Home({ initialPosts, error: initialError }) {
     return {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      name: "The Stylish Mama | Easy Family Recipes & Home Cooking",
-      description:
-        "The Stylish Mama shares easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms.",
-      url: "https://www.thestylishmama.com/",
+      name: pageSeo.home.title,
+      description: pageSeo.home.description,
+      url: `${SITE_URL}/`,
+      isPartOf: {
+        "@type": "WebSite",
+        name: SITE_NAME,
+        url: SITE_URL
+      },
       mainEntity: {
         "@type": "ItemList",
         itemListElement: displayedPosts.map((post, index) => {
@@ -259,8 +254,8 @@ export default function Home({ initialPosts, error: initialError }) {
               headline: post.title,
               description: desc,
               ...(datePublished ? { datePublished } : {}),
-              author: { "@type": "Organization", name: "The Stylish Mama" },
-              image: toAbsoluteImage(post.thumbnailUrl),
+              author: { "@type": "Organization", name: SITE_NAME },
+              image: absoluteImage(post.thumbnailUrl),
             },
           };
         }),
@@ -268,37 +263,32 @@ export default function Home({ initialPosts, error: initialError }) {
     };
   }, [displayedPosts]);
 
-  if (!isClient) return <p>Loading...</p>;
-
   const hasMore = displayedPosts.length < allPosts.length;
 
   return (
     <div className={styles.homePage}>
       <Head>
-        <title>The Stylish Mama | Easy Family Recipes & Home Cooking</title>
+        <title>{pageSeo.home.title}</title>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta
           name="description"
-          content="The Stylish Mama shares easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms."
+          content={pageSeo.home.description}
         />
-        <link rel="canonical" href="https://www.thestylishmama.com/" />
+        <link rel="canonical" href={`${SITE_URL}/`} />
         <link rel="icon" href="/favicon.ico" />
 
-        <meta property="og:title" content="The Stylish Mama | Easy Family Recipes & Home Cooking" />
-        <meta
-          property="og:description"
-          content="Easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms."
-        />
-        <meta property="og:url" content="https://www.thestylishmama.com/" />
+        <meta property="og:title" content={pageSeo.home.title} />
+        <meta property="og:description" content={pageSeo.home.description} />
+        <meta property="og:url" content={`${SITE_URL}/`} />
         <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:image" content={absoluteImage("/logo2.png")} />
 
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="The Stylish Mama | Easy Family Recipes & Home Cooking" />
-        <meta
-          name="twitter:description"
-          content="Easy, family-friendly recipes, quick dinners, and comforting home cooking—simple ingredients, big flavor, and real-life tips for busy moms."
-        />
+        <meta name="twitter:title" content={pageSeo.home.title} />
+        <meta name="twitter:description" content={pageSeo.home.description} />
+        <meta name="twitter:image" content={absoluteImage("/logo2.png")} />
 
         <script
           type="application/ld+json"

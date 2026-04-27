@@ -5,8 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from '../header';
 import styles from '../../styles/ProductsReview.module.css';
+import { SITE_NAME, SITE_URL, absoluteImage, collectionJsonLd, fetchWithTimeout, pageSeo } from '../../lib/seo';
 
-const API_URL = 'https://www.thestylishmama.com/api/posts';
+const API_URL = process.env.PHP_API_URL || 'https://www.barkatkamran.com/api.php';
 
 const sanitizeText = (htmlContent) => {
   if (!htmlContent) return '';
@@ -27,32 +28,13 @@ export default function ProductsReview({ posts, initialCategories, initialTags, 
   const [categories] = useState(initialCategories || []);
   const [tags] = useState(initialTags || []);
 
-  const baseUrl = 'https://www.thestylishmama.com';
+  const baseUrl = SITE_URL;
 
-  const dynamicDescription =
-    filteredPosts.length > 0
-      ? `Discover detailed product reviews like "${filteredPosts[0].title}" at The Stylish Mama.`
-      : 'Explore product reviews and lifestyle tips at The Stylish Mama.';
-  const dynamicTitle =
-    filteredPosts.length > 0
-      ? `${filteredPosts[0].title} - Product Reviews | The Stylish Mama`
-      : 'Product Reviews | The Stylish Mama';
-
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": "Product Reviews | The Stylish Mama",
-    "description": "Honest and detailed product reviews for stylish moms trust.",
-    "url": `${baseUrl}/productsreview`,
-    "mainEntity": {
-      "@type": "ItemList",
-      "itemListElement": filteredPosts.map((post, index) => ({
-        "@type": "ListItem",
-        "position": index + 1,
-        "url": `${baseUrl}/productsreview/${post.slug}`
-      }))
-    }
-  };
+  const structuredData = collectionJsonLd({
+    section: 'productsreview',
+    seo: pageSeo.productsreview,
+    posts: filteredPosts
+  });
 
   const handleSearch = useCallback((searchTerm) => {
     if (!searchTerm.trim()) {
@@ -79,26 +61,21 @@ export default function ProductsReview({ posts, initialCategories, initialTags, 
   return (
     <div className={styles.productsReviewPage}>
       <Head>
-        <title>{dynamicTitle}</title>
-        <meta name="description" content={dynamicDescription} />
+        <title>{pageSeo.productsreview.title}</title>
+        <meta name="description" content={pageSeo.productsreview.description} />
         <meta name="keywords" content="product reviews, buying guide, lifestyle tips" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={`${baseUrl}/productsreview`} />
-        <meta property="og:title" content={dynamicTitle} />
-        <meta property="og:description" content={dynamicDescription} />
+        <meta property="og:title" content={pageSeo.productsreview.title} />
+        <meta property="og:description" content={pageSeo.productsreview.description} />
         <meta property="og:url" content={`${baseUrl}/productsreview`} />
         <meta property="og:type" content="website" />
-        <meta
-          property="og:image"
-          content={filteredPosts[0]?.imageUrl || 'https://www.thestylishmama.com/default-product-image.jpg'}
-        />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:image" content={absoluteImage('/logo2.png')} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={dynamicTitle} />
-        <meta name="twitter:description" content={dynamicDescription} />
-        <meta
-          name="twitter:image"
-          content={filteredPosts[0]?.imageUrl || 'https://www.thestylishmama.com/default-product-image.jpg'}
-        />
+        <meta name="twitter:title" content={pageSeo.productsreview.title} />
+        <meta name="twitter:description" content={pageSeo.productsreview.description} />
+        <meta name="twitter:image" content={absoluteImage('/logo2.png')} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -209,7 +186,7 @@ export async function getStaticProps() {
   const offset = 0;
 
   try {
-    const response = await fetch(`${API_URL}?page=ProductsReview&limit=${limit}&offset=${offset}`);
+    const response = await fetchWithTimeout(`${API_URL}?page=ProductsReview&limit=${limit}&offset=${offset}`);
     const data = await response.json();
     const { posts = [], pagination = {} } = data;
 

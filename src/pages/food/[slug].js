@@ -2,8 +2,9 @@
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../../styles/Food.module.css";
+import { SITE_NAME } from "../../lib/seo";
 
-const API_URL = "https://www.thestylishmama.com/api/posts";
+const API_URL = process.env.PHP_API_URL || "https://www.barkatkamran.com/api.php";
 const baseUrl = "https://www.thestylishmama.com";
 
 const sanitizeText = (htmlContent) => {
@@ -50,10 +51,10 @@ export default function FoodPost({ post, canonicalSlug }) {
     "@type": "Recipe",
     name: post.title || "Untitled",
     description,
-    datePublished: post.createdAt || new Date().toISOString(),
-    dateModified: post.updated_at || post.createdAt || new Date().toISOString(),
-    author: { "@type": "Organization", name: "The Stylish Mama" },
-    publisher: { "@type": "Organization", name: "The Stylish Mama" },
+    ...(post.createdAt ? { datePublished: post.createdAt } : {}),
+    ...(post.updated_at || post.createdAt ? { dateModified: post.updated_at || post.createdAt } : {}),
+    author: { "@type": "Organization", name: SITE_NAME },
+    publisher: { "@type": "Organization", name: SITE_NAME },
     image: [ogImage],
     url: pageUrl,
     recipeCategory: "Food",
@@ -71,7 +72,7 @@ export default function FoodPost({ post, canonicalSlug }) {
         <meta property="og:description" content={description} />
         <meta property="og:url" content={pageUrl} />
         <meta property="og:type" content="article" />
-        <meta property="og:site_name" content="The Stylish Mama" />
+        <meta property="og:site_name" content={SITE_NAME} />
         <meta property="og:image" content={ogImage} />
 
         {/* Twitter */}
