@@ -104,7 +104,20 @@ export default function ProductsReview({ posts, initialCategories, initialTags, 
       </div>
 
       <section className={styles.productsReviewPageContentWrapper}>
-        <h1 className={styles.productsReviewPageHeading}>Product Reviews</h1>
+        <div className={styles.productsReviewPageIntro}>
+          <h1 className={styles.productsReviewPageHeading}>Product Reviews for Busy Moms</h1>
+          <p>
+            Practical beauty finds, travel essentials, budget-friendly mom products, and everyday
+            favorites reviewed for style, time savings, and real family life.
+          </p>
+          <nav aria-label="Related Stylish Mama topics" className={styles.productsReviewPageTopicLinks}>
+            <Link href="/food">Easy family recipes</Link>
+            <Link href="/blog">Mom life blog</Link>
+            <Link href="/dessert">Easy desserts</Link>
+            <Link href="/drinks">Simple drinks</Link>
+          </nav>
+        </div>
+
         {error && <p className={styles.productsReviewPageErrorMessage}>{error}</p>}
         {!error && filteredPosts.length === 0 && (
           <p className={styles.productsReviewPageNoPostsMessage}>No posts available</p>

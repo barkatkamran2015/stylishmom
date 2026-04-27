@@ -129,6 +129,20 @@ export default function Blog({ initialPosts, initialCategories, initialTags, ini
       </div>
 
       <section className={styles.blogPageContentWrapper}>
+        <div className={styles.blogPageIntro}>
+          <h1 className={styles.blogPageHeading}>Mom Life Blog for Real Busy Days</h1>
+          <p>
+            Honest motherhood stories, parenting reflections, immigrant mom life, routines, and
+            practical encouragement for moms who want life to feel a little lighter.
+          </p>
+          <nav aria-label="Related Stylish Mama topics" className={styles.blogPageTopicLinks}>
+            <Link href="/food">Easy family recipes</Link>
+            <Link href="/productsreview">Product reviews for moms</Link>
+            <Link href="/dessert">Family desserts</Link>
+            <Link href="/drinks">Drink recipes</Link>
+          </nav>
+        </div>
+
         {error ? (
           <p className={styles.blogPageErrorMessage}>{error}</p>
         ) : displayedPosts.length === 0 ? (

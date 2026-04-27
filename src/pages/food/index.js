@@ -161,7 +161,19 @@ export default function Food({ posts, initialCategories, initialTags, error }) {
       </div>
 
       <section className={styles.foodPageContentWrapper}>
-        <h1 className={styles.foodPageHeading}>Delicious Food Recipes</h1>
+        <div className={styles.foodPageIntro}>
+          <h1 className={styles.foodPageHeading}>Easy Family Recipes for Busy Moms</h1>
+          <p>
+            Find quick weeknight dinners, air fryer recipes, comforting family meals, and simple
+            home cooking ideas made for real busy-mom days.
+          </p>
+          <nav aria-label="Related mom life topics" className={styles.foodPageTopicLinks}>
+            <Link href="/blog">Mom life stories</Link>
+            <Link href="/productsreview">Busy mom product reviews</Link>
+            <Link href="/dessert">Easy desserts</Link>
+            <Link href="/drinks">Simple drinks</Link>
+          </nav>
+        </div>
 
         {error && <p className={styles.foodPageErrorMessage}>{error}</p>}
         {displayedPosts.length === 0 && !error && (
